@@ -1,0 +1,153 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b63fb5c723510549bf51c9ff5ba7bb3, type: 3}
+  m_Name: ItemCategory
+  m_EditorClassIdentifier: 
+  m_List:
+  - name: Sword
+    identity: 20000
+    resource: {fileID: 21300000, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Blade
+    identity: 20010
+    resource: {fileID: 21300020, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Dagger
+    identity: 20020
+    resource: {fileID: 21300008, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Axe
+    identity: 20030
+    resource: {fileID: 21300002, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Spear
+    identity: 20040
+    resource: {fileID: 21300004, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Hammer
+    identity: 20050
+    resource: {fileID: 21300006, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Scythe
+    identity: 20060
+    resource: {fileID: 21300010, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Whip
+    identity: 20070
+    resource: {fileID: 21300024, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Knuckle
+    identity: 20080
+    resource: {fileID: 21300022, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Bow
+    identity: 20090
+    resource: {fileID: 21300012, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Gun
+    identity: 20100
+    resource: {fileID: 21300014, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Rod
+    identity: 20110
+    resource: {fileID: 21300018, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Staff
+    identity: 20120
+    resource: {fileID: 21300016, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Book
+    identity: 20130
+    resource: {fileID: 21300006, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}
+  - name: LargeShield
+    identity: 21000
+    resource: {fileID: 21300040, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: SmallShield
+    identity: 21010
+    resource: {fileID: 21300030, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Poison
+    identity: 21030
+    resource: {fileID: 21300004, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}
+  - name: Arrow
+    identity: 21040
+    resource: {fileID: 21300000, guid: bb572d66ff333ba4b9be29a12c8fe062, type: 3}
+  - name: Bullet
+    identity: 21050
+    resource: {fileID: 21300002, guid: bb572d66ff333ba4b9be29a12c8fe062, type: 3}
+  - name: Talisman
+    identity: 21060
+    resource: {fileID: 21300008, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}
+  - name: Minion
+    identity: 21070
+    resource: {fileID: 21300010, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}
+  - name: HeavyBody
+    identity: 22000
+    resource: {fileID: 21300032, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: MediumBody
+    identity: 22010
+    resource: {fileID: 21300034, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: LightBody
+    identity: 22020
+    resource: {fileID: 21300036, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: HeavyHead
+    identity: 23000
+    resource: {fileID: 21300038, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: MediumHead
+    identity: 23010
+    resource: {fileID: 21300042, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: LightHead
+    identity: 23020
+    resource: {fileID: 21300044, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: HeavyArm
+    identity: 24000
+    resource: {fileID: 21300046, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: MediumArm
+    identity: 24010
+    resource: {fileID: 21300048, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: LightArm
+    identity: 24020
+    resource: {fileID: 21300050, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: HeavyLeg
+    identity: 25000
+    resource: {fileID: 21300052, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: MeduiumLeg
+    identity: 25010
+    resource: {fileID: 21300054, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: LightLeg
+    identity: 25020
+    resource: {fileID: 21300056, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Waist
+    identity: 26000
+    resource: {fileID: 21300068, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Back
+    identity: 26010
+    resource: {fileID: 21300058, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Ear
+    identity: 26020
+    resource: {fileID: 21300060, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Neck
+    identity: 26030
+    resource: {fileID: 21300062, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Wrist
+    identity: 26040
+    resource: {fileID: 21300068, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Finger
+    identity: 26050
+    resource: {fileID: 21300066, guid: 1fe65c9af0c3d854584ad0c945e273e3, type: 3}
+  - name: Supply
+    identity: 10000
+    resource: {fileID: 21300000, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}
+  - name: Grip
+    identity: 21020
+    resource: {fileID: 21300000, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}
+  - name: MagicStone
+    identity: 27000
+    resource: {fileID: 21300012, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}
+  - name: Tool
+    identity: 10000
+    resource: {fileID: 21300000, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}
+  - name: Aid
+    identity: 10010
+    resource: {fileID: 21300014, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}
+  - name: Scroll
+    identity: 10020
+    resource: {fileID: 21300016, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}
+  - name: Material
+    identity: 30000
+    resource: {fileID: 21300018, guid: 5c6532c49e8b65b40b4b2cfb7b10863d, type: 3}

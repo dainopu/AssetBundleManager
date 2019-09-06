@@ -1,0 +1,10 @@
+ManifestFileVersion: 0
+CRC: 1140702820
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: textures/button
+      Dependencies: {}
+    Info_1:
+      Name: textures/button_s
+      Dependencies: {}

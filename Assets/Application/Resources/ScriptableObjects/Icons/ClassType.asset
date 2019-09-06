@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b63fb5c723510549bf51c9ff5ba7bb3, type: 3}
+  m_Name: ClassType
+  m_EditorClassIdentifier: 
+  m_List:
+  - name: Warrior
+    identity: 0
+    resource: {fileID: 21300000, guid: 767ea68a00fcba449992ce2b364d124c, type: 3}
+  - name: Scout
+    identity: 1
+    resource: {fileID: 21300000, guid: 7f04282d5ebe0424fbbfe2cdfa5df99a, type: 3}
+  - name: Cleric
+    identity: 2
+    resource: {fileID: 21300000, guid: 60f3be53379b1004396eafc468ea1d6a, type: 3}
+  - name: Wizard
+    identity: 3
+    resource: {fileID: 21300000, guid: 6f32a9847d651e24885d64ae218c3a13, type: 3}
+  - name: Ranger
+    identity: 4
+    resource: {fileID: 21300000, guid: 2f8553e3ce7d8f44babe10017642ecb0, type: 3}
+  - name: Paladin
+    identity: 5
+    resource: {fileID: 21300000, guid: cfd9ef1f3ba52854a98b2d820ebf6501, type: 3}
+  - name: Warlock
+    identity: 6
+    resource: {fileID: 21300000, guid: b1015bdb79c1a5e45894e782d54454ae, type: 3}
+  - name: Minstrel
+    identity: 7
+    resource: {fileID: 21300000, guid: f2bf0f886f4c59e42a3d126e75667a2c, type: 3}
+  - name: Trickster
+    identity: 8
+    resource: {fileID: 21300000, guid: 51b3a03d42b03cb459c08b567508bd12, type: 3}
+  - name: Summoner
+    identity: 9
+    resource: {fileID: 21300000, guid: 3b2b5838eb53fb44581b62d82f8b0a9d, type: 3}
