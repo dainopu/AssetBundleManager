@@ -10,6 +10,7 @@ using UnityEngine.Networking ;
 
 #if UNITY_EDITOR
 using UnityEditor ;
+using UnityEditor.SceneManagement ;
 #endif
 
 using StorageHelper ;
@@ -205,6 +206,47 @@ namespace AssetBundleHelper
 				return null ;
 			}
 		}
+
+		/// <summary>
+		/// ローカルアセットパスからシーンをロードする
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		private UnityEngine.SceneManagement.Scene? LoadLocalScene( string path )
+		{
+			path = m_LocalAssetBundleRootPath + path ;
+
+			UnityEngine.SceneManagement.Scene scene ;
+
+			scene = EditorSceneManager.OpenScene( path ) ;
+			if( scene.IsValid() == true )
+			{
+				// 成功したら終了
+				return scene ;
+			}
+
+			// 拡張子が無い場合はタイプ検索を行う
+			int i0 = path.LastIndexOf( '/' ) ;
+			int i1 = path.LastIndexOf( '.' ) ;
+			if( i1 <= i0 )
+			{
+				// 拡張子なし
+				scene = EditorSceneManager.OpenScene( path + ".unity" ) ;
+				if( scene.IsValid() == true )
+				{
+					// 成功したら終了
+					return scene ;
+				}
+				return null ;
+			}
+			else
+			{
+				// 拡張子あり(失敗)
+				return null ;
+			}
+		}
+
+
 
 		//---------------
 
@@ -1297,6 +1339,17 @@ namespace AssetBundleHelper
 							yield return StartCoroutine( LoadOrAddSceneCoreAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, mode, request ) ) ;
 							result = string.IsNullOrEmpty( request.Error ) ;
 						}
+#if UNITY_EDITOR
+						if( m_UseLocalAsset == true && result == false )
+						{
+							// ローカルアセットからロードを試みる
+							LoadLocalScene( path ) ;
+
+							request.Error = null ;
+							yield return StartCoroutine( LoadOrAddSceneCoreAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, mode, request ) ) ;
+							result = string.IsNullOrEmpty( request.Error ) ;
+#endif
+						}
 					}
 					else
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
@@ -1359,8 +1412,7 @@ namespace AssetBundleHelper
 			request.IsDone = true ;
 		}
 
-		// シーンをロードまたは加算する(非同期版)
-		private IEnumerator LoadOrAddSceneCoreAsync_Private( string sceneName, Type type, Action<UnityEngine.Object[]> onLoaded, string targetName, UnityEngine.SceneManagement.LoadSceneMode mode, Request request )
+		private IEnumerator LoadOrAddSceneBaseAsync_Private( string sceneName, Type type, string targetName, UnityEngine.SceneManagement.LoadSceneMode mode, Request request )
 		{
 			if( string.IsNullOrEmpty( sceneName ) == true )
 			{
@@ -1384,7 +1436,8 @@ namespace AssetBundleHelper
 			}
 
 			//----------------------------------------------------------
-		
+			
+			// リモート
 //			if( tInstance.m_FastLoadEnabled == false || fastLoadEnabled == false )
 //			{
 //				// 非同期(低速)
@@ -1395,9 +1448,11 @@ namespace AssetBundleHelper
 				// 同期(高速)　※同期メソッドを使っても実質非同期
 				UnityEngine.SceneManagement.SceneManager.LoadScene( sceneName, mode ) ;
 //			}
+		}
 
-			//------------------------------------------------------------------------------------------
-
+		// シーンをロードまたは加算する(非同期版)
+		private IEnumerator LoadOrAddSceneCoreAsync_Private( string sceneName, Type type, Action<UnityEngine.Object[]> onLoaded, string targetName, UnityEngine.SceneManagement.LoadSceneMode mode, Request request )
+		{
 			UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneByName( sceneName ) ;
 			
 			if( scene.IsValid() == false )

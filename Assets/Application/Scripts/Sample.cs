@@ -177,11 +177,11 @@ namespace AssetableExperiment
 			
 			Sprite[] sprite = new Sprite[ 2 ] ;
 
-			int category = 2 ;
-			int type = 1 ;
+			int category = 3 ;
+			int type = 0 ;
 
-			AssetBundleManager.UseResources = AssetBundleManager.UserResources.None ;       // ネットワーク上のアセットバンドルが見つからない場合は Resources から探す
-			AssetBundleManager.UseLocalAsset = true ;
+			AssetBundleManager.UseResources = AssetBundleManager.UserResources.Same ;       // ネットワーク上のアセットバンドルが見つからない場合は Resources から探す
+			AssetBundleManager.UseLocalAsset = false ;
 
 			if( category == 0 )
 			{
@@ -263,6 +263,14 @@ namespace AssetableExperiment
 						sprite[ 0 ] = AssetBundleManager.LoadSubAsset<Sprite>( path, subAssetName[ 0 ], AssetBundleManager.CachingType.Same ) ;
 						sprite[ 1 ] = AssetBundleManager.LoadSubAsset<Sprite>( path, subAssetName[ 1 ], AssetBundleManager.CachingType.Same ) ;
 	//				}
+				}
+			}
+			else
+			if( category == 3 )
+			{
+				if( type == 0 )
+				{
+					yield return AssetBundleManager.AddSceneAsync( "scenes/OverlayScene" ) ;
 				}
 			}
 
