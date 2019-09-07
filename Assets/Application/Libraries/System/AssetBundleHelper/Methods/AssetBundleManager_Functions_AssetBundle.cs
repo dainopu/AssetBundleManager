@@ -212,18 +212,32 @@ namespace AssetBundleHelper
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>
-		private UnityEngine.SceneManagement.Scene? LoadLocalScene( string path )
+		private IEnumerator OpenLocalSceneAsync( string path, string sceneName, Type type, UnityEngine.SceneManagement.LoadSceneMode mode, Request request )
 		{
-			path = m_LocalAssetBundleRootPath + path ;
-
-			UnityEngine.SceneManagement.Scene scene ;
-
-			scene = EditorSceneManager.OpenScene( path ) ;
-			if( scene.IsValid() == true )
+			if( string.IsNullOrEmpty( sceneName ) == true )
 			{
-				// 成功したら終了
-				return scene ;
+				request.Error = "Bad scene name" ;
+				yield break ;
 			}
+			
+			//----------------------------------------------------------
+
+			if( type != null )
+			{
+				// 指定の型のコンポーネントが存在する場合はそれが完全に消滅するまで待つ
+				while( true )
+				{
+					if( GameObject.FindObjectOfType( type ) == null )
+					{
+						break ;
+					}
+					yield return null ;
+				}
+			}
+
+			//----------------------------------------------------------
+
+			path = m_LocalAssetBundleRootPath + path ;
 
 			// 拡張子が無い場合はタイプ検索を行う
 			int i0 = path.LastIndexOf( '/' ) ;
@@ -231,22 +245,17 @@ namespace AssetBundleHelper
 			if( i1 <= i0 )
 			{
 				// 拡張子なし
-				scene = EditorSceneManager.OpenScene( path + ".unity" ) ;
-				if( scene.IsValid() == true )
-				{
-					// 成功したら終了
-					return scene ;
-				}
-				return null ;
+				path += ".unity" ;
 			}
-			else
+
+			EditorSceneManager.LoadSceneInPlayMode( path, new UnityEngine.SceneManagement.LoadSceneParameters( mode ) ) ;
+			UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneByName( sceneName ) ;
+			if( scene.IsValid() == false )
 			{
-				// 拡張子あり(失敗)
-				return null ;
+				request.Error = "Could not load." ;
+				yield break ;
 			}
 		}
-
-
 
 		//---------------
 
@@ -1344,17 +1353,21 @@ namespace AssetBundleHelper
 								result = string.IsNullOrEmpty( request.Error ) ;
 							}
 						}
+
 #if UNITY_EDITOR
 						if( m_UseLocalAsset == true && result == false )
 						{
 							// ローカルアセットからロードを試みる
-							LoadLocalScene( path ) ;
-
-//							request.Error = null ;
-//							yield return StartCoroutine( LoadOrAddSceneCoreAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, mode, request ) ) ;
-//							result = string.IsNullOrEmpty( request.Error ) ;
-#endif
+							yield return StartCoroutine( OpenLocalSceneAsync( path, sceneName, type, mode, request ) ) ;
+							result = string.IsNullOrEmpty( request.Error ) ;
+							if( result == true )
+							{
+								yield return StartCoroutine( WaitSceneAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, request ) ) ;
+								result = string.IsNullOrEmpty( request.Error ) ;
+							}
 						}
+#endif
+
 					}
 					else
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
@@ -1381,17 +1394,12 @@ namespace AssetBundleHelper
 												yield return StartCoroutine( WaitSceneAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, request ) ) ;
 												result = string.IsNullOrEmpty( request.Error ) ;
 											}
+										}
 
-											if( result == true )
-											{
-												// 成功の場合は自動破棄リストに追加する(Unload(false))
-												AddAutoCleaningTarget( assetBundle ) ;
-											}
-											else
-											{
-												// 失敗
-												assetBundle.Unload( true ) ;
-											}
+										if( result == true )
+										{
+											// 成功の場合は自動破棄リストに追加する(Unload(false))
+											AddAutoCleaningTarget( assetBundle ) ;
 										}
 										else
 										{

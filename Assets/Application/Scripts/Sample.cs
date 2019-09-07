@@ -137,8 +137,8 @@ namespace AssetableExperiment
 			int category = 3 ;
 			int type = 0 ;
 
-			AssetBundleManager.UseResources = AssetBundleManager.UserResources.Same ;       // ネットワーク上のアセットバンドルが見つからない場合は Resources から探す
-			AssetBundleManager.UseLocalAsset = false ;
+			AssetBundleManager.UseResources = AssetBundleManager.UserResources.None ;       // ネットワーク上のアセットバンドルが見つからない場合は Resources から探す
+			AssetBundleManager.UseLocalAsset = true ;
 
 			if( category == 0 )
 			{
