@@ -1330,14 +1330,19 @@ namespace AssetBundleHelper
 			{
 				if( result == false )
 				{
+					request.Error = null ;
 					if( ( t == 0 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 1 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
 						if( m_UseResources == UserResources.AsyncOnly || m_UseResources == UserResources.Same )
 						{
 							// リソースからロードを試みる
-							request.Error = null ;
-							yield return StartCoroutine( LoadOrAddSceneCoreAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, mode, request ) ) ;
+							yield return StartCoroutine( OpenSceneAsync_Private( sceneName, type, mode, request ) ) ;
 							result = string.IsNullOrEmpty( request.Error ) ;
+							if( result == true )
+							{
+								yield return StartCoroutine( WaitSceneAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, request ) ) ;
+								result = string.IsNullOrEmpty( request.Error ) ;
+							}
 						}
 #if UNITY_EDITOR
 						if( m_UseLocalAsset == true && result == false )
@@ -1345,9 +1350,9 @@ namespace AssetBundleHelper
 							// ローカルアセットからロードを試みる
 							LoadLocalScene( path ) ;
 
-							request.Error = null ;
-							yield return StartCoroutine( LoadOrAddSceneCoreAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, mode, request ) ) ;
-							result = string.IsNullOrEmpty( request.Error ) ;
+//							request.Error = null ;
+//							yield return StartCoroutine( LoadOrAddSceneCoreAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, mode, request ) ) ;
+//							result = string.IsNullOrEmpty( request.Error ) ;
 #endif
 						}
 					}
@@ -1368,20 +1373,29 @@ namespace AssetBundleHelper
 									{
 										if( assetBundle.isStreamedSceneAssetBundle == true )
 										{
-											request.Error = null ;
-											yield return StartCoroutine( LoadOrAddSceneCoreAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, mode, request ) ) ;
+											// SceneのAssetBundle
+											yield return StartCoroutine( OpenSceneAsync_Private( sceneName, type, mode, request ) ) ;
 											result = string.IsNullOrEmpty( request.Error ) ;
+											if( result == true )
+											{
+												yield return StartCoroutine( WaitSceneAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, request ) ) ;
+												result = string.IsNullOrEmpty( request.Error ) ;
+											}
 
-											if( result == false )
+											if( result == true )
+											{
+												// 成功の場合は自動破棄リストに追加する(Unload(false))
+												AddAutoCleaningTarget( assetBundle ) ;
+											}
+											else
 											{
 												// 失敗
 												assetBundle.Unload( true ) ;
 											}
-
-											AddAutoCleaningTarget( assetBundle ) ;
 										}
 										else
 										{
+											// 失敗(isStreamedSceneAssetBundle==trueでなければSceneのAssetBundleではない)
 											assetBundle.Unload( true ) ;
 										}
 									}
@@ -1412,7 +1426,7 @@ namespace AssetBundleHelper
 			request.IsDone = true ;
 		}
 
-		private IEnumerator LoadOrAddSceneBaseAsync_Private( string sceneName, Type type, string targetName, UnityEngine.SceneManagement.LoadSceneMode mode, Request request )
+		private IEnumerator OpenSceneAsync_Private( string sceneName, Type type, UnityEngine.SceneManagement.LoadSceneMode mode, Request request )
 		{
 			if( string.IsNullOrEmpty( sceneName ) == true )
 			{
@@ -1451,7 +1465,7 @@ namespace AssetBundleHelper
 		}
 
 		// シーンをロードまたは加算する(非同期版)
-		private IEnumerator LoadOrAddSceneCoreAsync_Private( string sceneName, Type type, Action<UnityEngine.Object[]> onLoaded, string targetName, UnityEngine.SceneManagement.LoadSceneMode mode, Request request )
+		private IEnumerator WaitSceneAsync_Private( string sceneName, Type type, Action<UnityEngine.Object[]> onLoaded, string targetName, Request request )
 		{
 			UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneByName( sceneName ) ;
 			

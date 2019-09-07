@@ -33,49 +33,6 @@ namespace AssetableExperiment
 		IEnumerator Start()
 		{
 			// フレームレート指定
-
-
-
-/*			Sprite sprite = null ;
-
-			m_FE = true ;
-			m_FC = 0 ;
-			float ft = Time.realtimeSinceStartup ;
-
-			int type = 0 ;
-			string path = "Textures/button" ;
-
-			if( type == 0 )
-			{
-				sprite = Resources.Load<Sprite>( path ) ;
-			}
-			else
-			if( type == 1 )
-			{
-				var request = Addressables.LoadAssetAsync<Sprite>( path ) ;
-				Debug.LogWarning( "結果:" + request.Result ) ;
-				yield return request ;
-				if( request.IsDone == true )
-				{
-					sprite = request.Result ;
-				}
-			}
-			else
-			if( type == 2 )
-			{
-				sprite = Asset.Load<Sprite>( path, "png" ) ;
-			}
-
-			if( sprite != null && m_Image != null )
-			{
-				m_Image.sprite = sprite ;
-			}
-
-			ft = Time.realtimeSinceStartup - ft ;
-			Debug.LogWarning( "経過フレーム数:" + m_FC + " ft : " + ft ) ;
-
-			yield break ;*/
-
 			yield return StartCoroutine( AssetBundleStartup() ) ;
 		}
 		
