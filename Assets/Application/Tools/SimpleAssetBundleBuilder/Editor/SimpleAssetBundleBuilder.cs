@@ -12,7 +12,7 @@ using System.Text ;
 namespace SimpleAssetBundleBuilder
 {
 	/// <summary>
-	/// アセットバンドルビルダークラス(エディター用) Version 2018/06/25 0
+	/// アセットバンドルビルダークラス(エディター用) Version 2019/09/10 0
 	/// </summary>
 	public class SimpleAssetBundleBuilder : EditorWindow
 	{
@@ -42,13 +42,13 @@ namespace SimpleAssetBundleBuilder
 			}
 
 			public string	name ;											// 書き出すアセットバンドルのパス
-			public List<AssetFile>	assetFile = new List<AssetFile>() ;		// 含めるアセットのパスのリスト
+			public List<AssetFile>	AssetFiles = new List<AssetFile>() ;	// 含めるアセットのパスのリスト
 
 			public int		sourceType ;									// 0=ファイル　1=フォルダ
 
 			public void AddAssetFile( string tPath, int tType )
 			{
-				assetFile.Add( new AssetFile( tPath, tType ) ) ;
+				AssetFiles.Add( new AssetFile( tPath, tType ) ) ;
 			}
 
 			// 依存関係のあるアセットも対象に追加する
@@ -56,7 +56,7 @@ namespace SimpleAssetBundleBuilder
 			{
 				// 注意：必ず基本アセットを全て追加した後にこのメソッドを呼び出す事
 
-				if( assetFile.Count == 0 )
+				if( AssetFiles.Count == 0 )
 				{
 					return 0 ;
 				}
@@ -69,27 +69,27 @@ namespace SimpleAssetBundleBuilder
 				int i, j, k, l, p ;
 				bool f ;
 
-				l = assetFile.Count ;
+				l = AssetFiles.Count ;
 				for( i  = 0 ; i <  l ; i ++ )
 				{
 	//				Debug.LogWarning( "基準アセット:" + assetFile[ i ].path ) ;
 
 					// 依存関係にあるアセットを検出する
-					tCheckPath = AssetDatabase.GetDependencies( assetFile[ i ].path ) ;
+					tCheckPath = AssetDatabase.GetDependencies( AssetFiles[ i ].path ) ;
 					if( tCheckPath!= null && tCheckPath.Length >  0 )
 					{
 						for( j  = 0 ; j <  tCheckPath.Length ; j ++ )
 						{
 							// 同アセットバンドルに含まれるアセットは除外する
-							for( k  = 0 ; k <  assetFile.Count ; k ++ )
+							for( k  = 0 ; k <  AssetFiles.Count ; k ++ )
 							{
-								if( tCheckPath[ j ] == assetFile[ k ].path )
+								if( tCheckPath[ j ] == AssetFiles[ k ].path )
 								{
 									break ;
 								}
 							}
 
-							if( k >= assetFile.Count )
+							if( k >= AssetFiles.Count )
 							{
 								// 候補にはなる
 							
@@ -514,7 +514,7 @@ namespace SimpleAssetBundleBuilder
 			int tr = 0 ;
 			for( i  = 0 ; i <  ta ; i ++ )
 			{
-				tr = tr + m_AssetBundleFileList[ i ].assetFile.Count ;
+				tr = tr + m_AssetBundleFileList[ i ].AssetFiles.Count ;
 			}
 			
 			//---------------------------------------------------------
@@ -592,16 +592,16 @@ namespace SimpleAssetBundleBuilder
 					
 						if( m_CollectDependencies == false )
 						{
-							ac = " [ " + m_AssetBundleFileList[ i ].assetFile.Count +" ]" ;
+							ac = " [ " + m_AssetBundleFileList[ i ].AssetFiles.Count +" ]" ;
 						}
 						else
 						{
 							int[] st = { 0, 0 } ;
 
 							int t ;
-							for( t  = 0 ; t <  m_AssetBundleFileList[ i ].assetFile.Count ; t ++ )
+							for( t  = 0 ; t <  m_AssetBundleFileList[ i ].AssetFiles.Count ; t ++ )
 							{
-								st[ m_AssetBundleFileList[ i ].assetFile[ t ].type ] ++ ;
+								st[ m_AssetBundleFileList[ i ].AssetFiles[ t ].type ] ++ ;
 							}
 
 							ac = " [ " + st[ 0 ] + " + " + st[ 1 ] +" ]" ;
@@ -622,14 +622,14 @@ namespace SimpleAssetBundleBuilder
 					if( m_ShowResourceElements == true )
 					{
 						GUI.color = c1 ;
-						for( j  = 0 ; j <  m_AssetBundleFileList[ i ].assetFile.Count ; j ++ )
+						for( j  = 0 ; j <  m_AssetBundleFileList[ i ].AssetFiles.Count ; j ++ )
 						{
 							GUILayout.BeginHorizontal() ;
 							{
 								// 横一列
 								if( m_CollectDependencies == true )
 								{
-									if( m_AssetBundleFileList[ i ].assetFile[ j ].type == 0 )
+									if( m_AssetBundleFileList[ i ].AssetFiles[ j ].type == 0 )
 									{
 										GUI.color = Color.white ;
 									}
@@ -641,7 +641,7 @@ namespace SimpleAssetBundleBuilder
 
 								GUILayout.Label( "", GUILayout.Width( 10f ) ) ;
 								GUILayout.Label( string.Format( tFR, j ) + " : ", GUILayout.Width( 40f ) ) ;
-								GUILayout.Label( m_AssetBundleFileList[ i ].assetFile[ j ].path ) ;
+								GUILayout.Label( m_AssetBundleFileList[ i ].AssetFiles[ j ].path ) ;
 							}
 							GUILayout.EndHorizontal() ;
 						}
@@ -843,7 +843,7 @@ namespace SimpleAssetBundleBuilder
 					// 再帰的に素材ファイルを加える
 					AddAssetBundleFile( tABF, tResourcePath ) ;
 					
-					if( tABF.assetFile.Count >  0 )
+					if( tABF.AssetFiles.Count >  0 )
 					{
 						tABF.sourceType = 1 ;	// 複数ファイル
 
@@ -949,7 +949,7 @@ namespace SimpleAssetBundleBuilder
 						// 再帰的に素材ファイルを加える
 						AddAssetBundleFile( tABF, tTargetPath[ i ] ) ;
 					
-						if( tABF.assetFile.Count >  0 )
+						if( tABF.AssetFiles.Count >  0 )
 						{
 							tABF.sourceType = 1 ;	// 複数ファイル
 
@@ -970,15 +970,9 @@ namespace SimpleAssetBundleBuilder
 		}
 
 		// アセットバンドルの要素をリストに追加していく（再帰版）
-		private void AddAssetBundleFile( AssetBundleFile tABF, string tCurrentPath )
+		private void AddAssetBundleFile( AssetBundleFile assetBundleFile, string currentPath )
 		{
-			int L = tCurrentPath.Length ;
-		
-			int i, l ;
-		
-			//-----------------------------------------------------
-		
-			if( Directory.Exists( tCurrentPath ) == false )
+			if( Directory.Exists( currentPath ) == false )
 			{
 				return ;
 			}
@@ -986,263 +980,255 @@ namespace SimpleAssetBundleBuilder
 			//-----------------------------------------------------
 		
 			// フォルダ
-			string[] tDA = Directory.GetDirectories( tCurrentPath ) ;
-		
-			if( tDA != null && tDA.Length >  0 )
+			string[] da = Directory.GetDirectories( currentPath ) ;
+			if( da != null && da.Length >  0 )
 			{
 				// サブフォルダがあるのでさらに検査していく
-				l = tDA.Length ;
-				for( i  = 0 ; i <  tDA.Length ; i ++ )
+				for( int i  = 0 ; i <  da.Length ; i ++ )
 				{
 					// サブフォルダを検査
-					tDA[ i ] = tDA[ i ].Replace( "\\", "/" ) ;
-					AddAssetBundleFile( tABF, tDA[ i ] + "/" ) ;	// 再帰版
+					da[ i ] = da[ i ].Replace( "\\", "/" ) ;
+					AddAssetBundleFile( assetBundleFile, da[ i ] + "/" ) ;	// 再帰版
 				}
 			}
 		
 			// ファイル
-			string[] tFA = Directory.GetFiles( tCurrentPath ) ;
-		
-			if( tFA != null && tFA.Length >  0 )
+			string[] fa = Directory.GetFiles( currentPath ) ;
+			if( fa != null && fa.Length >  0 )
 			{
-				l = tFA.Length ;
-				for( i  = 0 ; i <  l ; i ++ )
+				for( int i  = 0 ; i <  fa.Length ; i ++ )
 				{
 					// 対象化コードで反転無効化（は止める）
-
-					tFA[ i ] = tFA[ i ].Replace( "\\", "/" ) ;
-					if( CheckType( tFA[ i ] ) == true )
+					fa[ i ] = fa[ i ].Replace( "\\", "/" ) ;
+					if( CheckType( fa[ i ] ) == true )
 					{
 						// コードで対象指定：複数ファイルのケース
-						tABF.AddAssetFile( tFA[ i ], 0 ) ;
+						assetBundleFile.AddAssetFile( fa[ i ], 0 ) ;
 					}
 				}
 			}
 		}
 
 		// パスを解析して最終的なターゲットパスを取得する
-		private string GetLowerPath( string tPath, out bool oWildCard, out bool oFolderOnly )
+		private string GetLowerPath( string path, out bool wildCard, out bool folderOnly )
 		{
-			oWildCard = false ;
-			oFolderOnly = false ;
+			wildCard = false ;
+			folderOnly = false ;
 
-			tPath = tPath.TrimEnd( '\n', ( char )0x0D, ( char )0x0A ) ;
-			tPath = tPath.Trim( ' ' ) ;	// 前後のスペースを削除する
+			path = path.TrimEnd( '\n', ( char )0x0D, ( char )0x0A ) ;
+			path = path.Trim( ' ' ) ;	// 前後のスペースを削除する
 
-			tPath = tPath.Replace( "**", "*" ) ;
-			tPath = tPath.Replace( "**", "*" ) ;
+			path = path.Replace( "**", "*" ) ;
+			path = path.Replace( "**", "*" ) ;
 
-			if( tPath.Length == 0 )
+			if( path.Length == 0 )
 			{
 				// 不可
 				return null ;
 			}
 
 			// 先頭がビックリマークなら除外する
-			if( tPath[ 0 ] == '!' )
+			if( path[ 0 ] == '!' )
 			{
 				// 不可
 				return null ;
 			}
 
 			// 先頭にスラッシュが付いていれば外す
-			tPath = tPath.TrimStart( '/' ) ;
-			if( tPath.Length == 0 )
+			path = path.TrimStart( '/' ) ;
+			if( path.Length == 0 )
 			{
 				// 不可
 				return null ;
 			}
 
 			// 最後にスラッシュが付いていればフォルダ限定
-			if( tPath[ tPath.Length - 1 ] == '/' )
+			if( path[ path.Length - 1 ] == '/' )
 			{
-				oFolderOnly = true ;	// フォルダ限定
-				tPath = tPath.TrimEnd( '/' ) ;
+				folderOnly = true ;	// フォルダ限定
+				path = path.TrimEnd( '/' ) ;
 			}
 
-			if( tPath.Length == 0 )
+			if( path.Length == 0 )
 			{
 				// 不可
 				return null ;
 			}
 
 			// 最後にアスタリスクが付いていれば複数対象
-			if( tPath[ tPath.Length - 1 ] == '*' )
+			if( path[ path.Length - 1 ] == '*' )
 			{
-				oWildCard = true ;	// 対象は親フォルダ内の全て
-				tPath = tPath.TrimEnd( '*' ) ;
+				wildCard = true ;	// 対象は親フォルダ内の全て
+				path = path.TrimEnd( '*' ) ;
 			}
 
 			// 最後にスラッシュになってしまうようなら除外する
-			if( tPath.Length >= 1 )
+			if( path.Length >= 1 )
 			{
-				if( tPath[ tPath.Length - 1 ] == '/' )
+				if( path[ path.Length - 1 ] == '/' )
 				{
-					tPath = tPath.Trim( '/' ) ;
+					path = path.Trim( '/' ) ;
 				}
 			}
 
 			// パスが空文字の場合もありえる
-			return tPath ;
+			return path ;
 		}
 
-		private string[] GetUpperPath( string tPath )
+		private string[] GetUpperPath( string path )
 		{
-			if( string.IsNullOrEmpty( tPath ) == true || tPath.Contains( "*" ) == false )
+			if( string.IsNullOrEmpty( path ) == true || path.Contains( "*" ) == false )
 			{
-				return new string[]{ tPath } ;
+				return new string[]{ path } ;
 			}
 
 			// ワイルドカード部分を展開して全て個別のパスにする
 
-			List<string> tStackedPath = new List<string>() ;
+			List<string> stackedPaths = new List<string>() ;
 
 			// 一時的に最後にスラッシュを付ける
-			tPath = tPath + "/" ;
+			path += "/" ;
 
-			string tCurrentPath = "" ;
+			string currentPath = string.Empty ;
 
 			// 再帰メソッドを呼ぶ
-			GetUpperPath( tPath, tCurrentPath, ref tStackedPath ) ;
+			GetUpperPath( path, currentPath, ref stackedPaths ) ;
 
-			if( tStackedPath.Count == 0 )
+			if( stackedPaths.Count == 0 )
 			{
 				// ワイルドカード内で有効なパスは存在しない
 				return null ;
 			}
 
-			return tStackedPath.ToArray() ;
+			return stackedPaths.ToArray() ;
 		}
 
 		// 再帰処理側
-		private void GetUpperPath( string tPath, string tCurrentPath, ref List<string> tStackedPath )
+		private void GetUpperPath( string path, string currentPath, ref List<string> stackedPaths )
 		{
 			int i, l, p ;
-			string tName,  tFixedPath ;
+			string token,  fixedPath ;
 
-			string[]		tWorks ;
-			List<string>	tNames = new List<string>() ;
+			string[]		folderPaths ;
+			List<string>	assetPaths = new List<string>() ;
 
 			//----------------------------------
 
-			p = tPath.IndexOf( "/" ) ;
+			p = path.IndexOf( "/" ) ;
 
 			// 最初のスラッシュまで切り出し(絶対に０より大きい値になる
-			tName = tPath.Substring( 0, p ) ;
+			token = path.Substring( 0, p ) ;
 
 			p ++ ;
-			tPath = tPath.Substring( p, tPath.Length - p ) ;
+			path = path.Substring( p, path.Length - p ) ;
 
-			if( tName != "*" )
+			if( token != "*" )
 			{
 				// 固定
-				tFixedPath = tCurrentPath ;
-				if( string.IsNullOrEmpty( tFixedPath ) == false )
+				fixedPath = currentPath ;
+				if( string.IsNullOrEmpty( fixedPath ) == false )
 				{
-					tFixedPath = tFixedPath + "/" ;
+					fixedPath += "/" ;
 				}
-				tFixedPath = tFixedPath + tName ;
+				fixedPath += token ;
 
-				if( string.IsNullOrEmpty( tPath ) == false )
+				if( string.IsNullOrEmpty( path ) == false )
 				{
 					// まだ続きがある
 
 					// 再帰的に処理する
-					GetUpperPath( tPath, tFixedPath, ref tStackedPath ) ;
+					GetUpperPath( path, fixedPath, ref stackedPaths ) ;
 				}
 				else
 				{
 					// 最終的なパスが決定した
-					tStackedPath.Add( tFixedPath ) ;
+					stackedPaths.Add( fixedPath ) ;
 				}
 			}
 			else
 			{
 				// 可変
 
-				if( Directory.Exists( m_ResourceRootFolderPath + tCurrentPath ) == false )
+				if( Directory.Exists( m_ResourceRootFolderPath + currentPath ) == false )
 				{
 					// フォルダが存在しない
 					return ;
 				}
 
-				tNames.Clear() ;
-				tWorks = Directory.GetDirectories( m_ResourceRootFolderPath + tCurrentPath ) ;
-				if( tWorks != null && tWorks.Length >  0 )
+				assetPaths.Clear() ;
+				folderPaths = Directory.GetDirectories( m_ResourceRootFolderPath + currentPath ) ;
+				if( folderPaths != null && folderPaths.Length >  0 )
 				{
-					l = tWorks.Length ;
+					l = folderPaths.Length ;
 					for( i  = 0 ; i <  l ; i ++ )
 					{
-						tWorks[ i ] = tWorks[ i ].Replace( "\\", "/" ) ;
-						if( Directory.Exists( tWorks[ i ] ) == true )
+						folderPaths[ i ] = folderPaths[ i ].Replace( "\\", "/" ) ;
+						if( Directory.Exists( folderPaths[ i ] ) == true )
 						{
 							// フォルダ
-							tNames.Add( tWorks[ i ].Replace( m_ResourceRootFolderPath + tCurrentPath + "/", "" ) ) ;
+							assetPaths.Add( folderPaths[ i ].Replace( m_ResourceRootFolderPath + currentPath + "/", "" ) ) ;
 						}
 					}
 				}
 
-				if( tNames.Count == 0 )
+				if( assetPaths.Count == 0 )
 				{
 					// この枝は打ち止め
 					return ;
 				}
 
-				if( string.IsNullOrEmpty( tPath ) == false )
+				if( string.IsNullOrEmpty( path ) == false )
 				{
 					// まだ続きがある
 
 					// 再帰的に処理する
-					l = tNames.Count ;
+					l = assetPaths.Count ;
 					for( i  = 0 ; i <  l ; i ++ )
 					{
-						tFixedPath = tCurrentPath ;
-						if( string.IsNullOrEmpty( tFixedPath ) == false )
+						fixedPath = currentPath ;
+						if( string.IsNullOrEmpty( fixedPath ) == false )
 						{
-							tFixedPath = tFixedPath + "/" ;
+							fixedPath += "/" ;
 						}
-						tFixedPath = tFixedPath + tNames[ i ] ;
+						fixedPath += assetPaths[ i ] ;
 
-						GetUpperPath( tPath, tFixedPath, ref tStackedPath ) ;
+						GetUpperPath( path, fixedPath, ref stackedPaths ) ;
 					}
 				}
 				else
 				{
 					// 最終的なパスが決定した
-					l = tNames.Count ;
+					l = assetPaths.Count ;
 					for( i  = 0 ; i <  l ; i ++ )
 					{
-						tFixedPath = tCurrentPath ;
-						if( string.IsNullOrEmpty( tFixedPath ) == false )
+						fixedPath = currentPath ;
+						if( string.IsNullOrEmpty( fixedPath ) == false )
 						{
-							tFixedPath = tFixedPath + "/" ;
+							fixedPath += "/" ;
 						}
-						tFixedPath = tFixedPath + tNames[ i ] ;
+						fixedPath += assetPaths[ i ] ;
 
 						// 追加
-						tStackedPath.Add( tFixedPath ) ;
+						stackedPaths.Add( fixedPath ) ;
 					}
 				}
 			}
 		}
 
-
 		//-----------------------------------------------------------
 	
 		// 拡張子をチェックして有効なファイルかどうか判別する
-		private bool CheckType( string tPath )
+		private bool CheckType( string path )
 		{
-			int s = tPath.LastIndexOf( '.' ) ;
-			if( s >= 0 )
+			int i = path.LastIndexOf( '.' ) ;
+			if( i >= 0 )
 			{
 				// 拡張子あり
-				string tType = tPath.Substring( s + 1, tPath.Length - ( s + 1 ) ) ;
+				string extension = path.Substring( i + 1, path.Length - ( i + 1 ) ) ;
 			
-				if( string.IsNullOrEmpty( tType ) == false )
+				if( string.IsNullOrEmpty( extension ) == false )
 				{
-	//				Debug.Log ( "Type:" + tType ) ;
-			
-					if( tType != "meta" )
+					if( extension != "meta" )
 					{
 						return true ;	// meta 以外はＯＫ
 					}
@@ -1258,71 +1244,70 @@ namespace SimpleAssetBundleBuilder
 		private void CreateAssetBundleAll()
 		{
 			// コンソールから呼ばれた場合
-			AssetBundleFile[] tAssetBundleFileList = GetAssetBundleFileList() ;
+			AssetBundleFile[] assetBundleFiles = GetAssetBundleFileList() ;
 
-			if( tAssetBundleFileList != null && tAssetBundleFileList.Length >  0 )
+			if( assetBundleFiles != null && assetBundleFiles.Length >  0 )
 			{
-				CreateAssetBundleAll( tAssetBundleFileList ) ;
+				CreateAssetBundleAll( assetBundleFiles ) ;
 			}
 		}
 
 		// 必要なアセットバンドルを全て生成する
-		private void CreateAssetBundleAll( AssetBundleFile[] tAssetBundleFileList )
+		private void CreateAssetBundleAll( AssetBundleFile[] assetBundleFiles )
 		{
-			if( tAssetBundleFileList == null || tAssetBundleFileList.Length == 0 )
+			if( assetBundleFiles == null || assetBundleFiles.Length == 0 )
 			{
 				return ;
 			}
 	
 			int i, l ;
-			bool tResult = false ;
-			string[] tAssetBundleName = null ;
+			bool result = false ;
+			string[] assetBundleNames = null ;
 			
 			//-----------------------------------------------------------------------------
 			
 			// アセットバンドルファイルの階層が浅い方から順にビルドするようにソートする(小さい値の方が先)
 
-			l = tAssetBundleFileList.Length ;
+//			l = assetBundleFiles.Length ;
 			
 			//-----------------------------------------------------------------------------
 		
 			// 保存先ルートフォルダ
-			string tAssetBundleRootFolderPath = m_AssetBundleRootFolderPath ;
-			l = tAssetBundleRootFolderPath.Length ;
-			if( tAssetBundleRootFolderPath[ l - 1 ] == '/' )
+			string assetBundleRootFolderPath = m_AssetBundleRootFolderPath ;
+			l = assetBundleRootFolderPath.Length ;
+			if( assetBundleRootFolderPath[ l - 1 ] == '/' )
 			{
-				tAssetBundleRootFolderPath = tAssetBundleRootFolderPath.Substring( 0, l - 1 ) ;
+				assetBundleRootFolderPath = assetBundleRootFolderPath.Substring( 0, l - 1 ) ;
 			}
 			
-			if( Directory.Exists( tAssetBundleRootFolderPath ) == false )
+			if( Directory.Exists( assetBundleRootFolderPath ) == false )
 			{
-				Debug.Log( "[Log]Output folder is not found :" + tAssetBundleRootFolderPath ) ;
+				Debug.Log( "[Log]Output folder is not found :" + assetBundleRootFolderPath ) ;
 				return ;
 			}
 
-
 			//----------------------------------
 
-			BuildAssetBundleOptions tOptions = BuildAssetBundleOptions.DeterministicAssetBundle ;
+			BuildAssetBundleOptions options = BuildAssetBundleOptions.DeterministicAssetBundle ;
 
 			if( m_ChunkBasedCompression == true )
 			{
-				tOptions = tOptions | BuildAssetBundleOptions.ChunkBasedCompression ;
+				options |= BuildAssetBundleOptions.ChunkBasedCompression ;
 			}
 
 			if( m_ForceRebuildAssetBundle == true )
 			{
-				tOptions = tOptions | BuildAssetBundleOptions.ForceRebuildAssetBundle ;
+				options |= BuildAssetBundleOptions.ForceRebuildAssetBundle ;
 			}
 
 			if( m_IgnoreTypeTreeChanges == true && m_DisableWriteTypeTree == false )
 			{
-				tOptions = tOptions | BuildAssetBundleOptions.IgnoreTypeTreeChanges ;
+				options |= BuildAssetBundleOptions.IgnoreTypeTreeChanges ;
 			}
 
 			if( m_DisableWriteTypeTree == true && m_IgnoreTypeTreeChanges == false  )
 			{
-				tOptions = tOptions | BuildAssetBundleOptions.DisableWriteTypeTree ;
+				options |= BuildAssetBundleOptions.DisableWriteTypeTree ;
 			}
 
 			//---------------------------------------------------------
@@ -1330,89 +1315,89 @@ namespace SimpleAssetBundleBuilder
 			if( m_CollectDependencies == false )
 			{
 				// 新版(依存アセット除外あり)
-				l = tAssetBundleFileList.Length ;
+				l = assetBundleFiles.Length ;
 
 				// ここからが新版のメイン生成処理
-				AssetBundleBuild[] tMap = new AssetBundleBuild[ l ] ;
+				AssetBundleBuild[] map = new AssetBundleBuild[ l ] ;
 			
 				for( i  = 0 ; i <  l ; i ++ )
 				{
-					PostAssetBundleFile( tAssetBundleFileList[ i ], ref tMap[ i ] ) ;
+					PostAssetBundleFile( assetBundleFiles[ i ], ref map[ i ] ) ;
 				}
 
 				//--------------------
 
-				AssetBundleManifest tManifest = null ;
+				AssetBundleManifest manifest ;
 
 				// アセットバンドルの生成
-				tManifest = BuildPipeline.BuildAssetBundles
+				manifest = BuildPipeline.BuildAssetBundles
 				(
-					tAssetBundleRootFolderPath,
-					tMap,
-					tOptions,
+					assetBundleRootFolderPath,
+					map,
+					options,
 					m_BuildTarget
 				) ;
 	
-				if( tManifest != null )
+				if( manifest != null )
 				{
-					tResult = true ;
-					tAssetBundleName = tManifest.GetAllAssetBundles() ;
+					result = true ;
+					assetBundleNames = manifest.GetAllAssetBundles() ;
 				}
 			}
 			else
 			{
 				// 旧版(依存アセット除外なし)
-				l = tAssetBundleFileList.Length ;
+				l = assetBundleFiles.Length ;
 
 				// ここからが新版のメイン生成処理
-				AssetBundleBuild[] tMap = new AssetBundleBuild[ 1 ] ;
+				AssetBundleBuild[] map = new AssetBundleBuild[ 1 ] ;
 			
-				AssetBundleManifest tManifest = null ;
+				AssetBundleManifest manifest ;
 
-				string[] tNA ;
-				List<string> tNL = new List<string>() ;
-				List<string> tHC = new List<string>() ;
+				string[] nameArray ;
+				List<string> nameList = new List<string>() ;
+				List<string> hashList = new List<string>() ;
 
 				for( i  = 0 ; i <  l ; i ++ )
 				{
-					PostAssetBundleFile( tAssetBundleFileList[ i ], ref tMap[ 0 ] ) ;
+					PostAssetBundleFile( assetBundleFiles[ i ], ref map[ 0 ] ) ;
 
 					// アセットバンドルの生成
-					tManifest = BuildPipeline.BuildAssetBundles
+					manifest = BuildPipeline.BuildAssetBundles
 					(
-						tAssetBundleRootFolderPath,
-						tMap,
-						tOptions,
+						assetBundleRootFolderPath,
+						map,
+						options,
 						m_BuildTarget
 					) ;
 	
-					if( tManifest == null )
+					if( manifest == null )
 					{
 						break ;
 					}
 
-					tNA = tManifest.GetAllAssetBundles() ;
-					if( tNA != null && tNA.Length >  0 )
+					nameArray = manifest.GetAllAssetBundles() ;
+					if( nameArray != null && nameArray.Length >  0 )
 					{
-						tNL.Add( tNA[ 0 ] ) ;	// 常に１つのはず
-						tHC.Add( tManifest.GetAssetBundleHash( tNA[ 0 ] ).ToString() ) ; 
+						nameList.Add( nameArray[ 0 ] ) ;	// 常に１つのはず
+						hashList.Add( manifest.GetAssetBundleHash( nameArray[ 0 ] ).ToString() ) ; 
 					}
 				}
 
 				if( i >= l )
 				{
-					tResult = true ;
-					tAssetBundleName = tNL.ToArray() ;
+					result = true ;
+					assetBundleNames = nameList.ToArray() ;
 
 					// ハッシュリストを生成して保存する
-					l = tNL.Count ;
-					string tText = "" ;
+					l = nameList.Count ;
+					string text = string.Empty ;
 					for( i  = 0 ; i <  l ; i ++ )
 					{
-						tText = tText + tNL[ i ] + "," + tHC[ i ] + "\n" ;
+						text += ( nameList[ i ] + "," + hashList[ i ] + "\n" ) ;
 					}
 
-					File.WriteAllText( m_AssetBundleRootFolderPath + GetAssetBundleRootName() + ".list", tText ) ;
+					File.WriteAllText( m_AssetBundleRootFolderPath + GetAssetBundleRootName() + ".list", text ) ;
 				}
 			}
 
@@ -1424,62 +1409,61 @@ namespace SimpleAssetBundleBuilder
 //				Debug.LogWarning( "保存先ルートフォルダ:" + m_AssetBundleRootFolderPath ) ;
 //				Debug.LogWarning( "保存マニフェスト名:" + GetAssetBundleRootName() ) ;
 
-				l = tAssetBundleFileList.Length ;
+				l = assetBundleFiles.Length ;
 				
-				byte[] tData ;
-				int tSize ;
-				uint tCRC ;
-				string tText = "" ;
+				byte[] data ;
+				int size ;
+				uint crc ;
+				string text = string.Empty ;
 
 				for( i  = 0 ; i <  l ; i ++ )
 				{
-					tData = File.ReadAllBytes( m_AssetBundleRootFolderPath + tAssetBundleFileList[ i ].name ) ;
-					if( tData != null && tData.Length >  0 )
+					data = File.ReadAllBytes( m_AssetBundleRootFolderPath + assetBundleFiles[ i ].name ) ;
+					if( data != null && data.Length >  0 )
 					{
-						tSize = tData.Length ;
-						tCRC = GetCRC32( tData ) ;
-						tText = tText + tAssetBundleFileList[ i ].name + "," + tSize + "," + tCRC + "\n" ;
+						size  = data.Length ;
+						crc   = GetCRC32( data ) ;
+						text += ( assetBundleFiles[ i ].name + "," + size + "," + crc + "\n" ) ;
 					}
 
 //					Debug.LogWarning( "アセットバンドルファイルのパス:" + tAssetBundleFileList[ i ].name ) ;
 				}
 
-				if( string.IsNullOrEmpty( tText ) == false )
+				if( string.IsNullOrEmpty( text ) == false )
 				{
-					File.WriteAllText( m_AssetBundleRootFolderPath + GetAssetBundleRootName() + ".crc", tText ) ;
+					File.WriteAllText( m_AssetBundleRootFolderPath + GetAssetBundleRootName() + ".crc", text ) ;
 				}
 			}
 
 			//-------------------------------------------------------------------------------
 
-			if( m_Clean == true && tResult == true && tAssetBundleName != null )
+			if( m_Clean == true && result == true && assetBundleNames != null && assetBundleNames.Length >  0 )
 			{
 				// 余計なファイルを削除する
-				CleanAssetBundle( tAssetBundleName ) ;
+				CleanAssetBundle( assetBundleNames ) ;
 			}
 		
 			AssetDatabase.Refresh() ;
 		}
 
 		// アセットバンドルの情報を格納する
-		private void PostAssetBundleFile( AssetBundleFile tAssetBundleFile, ref AssetBundleBuild tMap )
+		private void PostAssetBundleFile( AssetBundleFile assetBundleFile, ref AssetBundleBuild map )
 		{
-			string tName = tAssetBundleFile.name ;
+			string assetBundleName = assetBundleFile.name ;
 
-			tMap.assetBundleName = tName ;
-			tMap.assetBundleVariant = "" ;
+			map.assetBundleName = assetBundleName ;
+			map.assetBundleVariant = string.Empty ;
 		
 //			Debug.LogWarning( "Map assetBundleName:" + tMap.assetBundleName ) ;
 			
-			List<string> tAssetPath = new List<string>() ;
+			List<string> assetPaths = new List<string>() ;
 		
-			int i, l = tAssetBundleFile.assetFile.Count ;
-			for( i  = 0 ; i <  l ; i ++ )
+			foreach( var assetFile in assetBundleFile.AssetFiles )
 			{
 				// このアセット自体は確実にアセットバンドルに含まれる
-				if( tAssetBundleFile.assetFile[ i ].type == 0 )
+				if( assetFile.type == 0 )
 				{
-					tAssetPath.Add( tAssetBundleFile.assetFile[ i ].path ) ;
+					assetPaths.Add( assetFile.path ) ;
 //					Debug.LogWarning( "含まれるリソース:" + tAssetBundleFile.assetFile[ i ].path ) ;
 
 					// 依存関係にあるアセットを表示する
@@ -1487,23 +1471,22 @@ namespace SimpleAssetBundleBuilder
 				}
 			}
 		
-			tMap.assetNames = tAssetPath.ToArray() ;
+			map.assetNames = assetPaths.ToArray() ;
 		}
 
 		private const uint CRC32_MASK = 0xffffffff ;
 	
 		// ＣＲＣ値を取得する
-		public static uint GetCRC32( byte[] tData )
+		public static uint GetCRC32( byte[] data )
 		{
-			uint tValue = CRC32_MASK  ;
+			uint value = CRC32_MASK  ;
 			
-			int i, l = tData.Length ;
-			for( i  = 0 ; i <  l ; i ++ )
+			foreach( var code in data )
 			{
-				tValue = m_CRC32_Table[ ( tValue ^ tData[ i ] ) & 0xFF ] ^ ( tValue >> 8 ) ;
+				value = m_CRC32_Table[ ( value ^ code ) & 0xFF ] ^ ( value >> 8 ) ;
 			}
 		
-			return tValue ^ CRC32_MASK ;
+			return value ^ CRC32_MASK ;
 		}
 	
 		private readonly static uint[] m_CRC32_Table = new uint[]
@@ -1569,89 +1552,85 @@ namespace SimpleAssetBundleBuilder
 		{
 			if( string.IsNullOrEmpty( m_AssetBundleRootFolderPath ) == true )
 			{
-				return "" ;
+				return string.Empty ;
 			}
 
 			// 出力パスのアセットバンドル
-			string tPath = m_AssetBundleRootFolderPath ;
-			if( tPath[ tPath.Length - 1 ] == '/' )
+			string path = m_AssetBundleRootFolderPath ;
+			if( path[ path.Length - 1 ] == '/' )
 			{
-				tPath = tPath.Substring( 0, tPath.Length - 1 ) ;
+				path = path.Substring( 0, path.Length - 1 ) ;
 			}
-			int s = tPath.LastIndexOf( '/' ) ;
-			if( s >= 0 )
+			int i = path.LastIndexOf( '/' ) ;
+			if( i >= 0 )
 			{
-				tPath = tPath.Substring( s + 1, tPath.Length - ( s + 1 ) ) ;
+				path = path.Substring( i + 1, path.Length - ( i + 1 ) ) ;
 			}
 
-			return tPath ;
+			return path ;
 		}
 
 		// 不要になったアセットバンドルファイルを削除する
-		private void CleanAssetBundle( string[] tName )
+		private void CleanAssetBundle( string[] assetBundleNames )
 		{
-			List<string> tList = new List<string>() ;
+			List<string> list = new List<string>() ;
 
 			//-------------------------------------------------
 
 			// 削除対象から除外するファイル名を登録する
 
 			// 出力パスのアセットバンドル
-			string tPath = GetAssetBundleRootName() ;
+			string path = GetAssetBundleRootName() ;
 
 			// シングルマニフェストアセットバンドル
 			if( m_CollectDependencies == false )
 			{
 				// 依存ありタイプ
-				tList.Add( m_AssetBundleRootFolderPath + tPath ) ;
-				tList.Add( m_AssetBundleRootFolderPath + tPath + ".meta" ) ;
-				tList.Add( m_AssetBundleRootFolderPath + tPath + ".manifest" ) ;
-				tList.Add( m_AssetBundleRootFolderPath + tPath + ".manifest.meta" ) ;
+				list.Add( m_AssetBundleRootFolderPath + path ) ;
+				list.Add( m_AssetBundleRootFolderPath + path + ".meta" ) ;
+				list.Add( m_AssetBundleRootFolderPath + path + ".manifest" ) ;
+				list.Add( m_AssetBundleRootFolderPath + path + ".manifest.meta" ) ;
 			}
 			else
 			{
 				// 依存なしタイプ
-				tList.Add( m_AssetBundleRootFolderPath + tPath + ".list" ) ;
-				tList.Add( m_AssetBundleRootFolderPath + tPath + ".list.meta" ) ;
+				list.Add( m_AssetBundleRootFolderPath + path + ".list" ) ;
+				list.Add( m_AssetBundleRootFolderPath + path + ".list.meta" ) ;
 			}
 
 			if( m_GenerateCRCFile == true )
 			{
-				tList.Add( m_AssetBundleRootFolderPath + tPath + ".crc" ) ;
-				tList.Add( m_AssetBundleRootFolderPath + tPath + ".crc.meta" ) ;
+				list.Add( m_AssetBundleRootFolderPath + path + ".crc" ) ;
+				list.Add( m_AssetBundleRootFolderPath + path + ".crc.meta" ) ;
 			}
 
 			// 各アセットバンドル
-			if( tName != null && tName.Length >  0 )
+			if( assetBundleNames != null && assetBundleNames.Length >  0 )
 			{
-				int i, l = tName.Length ;
-				for( i  = 0 ; i <  l ; i ++ )
+				foreach( var assetBundleName in assetBundleNames )
 				{
-	//				Debug.LogWarning( "生成されたAB:" + tName[ i ] ) ;
-
-					tList.Add( m_AssetBundleRootFolderPath + tName[ i ] ) ;
-					tList.Add( m_AssetBundleRootFolderPath + tName[ i ] + ".meta" ) ;
-					tList.Add( m_AssetBundleRootFolderPath + tName[ i ] + ".manifest" ) ;
-					tList.Add( m_AssetBundleRootFolderPath + tName[ i ] + ".manifest.meta" ) ;
+					list.Add( m_AssetBundleRootFolderPath + assetBundleName ) ;
+					list.Add( m_AssetBundleRootFolderPath + assetBundleName + ".meta" ) ;
+					list.Add( m_AssetBundleRootFolderPath + assetBundleName + ".manifest" ) ;
+					list.Add( m_AssetBundleRootFolderPath + assetBundleName + ".manifest.meta" ) ;
 				}
 			}
 
 			//---------------------------------------------------------
 
 			// 再帰を使って不要になったアセットバンドルファイルを全て削除する
-			CleanAssetBundle( tList, m_AssetBundleRootFolderPath ) ;
+			CleanAssetBundle( list, m_AssetBundleRootFolderPath ) ;
 		}
 
 		// 不要になったアセットバンドルファイルを削除(再帰)
-		private int CleanAssetBundle( List<string> tList, string tCurrentPath )
+		private int CleanAssetBundle( List<string> list, string currentPath )
 		{
 			int i ;
-		
-			string tPath ;
+			string path ;
 		
 			//-----------------------------------------------------
 		
-			if( Directory.Exists( tCurrentPath ) == false )
+			if( Directory.Exists( currentPath ) == false )
 			{
 				return 0 ;
 			}
@@ -1662,34 +1641,34 @@ namespace SimpleAssetBundleBuilder
 			int d = 0 ;	// フォルダ・ファイルを消すカウント
 		
 			// フォルダ
-			string[] tDA = Directory.GetDirectories( tCurrentPath ) ;
-			if( tDA != null && tDA.Length >  0 )
+			string[] da = Directory.GetDirectories( currentPath ) ;
+			if( da != null && da.Length >  0 )
 			{
 				// サブフォルダがあるのでさらに検査していく
-				for( i  = 0 ; i <  tDA.Length ; i ++ )
+				for( i  = 0 ; i <  da.Length ; i ++ )
 				{
 					// サブフォルダを検査
-					tPath = tDA[ i ] + "/" ;
-					if( CleanAssetBundle( tList, tPath ) == 0 )
+					path = da[ i ] + "/" ;
+					if( CleanAssetBundle( list, path ) == 0 )
 					{
 						// このサブフォルダは残す
-						Debug.LogWarning( "削除対象:" + tPath ) ;
-						System.IO.Directory.Delete( tPath, true ) ;
+						Debug.LogWarning( "削除対象:" + path ) ;
+						System.IO.Directory.Delete( path, true ) ;
 
 						d ++ ;
 					}
 					else
 					{
 						// フォルダのメタファイルを削除対象から除外する
-						if( tPath[ tPath.Length - 1 ] == '/' )
+						if( path[ path.Length - 1 ] == '/' )
 						{
-							tPath = tPath.Substring( 0, tPath.Length - 1 ) ;
+							path = path.Substring( 0, path.Length - 1 ) ;
 						}
-						tPath = tPath + ".meta" ;
+						path += ".meta" ;
 
-						if( tList.Contains( tPath ) == false )
+						if( list.Contains( path ) == false )
 						{
-							tList.Add( tPath ) ;
+							list.Add( path ) ;
 						}
 
 						c ++ ;
@@ -1698,17 +1677,17 @@ namespace SimpleAssetBundleBuilder
 			}
 		
 			// ファイル
-			string[] tFA = Directory.GetFiles( tCurrentPath ) ;
-			if( tFA != null && tFA.Length >  0 )
+			string[] fa = Directory.GetFiles( currentPath ) ;
+			if( fa != null && fa.Length >  0 )
 			{
-				for( i  = 0 ; i <  tFA.Length ; i ++ )
+				for( i  = 0 ; i <  fa.Length ; i ++ )
 				{
-					if( tList.Contains( tFA[ i ] ) == false )
+					if( list.Contains( fa[ i ] ) == false )
 					{
 						// 削除対象
 
 //						Debug.LogWarning( "削除対象:" + tFA[ i ] ) ;
-						File.Delete( tFA[ i ] ) ;
+						File.Delete( fa[ i ] ) ;
 
 						d ++ ;
 					}
@@ -1719,37 +1698,33 @@ namespace SimpleAssetBundleBuilder
 				}
 			}
 		
-			Debug.Log( "Deleted Count : " + tCurrentPath + " = " + d ) ;
+			Debug.Log( "Deleted Count : " + currentPath + " = " + d ) ;
 		
 			return c ;
 		}
 	
 		// 依存するアセットをコンソールに表示する
-		private void DebugPrintDependencies( string tPath )
+		private void DebugPrintDependencies( string path )
 		{
 			// 依存関係にあるアセットを検出する
-			string[] tCheckPath = AssetDatabase.GetDependencies( tPath ) ;
-			if( tCheckPath!= null && tCheckPath.Length >  0 )
+			string[] dependenciesPaths = AssetDatabase.GetDependencies( path ) ;
+			if( dependenciesPaths!= null && dependenciesPaths.Length >  0 )
 			{
-				int j ;
-				for( j  = 0 ; j <  tCheckPath.Length ; j ++ )
+				foreach( var dependenciesPath in dependenciesPaths )
 				{
-					Debug.LogWarning( "依存:" + tCheckPath[ j ] ) ;
+					Debug.LogWarning( "依存:" + dependenciesPaths ) ;
 				}
 			}
 		}
-
-
+		
 		public void OnPostprocessAssetbundleNameChanged( string assetPath, string previousAssetBundleName, string newAssetBundleName )
 		{
 			Debug.Log( "Asset " + assetPath + " has been moved from assetBundle " + previousAssetBundleName + " to assetBundle " + newAssetBundleName + "." ) ;
 		}
 
-
 		//----------------------------------------------------------------------------------------------
-
-
-		private Dictionary<string,string> mJapanese_Message = new Dictionary<string, string>()
+		
+		private static readonly Dictionary<string,string> m_Japanese_Message = new Dictionary<string, string>()
 		{
 			{ "SelectResourcePath",		"AssetBundle化したいファイル一覧が記述されたリストファイルを設定してください" },
 			{ "SelectAssetBundlePath",	"生成したAssetBundleを格納するフォルダを設定してください" },
@@ -1761,7 +1736,7 @@ namespace SimpleAssetBundleBuilder
 			{ "No",						"いいえ" },
 			{ "OK",						"閉じる" },
 		} ;
-		private Dictionary<string,string> mEnglish_Message = new Dictionary<string, string>()
+		private static readonly Dictionary<string,string> m_English_Message = new Dictionary<string, string>()
 		{
 			{ "SelectResourcePath",		"Please set up a list file that lists the files you want AssetBundle." },
 			{ "SelectAssetBundlePath",	"Please set the folder in which to store the generated AssetBundle." },
@@ -1774,23 +1749,23 @@ namespace SimpleAssetBundleBuilder
 			{ "OK",						"OK" },
 		} ;
 
-		private string GetMessage( string tLabel )
+		private string GetMessage( string label )
 		{
 			if( Application.systemLanguage == SystemLanguage.Japanese )
 			{
-				if( mJapanese_Message.ContainsKey( tLabel ) == false )
+				if( m_Japanese_Message.ContainsKey( label ) == false )
 				{
 					return "指定のラベル名が見つかりません" ;
 				}
-				return mJapanese_Message[ tLabel ] ;
+				return m_Japanese_Message[ label ] ;
 			}
 			else
 			{
-				if( mEnglish_Message.ContainsKey( tLabel ) == false )
+				if( m_English_Message.ContainsKey( label ) == false )
 				{
 					return "Specifying the label name can not be found" ;
 				}
-				return mEnglish_Message[ tLabel ] ;
+				return m_English_Message[ label ] ;
 			}
 		}
 
@@ -1799,24 +1774,23 @@ namespace SimpleAssetBundleBuilder
 		// コマンドラインからの実行可能版
 		public static bool BatchBuild()
 		{
-			string tPath = GetConfigurationFilePtah() ;
-			if( string.IsNullOrEmpty( tPath ) == true )
+			string path = GetConfigurationFilePtah() ;
+			if( string.IsNullOrEmpty( path ) == true )
 			{
 				Debug.Log( "Error : Bad Configuration File !!" ) ;
-			
 				return false ;
 			}
-	
-			return BatchBuild( tPath ) ;
+			
+			return BatchBuild( path ) ;
 		}
 	
-		public static bool BatchBuild( string tPath )
+		public static bool BatchBuild( string path )
 		{
-			SimpleAssetBundleBuilder tSABB = ScriptableObject.CreateInstance<SimpleAssetBundleBuilder>() ;
+			SimpleAssetBundleBuilder sabb = ScriptableObject.CreateInstance<SimpleAssetBundleBuilder>() ;
 		
-			if( tSABB.LoadConfiguration( tPath ) == false )
+			if( sabb.LoadConfiguration( path ) == false )
 			{
-				DestroyImmediate( tSABB ) ;
+				DestroyImmediate( sabb ) ;
 			
 				Debug.Log( "Error : Bad Configuration File !!" ) ;
 			
@@ -1826,38 +1800,37 @@ namespace SimpleAssetBundleBuilder
 			//-----------------------------------------
 			
 			// アセットバンドルをビルドする
-			tSABB.CreateAssetBundleAll() ;
+			sabb.CreateAssetBundleAll() ;
 		
 			// 最後にオブジェクトを破棄する
-			DestroyImmediate( tSABB ) ;
+			DestroyImmediate( sabb ) ;
 			
 			return true ;
 		}
-	
-	
+		
 		// コンフィギュレーションファイルのパスを取得する
 		private static string GetConfigurationFilePtah()
 		{
-			string[] tArgs = System.Environment.GetCommandLineArgs() ;
-			if( tArgs == null || tArgs.Length == 0 )
+			string[] args = System.Environment.GetCommandLineArgs() ;
+			if( args == null || args.Length == 0 )
 			{
 				return null ;
 			}
 		
-			string tPath = "" ;
+			string path = "" ;
 		
-			int i, l = tArgs.Length ;
+			int i, l = args.Length ;
 			for( i  = 0 ; i <  l ; i ++ )
 			{
-				if( tArgs[ i ].ToLower() == "-setting" && ( i + 1 ) <  l )
+				if( args[ i ].ToLower() == "-setting" && ( i + 1 ) <  l )
 				{
 					// 発見した
-					tPath = tArgs[ i + 1 ] ;
+					path = args[ i + 1 ] ;
 					break ;
 				}
 			}
 		
-			if( i >= l || string.IsNullOrEmpty( tPath ) == true )
+			if( i >= l || string.IsNullOrEmpty( path ) == true )
 			{
 				return null ;
 			}
@@ -1869,25 +1842,24 @@ namespace SimpleAssetBundleBuilder
 	//		}
 	//		
 	//		tPath = "Assets/" + tPath ;
-		
-		
-			return tPath ;
+			
+			return path ;
 		}
 	
 	
 		// コンフィグ情報を読み出す
-		private bool LoadConfiguration( string tPath )
+		private bool LoadConfiguration( string path )
 		{
 	//		Debug.Log( "ConfigPath:" + tPath ) ;
 		
-			if( File.Exists( tPath ) == false )
+			if( File.Exists( path ) == false )
 			{
 				return false ;
 			}
 		
-			string tCode = File.ReadAllText( tPath ) ;
+			string code = File.ReadAllText( path ) ;
 		
-			if( string.IsNullOrEmpty( tCode ) == true )
+			if( string.IsNullOrEmpty( code ) == true )
 			{
 				return false ;
 			}
@@ -1907,67 +1879,67 @@ namespace SimpleAssetBundleBuilder
 		
 			//-------------------------------------------------
 		
-			string[] tLine = tCode.Split( '\n' ) ;
-			int i, l = tLine.Length ;
+			string[] line = code.Split( '\n' ) ;
+			int i, l = line.Length ;
 			for( i  = 0 ; i <  l ; i ++ )
 			{
-				tLine[ i ] = tLine[ i ].Replace( " ", "" ) ;
-				tLine[ i ] = tLine[ i ].Replace( "\n", "" ) ;
-				tLine[ i ] = tLine[ i ].Replace( "\t", "" ) ;
-				tLine[ i ] = tLine[ i ].Replace( "\r", "" ) ;	// 超重要
-				string[] tData = tLine[ i ].Split( '=' ) ;
+				line[ i ] = line[ i ].Replace( " ", "" ) ;
+				line[ i ] = line[ i ].Replace( "\n", "" ) ;
+				line[ i ] = line[ i ].Replace( "\t", "" ) ;
+				line[ i ] = line[ i ].Replace( "\r", "" ) ;	// 超重要
+				string[] data = line[ i ].Split( '=' ) ;
 			
-				if( tData.Length == 2 )
+				if( data.Length == 2 )
 				{
-					string tLabel = tData[ 0 ].ToLower() ;
-					string tValue = tData[ 1 ] ;
+					string label = data[ 0 ].ToLower() ;
+					string value = data[ 1 ] ;
 				
-					if( tLabel == "ResourceListFilePath".ToLower() )
+					if( label == "ResourceListFilePath".ToLower() )
 					{
-						m_ResourceListFilePath = CollectFilePath( tValue ) ;
+						m_ResourceListFilePath = CollectFilePath( value ) ;
 						Debug.Log( "[Log]ResourceListFilePath:" + m_ResourceListFilePath ) ;
 					}
 
-					if( tLabel == "ResourceRootFolderPath".ToLower() )
+					if( label == "ResourceRootFolderPath".ToLower() )
 					{
-						m_ResourceRootFolderPath = CollectFolderPath( tValue ) ;
+						m_ResourceRootFolderPath = CollectFolderPath( value ) ;
 						Debug.Log( "[Log]ResourceRootFolderPath:" + m_ResourceRootFolderPath ) ;
 					}
 
-					if( tLabel == "AssetBundleRootFolderPath".ToLower() )
+					if( label == "AssetBundleRootFolderPath".ToLower() )
 					{
-						m_AssetBundleRootFolderPath = CollectFolderPath( tValue ) ;
+						m_AssetBundleRootFolderPath = CollectFolderPath( value ) ;
 						Debug.Log( "[Log]m_AssetBundleRootFolderPath:" + m_AssetBundleRootFolderPath ) ;
 					}
 
-					if( tLabel == "BuildTarget".ToLower() )
+					if( label == "BuildTarget".ToLower() )
 					{
-						m_BuildTarget = GetBuildTarget( tValue ) ;
+						m_BuildTarget = GetBuildTarget( value ) ;
 					}
 
-					if( tLabel == "ChunkBasedCompression".ToLower() )
+					if( label == "ChunkBasedCompression".ToLower() )
 					{
-						m_ChunkBasedCompression = GetBoolean( tValue ) ;
+						m_ChunkBasedCompression = GetBoolean( value ) ;
 					}
 
-					if( tLabel == "ForceRebuildAssetBundle".ToLower() )
+					if( label == "ForceRebuildAssetBundle".ToLower() )
 					{
-						m_ForceRebuildAssetBundle = GetBoolean( tValue ) ;
+						m_ForceRebuildAssetBundle = GetBoolean( value ) ;
 					}
 
-					if( tLabel == "IgnoreTypeTreeChanges".ToLower() )
+					if( label == "IgnoreTypeTreeChanges".ToLower() )
 					{
-						m_IgnoreTypeTreeChanges = GetBoolean( tValue ) ;
+						m_IgnoreTypeTreeChanges = GetBoolean( value ) ;
 					}
 
-					if( tLabel == "DisableWriteTypeTree".ToLower() )
+					if( label == "DisableWriteTypeTree".ToLower() )
 					{
-						m_DisableWriteTypeTree = GetBoolean( tValue ) ;
+						m_DisableWriteTypeTree = GetBoolean( value ) ;
 					}
 
-					if( tLabel == "CollectDependencies".ToLower() )
+					if( label == "CollectDependencies".ToLower() )
 					{
-						m_CollectDependencies = GetBoolean( tValue ) ;
+						m_CollectDependencies = GetBoolean( value ) ;
 					}
 				}
 			}
@@ -1976,110 +1948,109 @@ namespace SimpleAssetBundleBuilder
 		}
 	
 		// パスの整形を行う
-		private string CollectFolderPath( string tPath )
+		private string CollectFolderPath( string path )
 		{
-			if( string.IsNullOrEmpty( tPath ) == true )
+			if( string.IsNullOrEmpty( path ) == true )
 			{
-				return tPath ;
+				return path ;
 			}
 		
-			tPath = tPath.Replace( "\\", "/" ) ;
+			path = path.Replace( "\\", "/" ) ;
 		
-			if( tPath[ 0 ] == '/' )
+			if( path[ 0 ] == '/' )
 			{
-				tPath = tPath.Substring( 1, tPath.Length - 1 ) ;
+				path = path.Substring( 1, path.Length - 1 ) ;
 			}
 		
-			if( tPath.Length <  1 )
+			if( path.Length <  1 )
 			{
-				return tPath ;
+				return path ;
 			}
 		
-			if( tPath[ tPath.Length - 1 ] != '/' )
+			if( path[ path.Length - 1 ] != '/' )
 			{
-				tPath = tPath + "/" ;
+				path += "/" ;
 			}
 		
-			return tPath ;
+			return path ;
 		}
 	
 		// パスの整形を行う
-		private string CollectFilePath( string tPath )
+		private string CollectFilePath( string path )
 		{
-			if( string.IsNullOrEmpty( tPath ) == true )
+			if( string.IsNullOrEmpty( path ) == true )
 			{
-				return tPath ;
+				return path ;
 			}
 		
-			tPath = tPath.Replace( "\\", "/" ) ;
+			path = path.Replace( "\\", "/" ) ;
 		
-			if( tPath[ 0 ] == '/' )
+			if( path[ 0 ] == '/' )
 			{
-				tPath = tPath.Substring( 1, tPath.Length - 1 ) ;
+				path = path.Substring( 1, path.Length - 1 ) ;
 			}
 		
-			return tPath ;
+			return path ;
 		}
 
 		// ブーリアン結果を取得する
-		private bool GetBoolean( string tValue )
+		private bool GetBoolean( string value )
 		{
-			tValue = tValue.ToLower() ;
+			value = value.ToLower() ;
 		
-			bool tBoolean = false ;
+			bool boolean = false ;
 		
-			if( tValue == "false".ToLower() )
+			if( value == "false".ToLower() )
 			{
-				tBoolean = false ;
+				boolean = false ;
 			}
 			else
-			if( tValue == "true".ToLower() )
+			if( value == "true".ToLower() )
 			{
-				tBoolean = true ;
+				boolean = true ;
 			}
 		
-			return tBoolean ;
+			return boolean ;
 		}
 
-
 		// ビルドターゲットを取得する
-		private BuildTarget GetBuildTarget( string tValue )
+		private BuildTarget GetBuildTarget( string value )
 		{
-			tValue = tValue.ToLower() ;
+			value = value.ToLower() ;
 		
-			BuildTarget tBuildTarget = BuildTarget.Android ;
+			BuildTarget buildTarget = BuildTarget.Android ;
 		
-			if( tValue == "StandaloneOSXUniversal".ToLower() )
+			if( value == "StandaloneOSXUniversal".ToLower() )
 			{
-				tBuildTarget = BuildTarget.StandaloneOSX ;
+				buildTarget = BuildTarget.StandaloneOSX ;
 			}
 			else
-			if( tValue == "StandaloneWindows".ToLower() || tValue == "Windows".ToLower() )
+			if( value == "StandaloneWindows".ToLower() || value == "Windows".ToLower() )
 			{
-				tBuildTarget = BuildTarget.StandaloneWindows ;
+				buildTarget = BuildTarget.StandaloneWindows ;
 			}
 			else
-			if( tValue == "iPhone".ToLower() || tValue == "iOS".ToLower() )
+			if( value == "iPhone".ToLower() || value == "iOS".ToLower() )
 			{
-				tBuildTarget = BuildTarget.iOS ;
+				buildTarget = BuildTarget.iOS ;
 			}
 			else
-			if( tValue == "Android".ToLower() )
+			if( value == "Android".ToLower() )
 			{
-				tBuildTarget = BuildTarget.Android ;
+				buildTarget = BuildTarget.Android ;
 			}
 			else
-			if( tValue == "StandaloneWindows64".ToLower() || tValue == "Windows64".ToLower() )
+			if( value == "StandaloneWindows64".ToLower() || value == "Windows64".ToLower() )
 			{
-				tBuildTarget = BuildTarget.StandaloneWindows64 ;
+				buildTarget = BuildTarget.StandaloneWindows64 ;
 			}
 			else
-			if( tValue == "StandaloneLinux64".ToLower() )
+			if( value == "StandaloneLinux64".ToLower() )
 			{
-				tBuildTarget = BuildTarget.StandaloneLinux64 ;
+				buildTarget = BuildTarget.StandaloneLinux64 ;
 			}
 		
-			return tBuildTarget ;
+			return buildTarget ;
 		}
 	}
 }

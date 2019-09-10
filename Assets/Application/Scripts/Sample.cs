@@ -62,7 +62,7 @@ namespace AssetableExperiment
 
 				AssetBundleManager.FastLoadEnabled = false ;	// 一部同期化で高速化読み出し
 
-/*
+
 
 				// 実際はマスターの通信が完了してからそちらから取得する
 //				string tDomainName = "http://vms010.ibrains.co.jp/ibrains/moe/" ;
@@ -120,7 +120,7 @@ namespace AssetableExperiment
 						sizeName = ( size / ( 1024L * 1024L * 1024L ) ) + "GB" ;
 					}
 					Debug.LogWarning( "マニフェスト " + m.ManifestName +" のキャッシュサイズを " + sizeName + " に制限しました。" ) ;
-				}*/
+				}
 			}
 			
 			//-------------------------------------------------
