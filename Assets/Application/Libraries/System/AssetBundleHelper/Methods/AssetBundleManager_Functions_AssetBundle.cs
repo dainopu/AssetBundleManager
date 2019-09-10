@@ -1,5 +1,6 @@
 ﻿using System ;
 using System.Text ;
+using System.IO ;
 using System.Collections ;
 using System.Collections.Generic ;
 using System.Security.Cryptography ;
@@ -53,32 +54,86 @@ namespace AssetBundleHelper
 			if( i1 <= i0 )
 			{
 				// 拡張子なし
+				List<string> extensions ;
+
 				if( m_TypeToExtension.ContainsKey( type ) == true )
 				{
-					// 一般的なタイプ
-					foreach( string extension in m_TypeToExtension[ type ] )
-					{
-						asset = AssetDatabase.LoadAssetAtPath( path + extension, type ) ;
-						if( asset != null )
-						{
-							return asset ;
-						}
-					}
-
-					Debug.LogWarning( "Unknown Extension : " + path + " " + type.ToString() ) ;
-					return null ;
+					// 一般タイプ
+					extensions = m_TypeToExtension[ type ] ;
 				}
 				else
 				{
-					// 不明なタイプ
-					return AssetDatabase.LoadAssetAtPath( path + ".asset", type ) ;
+					// 不明タイプ
+					extensions = m_UnknownTypeToExtension ;
 				}
+
+				foreach( string extension in extensions )
+				{
+					asset = AssetDatabase.LoadAssetAtPath( path + extension, type ) ;
+					if( asset != null )
+					{
+						return asset ;
+					}
+				}
+
+				Debug.LogWarning( "Unknown Extension : " + path + " " + type.ToString() ) ;
+				return null ;
 			}
 			else
 			{
 				// 拡張子あり(失敗)
 				return null ;
 			}
+		}
+
+		/// <summary>
+		/// ローカルアセットバンドルパスからアセットの取得を行う(同期)　※非同期は存在しない
+		/// </summary>
+		/// <param name="path"></param>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		private UnityEngine.Object[] LoadLocalAllAssets( string folderPath, Type type )
+		{
+			folderPath = m_LocalAssetBundleRootPath + folderPath ;
+			
+			Debug.LogWarning( "----->きた？:" + folderPath ) ;
+
+			if( Directory.Exists( folderPath ) == false )
+			{
+				Debug.LogWarning( "そんなディレクトリは存在しない:" + folderPath ) ;
+				return null ;
+			}
+
+			string[] paths = Directory.GetFiles( folderPath ) ;
+			if( paths == null || paths.Length == 0 )
+			{
+				Debug.LogWarning( "ファイルが１つも存在しない" ) ;
+				return null ;
+			}
+
+			if( type == null )
+			{
+				// 指定なし
+				type = typeof( UnityEngine.Object ) ;
+			}
+
+			List<UnityEngine.Object> temporaryAssets = new List<UnityEngine.Object>() ;
+			foreach( var path in paths )
+			{
+				UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath( path, type ) ;
+				if( asset != null )
+				{
+					temporaryAssets.Add( asset ) ;
+				}
+			}
+
+			if( temporaryAssets.Count == 0 )
+			{
+				return null ;
+			}
+
+			Debug.LogWarning( "----->最終的な対象数:" + temporaryAssets.Count ) ;
+			return temporaryAssets.ToArray() ;
 		}
 
 		/// <summary>
@@ -107,37 +162,32 @@ namespace AssetBundleHelper
 			if( i1 <= i0 )
 			{
 				// 拡張子なし
+				List<string> extensions ;
+
 				if( m_TypeToExtension.ContainsKey( type ) == true )
 				{
-					// 一般的なタイプ
-					foreach( string extension in m_TypeToExtension[ type ] )
-					{
-						assets = AssetDatabase.LoadAllAssetRepresentationsAtPath( path + extension ) ;
-						if( assets != null && assets.Length >  0 )
-						{
-							// 成功したら終了
-							UnityEngine.Object asset = assets.FirstOrDefault( _ => _.name == subAssetName ) ;
-							return ( asset != null && asset.GetType() == type ) ? asset : null ;
-						}
-					}
-
-					Debug.LogWarning( "Unknown Extension : " + path + " " + type.ToString() ) ;
-					return null ;
+					// 一般タイプ
+					extensions = m_TypeToExtension[ type ] ;
 				}
 				else
 				{
-					// 不明なタイプ
-					assets = AssetDatabase.LoadAllAssetRepresentationsAtPath( path + ".asset" ) ;
+					// 不明タイプ
+					extensions = m_UnknownTypeToExtension ;
+				}
+
+				foreach( string extension in extensions )
+				{
+					assets = AssetDatabase.LoadAllAssetRepresentationsAtPath( path + extension ) ;
 					if( assets != null && assets.Length >  0 )
 					{
 						// 成功したら終了
 						UnityEngine.Object asset = assets.FirstOrDefault( _ => _.name == subAssetName ) ;
 						return ( asset != null && asset.GetType() == type ) ? asset : null ;
 					}
-
-					Debug.LogWarning( "Unknown Extension : " + path + " " + type.ToString() ) ;
-					return null ;
 				}
+
+				Debug.LogWarning( "Unknown Extension : " + path + " " + type.ToString() ) ;
+				return null ;
 			}
 			else
 			{
@@ -161,7 +211,11 @@ namespace AssetBundleHelper
 			if( assets != null && assets.Length >  0 )
 			{
 				// 成功したら終了
-				return assets.Where( _ => _.GetType() == type ).ToArray() ;
+				assets = assets.Where( _ => _.GetType() == type ).ToArray() ;
+				if( assets != null && assets.Length >  0 )
+				{
+					return assets ;
+				}
 			}
 			
 			// 拡張子が無い場合はタイプ検索を行う
@@ -170,35 +224,35 @@ namespace AssetBundleHelper
 			if( i1 <= i0 )
 			{
 				// 拡張子なし
+				List<string> extensions ;
+
 				if( m_TypeToExtension.ContainsKey( type ) == true )
 				{
-					// 一般的なタイプ
-					foreach( string extension in m_TypeToExtension[ type ] )
-					{
-						assets = AssetDatabase.LoadAllAssetRepresentationsAtPath( path + extension ) ;
-						if( assets != null && assets.Length >  0 )
-						{
-							// 成功したら終了
-							return assets.Where( _ => _.GetType() == type ).ToArray() ;
-						}
-					}
-
-					Debug.LogWarning( "Unknown Extension : " + path + " " + type.ToString() ) ;
-					return null ;
+					// 一般タイプ
+					extensions = m_TypeToExtension[ type ] ;
 				}
 				else
 				{
-					// 不明なタイプ
-					assets = AssetDatabase.LoadAllAssetRepresentationsAtPath( path + ".asset" ) ;
+					// 不明タイプ
+					extensions = m_UnknownTypeToExtension ;
+				}
+
+				foreach( string extension in extensions )
+				{
+					assets = AssetDatabase.LoadAllAssetRepresentationsAtPath( path + extension ) ;
 					if( assets != null && assets.Length >  0 )
 					{
 						// 成功したら終了
-						return assets.Where( _ => _.GetType() == type ).ToArray() ;
+						assets = assets.Where( _ => _.GetType() == type ).ToArray() ;
+						if( assets != null && assets.Length >  0 )
+						{
+							return assets ;
+						}
 					}
-
-					Debug.LogWarning( "Unknown Extension : " + path + " " + type.ToString() ) ;
-					return null ;
 				}
+
+				Debug.LogWarning( "Unknown Extension : " + path + " " + type.ToString() ) ;
+				return null ;
 			}
 			else
 			{
@@ -259,18 +313,25 @@ namespace AssetBundleHelper
 
 		//---------------
 
-		// タイプに対する拡張子
-		private static Dictionary<Type,List<string>> m_TypeToExtension = new Dictionary<Type, List<string>>()
+#endif
+
+		// 一般タイプに対する拡張子
+		internal protected readonly Dictionary<Type,List<string>> m_TypeToExtension = new Dictionary<Type, List<string>>()
 		{
 			{ typeof( Sprite ),		new List<string>{ ".png", ".jpg", ".bmp", ".tiff",		} },
-			{ typeof( GameObject ), new List<string>{ ".prefab",							} },
+			{ typeof( GameObject ), new List<string>{ ".prefab", ".asset"					} },
 			{ typeof( AudioClip ),	new List<string>{ ".wav", ".ogg", ".mp3",				} },
-			{ typeof( TextAsset ),	new List<string>{ ".txt", ".bytes", ".xml", ".json",	} },
+			{ typeof( TextAsset ),	new List<string>{ ".txt", ".bytes", ".html", ".xml", ".json", ".yml"	} },
 			{ typeof( Texture2D ),	new List<string>{ ".png", ".jpg", ".bmp", ".tiff",		} },
 			{ typeof( Texture ),	new List<string>{ ".png", ".jpg", ".bmp", ".tiff",		} },
 			{ typeof( Material ),	new List<string>{ ".mat",								} },
 		} ;
-#endif
+
+		// 不明タイプに対する拡張子
+		internal protected readonly List<string> m_UnknownTypeToExtension = new List<string>()
+		{
+			".asset", ".prefab"
+		} ;
 
 		//-------------------------------------------------------------------
 
@@ -278,24 +339,24 @@ namespace AssetBundleHelper
 		/// アセットを取得する(同期版)
 		/// </summary>
 		/// <typeparam name="T">任意のコンポーネント型</typeparam>
-		/// <param name="tPath">アセットバンドルのパス</param>
-		/// <param name="tCaching">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="cachingType">キャッシュするかどうか(true=する・false=しない)</param>
 		/// <returns>アセットに含まれる任意のコンポーネントのインスタンス</returns>
 		public static T LoadAsset<T>( string path, CachingType cachingType = CachingType.None ) where T : UnityEngine.Object
 		{
-			return m_Instance == null ? null : m_Instance.LoadAsset_Private( path, typeof( T ), cachingType ) as T ;
+			return m_Instance?.LoadAsset_Private( path, typeof( T ), cachingType ) as T ;
 		}
 
 		/// <summary>
 		/// アセットを取得する(同期版)
 		/// </summary>
 		/// <typeparam name="T">任意のコンポーネント型</typeparam>
-		/// <param name="tPath">アセットバンドルのパス</param>
-		/// <param name="tCaching">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="cachingType">キャッシュするかどうか(true=する・false=しない)</param>
 		/// <returns>アセットに含まれる任意のコンポーネントのインスタンス</returns>
 		public static UnityEngine.Object LoadAsset( string path, Type type, CachingType cachingType = CachingType.None )
 		{
-			return m_Instance == null ? null : m_Instance.LoadAsset_Private( path, type, cachingType ) ;
+			return m_Instance?.LoadAsset_Private( path, type, cachingType ) ;
 		}
 
 		// アセットを取得する(同期版)
@@ -510,9 +571,7 @@ namespace AssetBundleHelper
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									UnityEngine.Object[] rAssetHolder = { null } ;
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAsset_Coroutine( assetBundleName, assetName, type, rAssetHolder, keep, null, request, assetBundleCaching, this ) ) ;
-									asset = rAssetHolder[ 0 ] ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAsset_Coroutine( assetBundleName, assetName, type, ( _ ) => { asset = _ ; }, keep, request, assetBundleCaching, this ) ) ;
 								}
 							}
 						}
@@ -551,32 +610,389 @@ namespace AssetBundleHelper
 		
 		//---------------------------------------------------------------------------
 
+		// AssetBundleManager :: AllAssets
+
+		/// <summary>
+		/// 全てのアセットを取得する(同期版)
+		/// </summary>
+		/// <typeparam name="T">任意のコンポーネント型</typeparam>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="cachingType">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <returns>全てのサブアセットに含まれる任意のコンポーネントのインスタンス</returns>
+		public static T[] LoadAllAssets<T>( string path, CachingType cachingType = CachingType.None ) where T : UnityEngine.Object
+		{
+			if( m_Instance == null )
+			{
+				return null ;
+			}
+
+			// 配列のジェネリックキャストは出来ないので単体にばらしてキャストする
+			UnityEngine.Object[] temporaryAssets = m_Instance.LoadAllAssets_Private( path, typeof( T ), cachingType ) ;
+			if( temporaryAssets == null || temporaryAssets.Length == 0 )
+			{
+				return null ;
+			}
+
+			T[] assets = new T[ temporaryAssets.Length ] ;
+			for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
+			{
+				assets[ i ] = temporaryAssets[ i ] as T ;
+			}
+
+			return assets ;
+		}
+
+		/// <summary>
+		/// 全てのサブアセットを取得する(同期版)
+		/// </summary>
+		/// <typeparam name="T">任意のコンポーネント型</typeparam>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="type">コンポーネントのタイプ</param>
+		/// <param name="cachingType">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <returns>全てのサブアセットに含まれる任意のコンポーネントのインスタンス</returns>
+		public static UnityEngine.Object[] LoadAllAssets( string path, Type type, CachingType cachingType = CachingType.None )
+		{
+			return m_Instance?.LoadAllAssets_Private( path, type, cachingType ) ;
+		}
+
+		// アセットバンドル内の指定の型の全てのサブアセットを直接取得する(同期版)
+		private UnityEngine.Object[] LoadAllAssets_Private( string path, Type type, CachingType cachingType )
+		{
+			bool resourceCaching = false ;
+			bool assetBundleCaching = false ;
+
+			if( cachingType == CachingType.ResourceOnly || cachingType == CachingType.Same )
+			{
+				resourceCaching = true ;
+			}
+			if( cachingType == CachingType.AssetBundleOnly || cachingType == CachingType.Same )
+			{
+				assetBundleCaching = true ;
+			}
+
+			//------------------------------------------------
+
+			string resourcePath = path ;
+			resourcePath = resourcePath.Replace( "//", "/" ) ;
+
+			string resourceCachePath ;
+			
+			//------------------------------------------------
+
+			UnityEngine.Object[] assets = null ;
+			UnityEngine.Object[] temporaryAssets ;
+
+			for( int t  = 0 ; t <  2 ; t ++ )
+			{
+				if( assets == null )
+				{
+					if( ( t == 0 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 1 && m_LoadPriorityType == LoadPriority.Remote ) )
+					{
+						if( m_UseResources == UserResources.SyncOnly || m_UseResources == UserResources.Same )
+						{
+							// リソースからロードを試みる
+							temporaryAssets = Resources.LoadAll( resourcePath, type ) ;
+							if( temporaryAssets != null && temporaryAssets.Length >  0 )
+							{
+								for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
+								{
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
+									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
+									{
+										// キャッシュにあればそれを返す
+										temporaryAssets[ i ] = m_ResourceCache[ resourceCachePath ] ;
+									}
+								}
+								assets = temporaryAssets ;
+							}
+						}
+#if UNITY_EDITOR
+						if( m_UseLocalAsset == true && assets == null )
+						{
+							// ローカルアセットバンドルパスからロードを試みる
+							temporaryAssets = LoadLocalAllAssets( resourcePath, type ) ;
+							if( temporaryAssets != null && temporaryAssets.Length >  0 )
+							{
+								for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
+								{
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
+									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
+									{
+										// キャッシュにあればそれを返す
+										temporaryAssets[ i ] = m_ResourceCache[ resourceCachePath ] ;
+									}
+								}
+								assets = temporaryAssets ;
+							}
+						}
+#endif
+					}
+					else
+					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
+					{
+						// アセットバンドルからロードを試みる
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						{
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							{
+								if( m_ManifestHash.ContainsKey( manifestName ) == true )
+								{
+									assets = m_ManifestHash[ manifestName ].LoadAllAssets( assetBundleName, type, assetBundleCaching, this, resourcePath ) ;
+								}
+							}
+						}
+					}
+				}
+				if( assets != null )
+				{
+					break ;
+				}
+			}
+
+			if( assets == null || assets.Length == 0 )
+			{
+				// 失敗
+				return null ;
+			}
+
+			//------------------------------------------------
+
+			// 必要であればここでキャッシュに貯める
+			if( resourceCaching == true && m_ResourceCache != null )
+			{
+				foreach( var asset in assets )
+				{
+					resourceCachePath = resourcePath + "/" + asset.name + ":" + asset.GetType().ToString() ;
+					if( m_ResourceCache.ContainsKey( resourceCachePath ) == false )
+					{
+						m_ResourceCache.Add( resourceCachePath, asset ) ;
+					}
+				}
+			}
+
+			//------------------------------------------------
+
+			return assets ;
+		}
+
+		//---------------
+
+		/// <summary>
+		/// 全てのアセットを取得する(非同期版)
+		/// </summary>
+		/// <typeparam name="T">任意のコンポーネント型</typeparam>
+		/// <param name="tPath">アセットバンドルのパス</param>
+		/// <param name="rAllSubAssets">全てのサブアセットに含まれる任意のコンポーネントのインスタンスを格納するための要素数１以上の配列</param>
+		/// <param name="tCaching">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <returns>列挙子</returns>
+		public static Request LoadAllAssetsAsync<T>( string path, Action<T[]> onLoaded = null, CachingType cachingType = CachingType.None, bool keep = false ) where T : UnityEngine.Object
+		{
+			if( m_Instance == null )
+			{
+				// インスタンスが生成されていない
+				return null ;
+			}
+
+			Request request = new Request() ;
+
+			m_Instance.StartCoroutine( m_Instance.LoadAllAssetsAsync_Private
+			(
+				path, typeof( T ),
+				( UnityEngine.Object[] temporaryAssets ) =>
+				{
+					if( onLoaded != null && temporaryAssets != null && temporaryAssets.Length >  0 )
+					{
+						T[] assets = new T[ temporaryAssets.Length ] ;
+						for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
+						{
+							assets[ i ] = temporaryAssets[ i ] as T ;
+						}
+						onLoaded( assets ) ;
+					}
+				},
+				cachingType, keep, request
+			) ) ;
+
+			return request ;
+		}
+		
+		/// <summary>
+		/// 全てのアセットを取得する(非同期版)
+		/// </summary>
+		/// <typeparam name="T">任意のコンポーネント型</typeparam>
+		/// <param name="tPath">アセットバンドルのパス</param>
+		/// <param name="rAllSubAssets">全てのサブアセットに含まれる任意のコンポーネントのインスタンスを格納するための要素数１以上の配列</param>
+		/// <param name="tCaching">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <returns>列挙子</returns>
+		public static Request LoadAllAssetsAsync( string path, Type type, Action<UnityEngine.Object[]> onLoaded = null, CachingType cachingType = CachingType.None, bool keep = false )
+		{
+			if( m_Instance == null )
+			{
+				// インスタンスが生成されていない
+				return null ;
+			}
+
+			Request request = new Request() ;
+			m_Instance.StartCoroutine( m_Instance.LoadAllAssetsAsync_Private( path, type, ( UnityEngine.Object[] assets ) => { onLoaded?.Invoke( assets ) ; }, cachingType, keep, request ) ) ;
+			return request ;
+		}
+
+		// アセットに含まれる全てのサブアセットを取得する(非同期版)
+		private IEnumerator LoadAllAssetsAsync_Private( string path, Type type, Action<UnityEngine.Object[]> onLoaded, CachingType cachingType, bool keep, Request request )
+		{
+			bool resourceCaching = false ;
+			bool assetBundleCaching = false ;
+
+			if( cachingType == CachingType.ResourceOnly || cachingType == CachingType.Same )
+			{
+				resourceCaching = true ;
+			}
+			if( cachingType == CachingType.AssetBundleOnly || cachingType == CachingType.Same )
+			{
+				assetBundleCaching = true ;
+			}
+
+			//------------------------------------------------
+
+			string resourcePath = path ;
+			resourcePath = resourcePath.Replace( "//", "/" ) ;
+
+			string resourceCachePath ;
+			
+			//------------------------------------------------
+
+			UnityEngine.Object[] assets = null ;
+			UnityEngine.Object[] temporaryAssets ;
+
+			for( int t  = 0 ; t <  2 ; t ++ )
+			{
+				if( assets == null )
+				{
+					if( ( t == 0 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 1 && m_LoadPriorityType == LoadPriority.Remote ) )
+					{
+						if( m_UseResources == UserResources.AsyncOnly || m_UseResources == UserResources.Same )
+						{
+							// リソースからロードを試みる
+							temporaryAssets = Resources.LoadAll( resourcePath, type ) ;
+							if( temporaryAssets != null && temporaryAssets.Length >  0 )
+							{
+								for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
+								{
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
+									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
+									{
+										// キャッシュにあればそれを返す
+										temporaryAssets[ i ] = m_ResourceCache[ resourceCachePath ] ;
+									}
+								}
+								assets = temporaryAssets ;
+							}
+						}
+#if UNITY_EDITOR
+						if( m_UseLocalAsset == true && assets == null )
+						{
+							// ローカルアセットバンドルパスからロードを試みる
+							temporaryAssets = LoadLocalAllAssets( resourcePath, type ) ;
+							if( temporaryAssets != null && temporaryAssets.Length >  0 )
+							{
+								for( int  i = 0 ; i <  temporaryAssets.Length ; i ++ )
+								{
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
+									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
+									{
+										// キャッシュにあればそれを返す
+										temporaryAssets[ i ] = m_ResourceCache[ resourceCachePath ] ;
+									}
+								}
+								assets = temporaryAssets ;
+							}
+						}
+#endif
+					}
+					else
+					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
+					{
+						// アセットバンドルからロードを試みる
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						{
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							{
+								if( m_ManifestHash.ContainsKey( manifestName ) == true )
+								{
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllAssets_Coroutine( assetBundleName, type, ( _ ) => { assets = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
+								}
+							}
+						}
+					}
+				}
+				if( assets != null )
+				{
+					break ;
+				}
+			}
+
+			if( assets == null || assets.Length == 0 )
+			{
+				// 失敗
+				if( string.IsNullOrEmpty( request.Error ) == true )
+				{
+					request.Error = "Could not load" ;
+				}
+				yield break ;
+			}
+
+			//------------------------------------------------
+
+			// 必要であればここでキャッシュに貯める
+			if( resourceCaching == true && m_ResourceCache != null )
+			{
+				foreach( var asset in assets )
+				{
+					resourceCachePath = resourcePath + "/" + asset.name + ":" + asset.GetType().ToString() ;
+					if( m_ResourceCache.ContainsKey( resourceCachePath ) == false )
+					{
+						m_ResourceCache.Add( resourceCachePath, asset ) ;
+					}
+				}
+			}
+
+			//------------------------------------------------
+
+			onLoaded?.Invoke( assets ) ;
+			request.Assets = assets ;
+			request.IsDone = true ;
+		}
+
+
+		//---------------------------------------------------------------------------
+
 		// AssetBundleManager :: SubAsset
 
 		/// <summary>
 		/// アセットに含まれるサブアセットを取得する(同期版)
 		/// </summary>
 		/// <typeparam name="T">任意のコンポーネント型</typeparam>
-		/// <param name="tPath">アセットバンドルのパス</param>
-		/// <param name="tSubAssetName">サブアセット名</param>
-		/// <param name="tCaching">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="subAssetName">サブアセット名</param>
+		/// <param name="cachingType">キャッシュするかどうか(true=する・false=しない)</param>
 		/// <returns>サブアセットに含まれる任意のコンポーネントのインスタンス</returns>
 		public static T LoadSubAsset<T>( string path, string subAssetName, CachingType cachingType = CachingType.None ) where T : UnityEngine.Object
 		{
-			return m_Instance == null ? null : m_Instance.LoadSubAsset_Private( path, subAssetName, typeof( T ), cachingType ) as T ;
+			return m_Instance?.LoadSubAsset_Private( path, subAssetName, typeof( T ), cachingType ) as T ;
 		}
 
 		/// <summary>
 		/// アセットに含まれるサブアセットを取得する(同期版)
 		/// </summary>
 		/// <typeparam name="T">任意のコンポーネント型</typeparam>
-		/// <param name="tPath">アセットバンドルのパス</param>
-		/// <param name="tSubAssetName">サブアセット名</param>
-		/// <param name="tCaching">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="subAssetName">サブアセット名</param>
+		/// <param name="type">コンポーネントのタイプ</param>
+		/// <param name="cachingType">キャッシュするかどうか(true=する・false=しない)</param>
 		/// <returns>サブアセットに含まれる任意のコンポーネントのインスタンス</returns>
 		public static UnityEngine.Object LoadSubAsset( string path, string subAssetName, Type type, CachingType cachingType = CachingType.None )
 		{
-			return m_Instance == null ? null : m_Instance.LoadSubAsset_Private( path, subAssetName, type, cachingType ) ;
+			return m_Instance?.LoadSubAsset_Private( path, subAssetName, type, cachingType ) ;
 		}
 
 		// アセットに含まれるサブアセットを取得する(同期版)
@@ -684,10 +1100,11 @@ namespace AssetBundleHelper
 		/// アセットに含まれるサブアセットを取得する(非同期版)
 		/// </summary>
 		/// <typeparam name="T">任意のコンポーネント型</typeparam>
-		/// <param name="tPath">アセットバンドルのパス</param>
-		/// <param name="tSubAssetName">サブアセット名</param>
-		/// <param name="rAsset">サブアセットに含まれる任意のコンポーネントのインスタンスを格納するための要素数１以上の配列</param>
-		/// <param name="tCaching">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="subAssetName">サブアセット名</param>
+		/// <param name="onLoaded">サブアセットに含まれる任意のコンポーネントのインスタンスを格納するための要素数１以上の配列</param>
+		/// <param name="cachingType">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <param name="keep">関連するアセットバンドルを永続的に保持するかどうか(true=する・false=しない)</param>
 		/// <returns>列挙子</returns>
 		public static Request LoadSubAssetAsync<T>( string path, string subAssetName, Action<T> onLoaded = null, CachingType cachingType = CachingType.None, bool keep = false ) where T : UnityEngine.Object
 		{
@@ -706,10 +1123,12 @@ namespace AssetBundleHelper
 		/// アセットに含まれるサブアセットを取得する(非同期版)
 		/// </summary>
 		/// <typeparam name="T">任意のコンポーネント型</typeparam>
-		/// <param name="tPath">アセットバンドルのパス</param>
-		/// <param name="tSubAssetName">サブアセット名</param>
-		/// <param name="rAsset">サブアセットに含まれる任意のコンポーネントのインスタンスを格納するための要素数１以上の配列</param>
-		/// <param name="tCaching">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="subAssetName">サブアセット名</param>
+		/// <param name="type">コンポーネントのタイプ</param>
+		/// <param name="onLoaded">サブアセットに含まれる任意のコンポーネントのインスタンスを格納するための要素数１以上の配列</param>
+		/// <param name="cachingType">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <param name="keep">関連するアセットバンドルを永続的に保持するかどうか(true=する・false=しない)</param>
 		/// <returns>列挙子</returns>
 		public static Request LoadSubAssetAsync( string path, string subAssetName, Type type, Action<UnityEngine.Object> onLoaded = null, CachingType cachingType = CachingType.None, bool keep = false )
 		{
@@ -796,9 +1215,7 @@ namespace AssetBundleHelper
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									UnityEngine.Object[] rSubAssetHolder = { null } ;
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadSubAsset_Coroutine( assetBundleName, assetName, subAssetName, type, rSubAssetHolder, keep, null, request, assetBundleCaching, this, resourcePath ) ) ;
-									asset = rSubAssetHolder[ 0 ] ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadSubAsset_Coroutine( assetBundleName, assetName, subAssetName, type, ( _ ) => { asset = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
 								}
 							}
 						}
@@ -843,24 +1260,42 @@ namespace AssetBundleHelper
 		/// アセットに含まれる全てのサブアセットを取得する(同期版)
 		/// </summary>
 		/// <typeparam name="T">任意のコンポーネント型</typeparam>
-		/// <param name="tPath">アセットバンドルのパス</param>
-		/// <param name="tCaching">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="cachingType">キャッシュするかどうか(true=する・false=しない)</param>
 		/// <returns>全てのサブアセットに含まれる任意のコンポーネントのインスタンス</returns>
 		public static T[] LoadAllSubAssets<T>( string path, CachingType cachingType = CachingType.None ) where T : UnityEngine.Object
 		{
-			return m_Instance == null ? null : m_Instance.LoadAllSubAssets_Private( path, typeof( T ), cachingType ) as T[] ;
+			if( m_Instance == null )
+			{
+				return null ;
+			}
+
+			// ジェネリック配列へのキャストは出来ないので配列の個々単位でにキャストする必要がある
+			UnityEngine.Object[] temporaryAssets = m_Instance.LoadAllSubAssets_Private( path, typeof( T ), cachingType ) ;
+			if( temporaryAssets == null || temporaryAssets.Length == 0 )
+			{
+				return null ;
+			}
+
+			T[] assets = new T[ temporaryAssets.Length ] ;
+			for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
+			{
+				assets[ i ] = temporaryAssets[ i ] as T ;
+			}
+			return assets ;
 		}
 
 		/// <summary>
 		/// アセットに含まれる全てのサブアセットを取得する(同期版)
 		/// </summary>
 		/// <typeparam name="T">任意のコンポーネント型</typeparam>
-		/// <param name="tPath">アセットバンドルのパス</param>
-		/// <param name="tCaching">キャッシュするかどうか(true=する・false=しない)</param>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="type">コンポーネントのタイプ</param>
+		/// <param name="cachingType">キャッシュするかどうか(true=する・false=しない)</param>
 		/// <returns>全てのサブアセットに含まれる任意のコンポーネントのインスタンス</returns>
 		public static UnityEngine.Object[] LoadAllSubAssets( string path, Type type, CachingType cachingType = CachingType.None )
 		{
-			return m_Instance == null ? null : m_Instance.LoadAllSubAssets_Private( path, type, cachingType ) ;
+			return m_Instance?.LoadAllSubAssets_Private( path, type, cachingType ) ;
 		}
 
 		// アセットバンドル内の指定の型の全てのサブアセットを直接取得する(同期版)
@@ -887,7 +1322,7 @@ namespace AssetBundleHelper
 			
 			//------------------------------------------------
 
-			List<UnityEngine.Object> assets = null ;
+			UnityEngine.Object[] assets = null ;
 			UnityEngine.Object[] temporaryAssets ;
 
 			for( int t  = 0 ; t <  2 ; t ++ )
@@ -902,43 +1337,35 @@ namespace AssetBundleHelper
 							temporaryAssets = Resources.LoadAll( resourcePath, type ) ;
 							if( temporaryAssets != null && temporaryAssets.Length >  0 )
 							{
-								assets = new List<UnityEngine.Object>() ;
-								foreach( var asset in temporaryAssets )
+								for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
 								{
-									resourceCachePath = resourcePath + "/" + asset.name + ":" + type.ToString() ;
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
 									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
 									{
 										// キャッシュにあればそれを返す
-										assets.Add( m_ResourceCache[ resourceCachePath ] ) ;
-									}
-									else
-									{
-										assets.Add( asset ) ;
+										temporaryAssets[ i ] = m_ResourceCache[ resourceCachePath ] ;
 									}
 								}
+								assets = temporaryAssets ;
 							}
 						}
 #if UNITY_EDITOR
-						if( m_UseLocalAsset == true && assets == null && assets.Count == 0 )
+						if( m_UseLocalAsset == true && assets == null )
 						{
 							// ローカルアセットバンドルパスからロードを試みる
 							temporaryAssets = LoadLocalAllSubAssets( resourcePath, type ) ;
 							if( temporaryAssets != null && temporaryAssets.Length >  0 )
 							{
-								assets = new List<UnityEngine.Object>() ;
-								foreach( var asset in temporaryAssets )
+								for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
 								{
-									resourceCachePath = resourcePath + "/" + asset.name + ":" + type.ToString() ;
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
 									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
 									{
 										// キャッシュにあればそれを返す
-										assets.Add( m_ResourceCache[ resourceCachePath ] ) ;
-									}
-									else
-									{
-										assets.Add( asset ) ;
+										temporaryAssets[ i ] = m_ResourceCache[ resourceCachePath ] ;
 									}
 								}
+								assets = temporaryAssets ;
 							}
 						}
 #endif
@@ -965,7 +1392,7 @@ namespace AssetBundleHelper
 				}
 			}
 
-			if( assets == null )
+			if( assets == null || assets.Length == 0 )
 			{
 				// 失敗
 				return null ;
@@ -988,7 +1415,7 @@ namespace AssetBundleHelper
 
 			//------------------------------------------------
 
-			return assets.ToArray() ;
+			return assets ;
 		}
 
 		//---------------
@@ -1010,7 +1437,23 @@ namespace AssetBundleHelper
 			}
 
 			Request request = new Request() ;
-			m_Instance.StartCoroutine( m_Instance.LoadAllSubAssetsAsync_Private( path, typeof( T ), ( UnityEngine.Object[] assets ) => { onLoaded?.Invoke( assets as T[] ) ; }, cachingType, keep, request ) ) ;
+			m_Instance.StartCoroutine( m_Instance.LoadAllSubAssetsAsync_Private
+			(
+				path, typeof( T ),
+				( UnityEngine.Object[] temporaryAssets ) =>
+				{
+					if( onLoaded != null && temporaryAssets != null && temporaryAssets.Length >  0 )
+					{
+						T[] assets = new T[ temporaryAssets.Length ] ;
+						for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
+						{
+							assets[ i ] = temporaryAssets[ i ] as T ;
+						}
+						onLoaded( assets ) ;
+					}
+				},
+				cachingType, keep, request
+			) ) ;
 			return request ;
 		}
 		
@@ -1059,7 +1502,7 @@ namespace AssetBundleHelper
 			
 			//------------------------------------------------
 
-			List<UnityEngine.Object> assets = null ;
+			UnityEngine.Object[] assets = null ;
 			UnityEngine.Object[] temporaryAssets ;
 
 			for( int t  = 0 ; t <  2 ; t ++ )
@@ -1074,43 +1517,35 @@ namespace AssetBundleHelper
 							temporaryAssets = Resources.LoadAll( resourcePath, type ) ;
 							if( temporaryAssets != null && temporaryAssets.Length >  0 )
 							{
-								assets = new List<UnityEngine.Object>() ;
-								foreach( var asset in temporaryAssets )
+								for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
 								{
-									resourceCachePath = resourcePath + "/" + asset.name + ":" + type.ToString() ;
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
 									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
 									{
 										// キャッシュにあればそれを返す
-										assets.Add( m_ResourceCache[ resourceCachePath ] ) ;
-									}
-									else
-									{
-										assets.Add( asset ) ;
+										temporaryAssets[ i ] = m_ResourceCache[ resourceCachePath ] ;
 									}
 								}
+								assets = temporaryAssets ;
 							}
 						}
 #if UNITY_EDITOR
-						if( m_UseLocalAsset == true && assets == null && assets.Count == 0 )
+						if( m_UseLocalAsset == true && assets == null )
 						{
 							// ローカルアセットバンドルパスからロードを試みる
 							temporaryAssets = LoadLocalAllSubAssets( resourcePath, type ) ;
 							if( temporaryAssets != null && temporaryAssets.Length >  0 )
 							{
-								assets = new List<UnityEngine.Object>() ;
-								foreach( var asset in temporaryAssets )
+								for( int  i = 0 ; i <  temporaryAssets.Length ; i ++ )
 								{
-									resourceCachePath = resourcePath + "/" + asset.name + ":" + type.ToString() ;
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
 									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
 									{
 										// キャッシュにあればそれを返す
-										assets.Add( m_ResourceCache[ resourceCachePath ] ) ;
-									}
-									else
-									{
-										assets.Add( asset ) ;
+										temporaryAssets[ i ] = m_ResourceCache[ resourceCachePath ] ;
 									}
 								}
+								assets = temporaryAssets ;
 							}
 						}
 #endif
@@ -1125,9 +1560,7 @@ namespace AssetBundleHelper
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									List<UnityEngine.Object>[] rAllSubAssetsHolder = { null } ;
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllSubAssets_Coroutine( assetBundleName, assetName, type, rAllSubAssetsHolder, keep, null, request, assetBundleCaching, this, resourcePath ) ) ;
-									assets = rAllSubAssetsHolder[ 0 ] ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllSubAssets_Coroutine( assetBundleName, assetName, type, ( _ ) => { assets = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
 								}
 							}
 						}
@@ -1139,7 +1572,7 @@ namespace AssetBundleHelper
 				}
 			}
 
-			if( assets == null )
+			if( assets == null || assets.Length == 0 )
 			{
 				// 失敗
 				if( string.IsNullOrEmpty( request.Error ) == true )
@@ -1166,9 +1599,8 @@ namespace AssetBundleHelper
 
 			//------------------------------------------------
 
-			temporaryAssets = assets.ToArray() ;
-			onLoaded?.Invoke( temporaryAssets ) ;
-			request.Assets = temporaryAssets ;
+			onLoaded?.Invoke( assets ) ;
+			request.Assets = assets ;
 			request.IsDone = true ;
 		}
 		
@@ -1331,7 +1763,6 @@ namespace AssetBundleHelper
 
 			bool			result = false ;
 			AssetBundle		assetBundle = null ;
-			AssetBundle[]	rAssetBundleHolder = { null } ;
 
 			UnityEngine.Object[] targets = null ;
 
@@ -1379,9 +1810,7 @@ namespace AssetBundleHelper
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundleName, rAssetBundleHolder, keep, null, request, false, this ) ) ;
-									assetBundle = rAssetBundleHolder[ 0 ] ;
-
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundleName, ( _ ) => { assetBundle = _ ; }, keep, request, false, this ) ) ;
 									if( assetBundle != null )
 									{
 										if( assetBundle.isStreamedSceneAssetBundle == true )
@@ -1563,65 +1992,41 @@ namespace AssetBundleHelper
 		// AssetBundleManager :: AssetBundle
 		
 		/// <summary>
-		/// アセットバンドルを取得する(同期版)
+		/// アセットバンドルを取得する(同期版)　※必ず自前で Unload を行わなければならない
 		/// </summary>
 		/// <param name="tPath">アセットバンドルのパス</param>
 		/// <returns>アセットバンドルのインスタンス</returns>
-		public static AssetBundle LoadAssetBundle( string tPath )
+		public static AssetBundle LoadAssetBundle( string path )
 		{
-			// 必ず自前で Unload を行わなければならない
-			if( m_Instance == null )
-			{
-				// インスタンスが生成されていない
-				return null ;
-			}
-
-			return m_Instance.LoadAssetBundle_Private( tPath ) ;
+			return m_Instance?.LoadAssetBundle_Private( path ) ;
 		}
 
 		// アセットバンドルを取得する(同期版)
-		private AssetBundle LoadAssetBundle_Private( string tPath )
+		private AssetBundle LoadAssetBundle_Private( string path )
 		{
-			string tManifestName = "" ;
-			string tAssetBundleName = "" ;
-			string tAssetName = "" ;
-
-			if( GetManifestNameAndAssetBundleName( tPath, out tManifestName, out tAssetBundleName, out tAssetName ) == false )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
 			{
-				return null ;
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+				{
+					if( m_ManifestHash.ContainsKey( manifestName ) == true )
+					{
+						return m_ManifestHash[ manifestName ].LoadAssetBundle( assetBundleName, false, this ) ;
+					}
+				}
 			}
-
-			//------------------------------------------------
-
-			if( string.IsNullOrEmpty( tManifestName ) == true || string.IsNullOrEmpty( tAssetBundleName ) == true )
-			{
-				// マニフェスト名とアセットバンドル名は絶対に必要(この処理は実際は必要無いかもしれない)
-				return null ;
-			}
-			
-			if( m_ManifestHash.ContainsKey( tManifestName ) == false )
-			{
-				// マニフェスト名が存在しない
-				return null ;
-			}
-
-			// マニフェストインフォを取得する
-			ManifestInfo tManifestInfo = m_ManifestHash[ tManifestName ] ;
-
-			// アセットバンドルを取得する
-			return tManifestInfo.LoadAssetBundle( tAssetBundleName, false, this ) ;
+			return null ;
 		}
 
 		//-----------------------------------
 
 		/// <summary>
-		/// アセットバンドルを取得する(非同期版)
+		/// アセットバンドルを取得する(非同期版)　※必ず自前で Unload を行わなければならない
 		/// </summary>
 		/// <param name="tPath">アセットバンドルのパス</param>
 		/// <param name="rAssetBundle">アセットバンドルのインスタンスを格納するための要素数１以上の配列</param>
 		/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
 		/// <returns>列挙子</returns>
-		public static Request LoadAssetBundleAysnc( string tPath, AssetBundle[] rAssetBundle, bool tKeep = false, int[] rResultCode = null )
+		public static Request LoadAssetBundleAysnc( string path, Action<AssetBundle> onLoaded = null, bool keep = false )
 		{
 			// 必ず自前で Unload を行わなければならない
 			if( m_Instance == null )
@@ -1630,82 +2035,40 @@ namespace AssetBundleHelper
 				return null ;
 			}
 
-			Request tRequest = new Request() ;
-			m_Instance.StartCoroutine( m_Instance.LoadAssetBundleAsync_Private( tPath, rAssetBundle, tKeep, rResultCode, tRequest ) ) ;
-			return tRequest ;
+			Request request = new Request() ;
+			m_Instance.StartCoroutine( m_Instance.LoadAssetBundleAsync_Private( path, onLoaded, keep, request ) ) ;
+			return request ;
 		}
 
 		// アセットバンドルを取得する(非同期版)
-		private IEnumerator LoadAssetBundleAsync_Private( string tPath, AssetBundle[] rAssetBundle, bool tKeep, int[] rResultCode, Request tRequest )
+		private IEnumerator LoadAssetBundleAsync_Private( string path, Action<AssetBundle> onLoaded, bool keep, Request request )
 		{
-			// リザルトコードを成功で一旦初期化しておく
-			if( rResultCode != null && rResultCode.Length >  0 ){ rResultCode[ 0 ] = 0 ; }
-
-			string tManifestName = "" ;
-			string tAssetBundleName = "" ;
-			string tAssetName = "" ;
-
-			if( GetManifestNameAndAssetBundleName( tPath, out tManifestName, out tAssetBundleName, out tAssetName ) == false )
-			{
-				if( rResultCode != null && rResultCode.Length >  0 ){ rResultCode[ 0 ] = 1 ; }
-				if( tRequest != null ){ tRequest.Error = "Could not load" ; tRequest.ResultCode = 1 ; }
-				yield break ;
-			}
-
-			//------------------------------------------------
-
-			if( string.IsNullOrEmpty( tManifestName ) == true || string.IsNullOrEmpty( tAssetBundleName ) == true )
-			{
-				// マニフェスト名とアセットバンドル名は絶対に必要(この処理は実際は必要無いかもしれない)
-				if( rResultCode != null && rResultCode.Length >  0 ){ rResultCode[ 0 ] = 1 ; }
-				if( tRequest != null ){ tRequest.Error = "Could not load" ; tRequest.ResultCode = 1 ; }
-				yield break ;
-			}
-
-			if( m_ManifestHash.ContainsKey( tManifestName ) == false )
-			{
-				// マニフェスト名が存在しない
-				if( rResultCode != null && rResultCode.Length >  0 ){ rResultCode[ 0 ] = 1 ; }
-				if( tRequest != null ){ tRequest.Error = "Could not load" ; tRequest.ResultCode = 1 ; }
-				yield break ;
-			}
-
-			// マニフェストインフォを取得する
-			ManifestInfo tManifestInfo = m_ManifestHash[ tManifestName ] ;
-
 			// アセットバンドルを取得する
-			AssetBundle[] tAssetBundleHolder = { null } ;
-			yield return StartCoroutine( tManifestInfo.LoadAssetBundle_Coroutine( tAssetBundleName, tAssetBundleHolder, tKeep, rResultCode, tRequest, false, this ) ) ;
+			AssetBundle assetBundle = null ;
 
-			if( tAssetBundleHolder[ 0 ] == null )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
 			{
-				if( rResultCode != null && rResultCode.Length >  0 )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
 				{
-					if( rResultCode[ 0 ] == 0 )
+					if( m_ManifestHash.ContainsKey( manifestName ) == false )
 					{
-						rResultCode[ 0 ] = 2 ;
+						yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundleName, ( _ ) => { assetBundle = _ ; }, keep, request, false, this ) ) ;
 					}
 				}
-				if( tRequest != null )
+			}
+
+			if( assetBundle == null )
+			{
+				if( string.IsNullOrEmpty( request.Error ) == true )
 				{
-					if( string.IsNullOrEmpty( tRequest.Error ) == true )
-					{
-						tRequest.Error = "Could not load" ;
-						tRequest.ResultCode = 2 ;
-					}
+					request.Error = "Could not load" ;
 				}
 				yield break ;
 			}
 
-			if( rAssetBundle != null && rAssetBundle.Length >  0 )
-			{
-				rAssetBundle[ 0 ] = tAssetBundleHolder[ 0 ] ;
-			}
-			if( tRequest != null )
-			{
-				tRequest.AssetBundle = tAssetBundleHolder[ 0 ] ;
-				tRequest.IsDone = true ;
-			}
+			onLoaded?.Invoke( assetBundle ) ;
+			request.AssetBundle = assetBundle ;
+			request.IsDone = true ;
 		}
 
 		//-----------------------------------------------------------
@@ -1716,7 +2079,7 @@ namespace AssetBundleHelper
 		/// <param name="tPath">アセットバンドルのパス</param>
 		/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
 		/// <returns>アセットバンドルのダウンロードリクエストクラスのインスタンス</returns>
-		public static Request DownloadAssetBundleAsync( string tPath, bool tKeep = false, int[] rResultCode = null )
+		public static Request DownloadAssetBundleAsync( string path, bool keep = false )
 		{
 			if( m_Instance == null )
 			{
@@ -1724,77 +2087,37 @@ namespace AssetBundleHelper
 				return null ;
 			}
 
-			Request tRequest = new Request() ;
-			m_Instance.StartCoroutine( m_Instance.DownloadAssetBundleAsync_Private( tPath, tKeep, rResultCode, tRequest ) ) ;
-			return tRequest ;
+			Request request = new Request() ;
+			m_Instance.StartCoroutine( m_Instance.DownloadAssetBundleAsync_Private( path, keep, request ) ) ;
+			return request ;
 		}
 
 		// アセットバンドルのダウンロードを行う
-		private IEnumerator DownloadAssetBundleAsync_Private( string tPath, bool tKeep, int[] rResultCode, Request tRequest )
+		private IEnumerator DownloadAssetBundleAsync_Private( string path, bool keep, Request request )
 		{
-			// リザルトコードを成功で一旦初期化しておく
-			if( rResultCode != null && rResultCode.Length >  0 ){ rResultCode[ 0 ] = 0 ; }
+			bool result = false ;
 
-			string tManifestName = "" ;
-			string tAssetBundleName = "" ;
-			string tAssetName = "" ;
-
-			if( GetManifestNameAndAssetBundleName( tPath, out tManifestName, out tAssetBundleName, out tAssetName ) == false )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
 			{
-				if( rResultCode != null && rResultCode.Length >  0 ){ rResultCode[ 0 ] = 1 ; }
-				if( tRequest != null ){ tRequest.Error = "Could not load" ; tRequest.ResultCode = 1 ; }
-				yield break ;
-			}
-
-			//------------------------------------------------
-
-			if( string.IsNullOrEmpty( tManifestName ) == true || string.IsNullOrEmpty( tAssetBundleName ) == true )
-			{
-				// マニフェスト名とアセットバンドル名は絶対に必要(この処理は実際は必要無いかもしれない)
-				if( rResultCode != null && rResultCode.Length >  0 ){ rResultCode[ 0 ] = 1 ; }
-				if( tRequest != null ){ tRequest.Error = "Could not load" ; tRequest.ResultCode = 1 ; }
-				yield break ;
-			}
-			
-			if( m_ManifestHash.ContainsKey( tManifestName ) == false )
-			{
-				// マニフェスト名が存在しない
-				if( rResultCode != null && rResultCode.Length >  0 ){ rResultCode[ 0 ] = 1 ; }
-				if( tRequest != null ){ tRequest.Error = "Could not load" ; tRequest.ResultCode = 1 ; }
-				yield break ;
-			}
-
-			// マニフェストインフォを取得する
-			ManifestInfo tManifestInfo = m_ManifestHash[ tManifestName ] ;
-
-			// アセットバンドルを取得する
-			bool[] tResultHolder = { false } ;
-			yield return StartCoroutine( tManifestInfo.DownloadAssetBundle_Coroutine( tAssetBundleName, tResultHolder, tKeep, rResultCode, tRequest, this ) ) ;
-
-			if( tResultHolder[ 0 ] == false )
-			{
-				if( rResultCode != null && rResultCode.Length >  0 )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
 				{
-					if( rResultCode[ 0 ] == 0 )
+					if( m_ManifestHash.ContainsKey( manifestName ) == true )
 					{
-						rResultCode[ 0 ] = 2 ;
+						yield return StartCoroutine( m_ManifestHash[ manifestName ].DownloadAssetBundle_Coroutine( assetBundleName, ( _ ) => { result = _ ; }, keep, request, this ) ) ;
 					}
 				}
-				if( tRequest != null )
+			}
+
+			if( result == false )
+			{
+				if( string.IsNullOrEmpty( request.Error ) == true )
 				{
-					if( string.IsNullOrEmpty( tRequest.Error ) == true )
-					{
-						tRequest.Error = "Could not load" ;
-						tRequest.ResultCode = 2 ;
-					}
+					request.Error = "Could not load." ;
 				}
 				yield break ;
 			}
 
-			if( tRequest != null )
-			{
-				tRequest.IsDone = true ;
-			}
+			request.IsDone = true ;
 		}
 		
 		//-----------------------------------
@@ -1802,8 +2125,7 @@ namespace AssetBundleHelper
 		/// <summary>
 		/// アセットバンドルをストレージキャッシュから削除する
 		/// </summary>
-		/// <param name="tPath">アセットバンドルのパス</param>
-		/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
+		/// <param name="path">アセットバンドルのパス</param>
 		/// <returns>アセットバンドルのダウンロードリクエストクラスのインスタンス</returns>
 		public static bool RemoveAssetBundle( string path )
 		{
@@ -1813,25 +2135,16 @@ namespace AssetBundleHelper
 		// アセットバンドルをキャッシュから削除する
 		private bool RemoveAssetBundle_Private( string path )
 		{
-			string manifestName ;
-			string assetBundleName ;
-			string assetName ;
-
-			if( GetManifestNameAndAssetBundleName( path, out manifestName, out assetBundleName, out assetName ) == false )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
 			{
-				return false ;
-			}
-
-			//------------------------------------------------
-
-			if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
-			{
-				if( m_ManifestHash.ContainsKey( manifestName ) == true )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
 				{
-					return m_ManifestHash[ manifestName ].RemoveAssetBundle( assetBundleName, this ) ;
+					if( m_ManifestHash.ContainsKey( manifestName ) == true )
+					{
+						return m_ManifestHash[ manifestName ].RemoveAssetBundle( assetBundleName, this ) ;
+					}
 				}
 			}
-
 			return false ;
 		}
 
@@ -1840,7 +2153,7 @@ namespace AssetBundleHelper
 		/// <summary>
 		/// アセットバンドルが管理対象に含まれているか確認する
 		/// </summary>
-		/// <param name="tPath">アセットバンドルのパス</param>
+		/// <param name="path">アセットバンドルのパス</param>
 		/// <returns></returns>
 		public static bool Contains( string path )
 		{
@@ -1850,39 +2163,30 @@ namespace AssetBundleHelper
 		// アセットバンドルが管理対象に含まれているか確認する
 		private bool Contains_Private( string path )
 		{
-			string manifestName ;
-			string assetBundleName ;
-			string assetName ;
-
-			if( GetManifestNameAndAssetBundleName( path, out manifestName, out assetBundleName, out assetName ) == false )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
 			{
-				return false ;
-			}
-
-			//------------------------------------------------
-
-			if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
-			{
-				if( m_ManifestHash.ContainsKey( manifestName ) == true )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
 				{
-					return m_ManifestHash[ manifestName ].Contains( assetBundleName, this ) ;
+					if( m_ManifestHash.ContainsKey( manifestName ) == true )
+					{
+						return m_ManifestHash[ manifestName ].Contains( assetBundleName ) ;
+					}
 				}
 			}
-
 			return false ;
 		}
 		
 		/// <summary>
-		/// アセットバンドルの存在を確認する
+		/// アセットの存在を確認する
 		/// </summary>
-		/// <param name="tPath">アセットバンドルのパス</param>
+		/// <param name="path">アセットバンドルのパス</param>
 		/// <returns></returns>
 		public static bool Exists( string path )
 		{
 			return m_Instance == null ? false : m_Instance.Exists_Private( path ) ;
 		}
 		
-		// アセットバンドルの存在を確認する
+		// アセットの存在を確認する
 		private bool Exists_Private( string path )
 		{
 			if( m_UseLocalAsset == true )
@@ -1890,128 +2194,120 @@ namespace AssetBundleHelper
 				return true ;	// いわゆるデバッグモードなので常に成功扱いにする
 			}
 
-			string manifestName ;
-			string assetBundleName ;
-			string assetName ;
-
-			if( GetManifestNameAndAssetBundleName( path, out manifestName, out assetBundleName, out assetName ) == false )
-			{
-				return false ;
-			}
-
 			//------------------------------------------------
 
-			if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
 			{
-				if( m_ManifestHash.ContainsKey( manifestName ) == true )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
 				{
-					return m_ManifestHash[ manifestName ].Exists( assetBundleName, this ) ;
+					if( m_ManifestHash.ContainsKey( manifestName ) == true )
+					{
+						return m_ManifestHash[ manifestName ].Exists( assetBundleName ) ;
+					}
 				}
 			}
-
 			return false ;
 		}
 
 		/// <summary>
 		/// アセットバンドルのサイズを取得する
 		/// </summary>
-		/// <param name="tPath">アセットバンドルのパス</param>
+		/// <param name="path">アセットバンドルのパス</param>
 		/// <returns></returns>
 		public static int GetSize( string path )
 		{
 			return m_Instance == null ? -1 : m_Instance.GetSize_Private( path ) ;
-
 		}
 		
 		// アセットバンドルのサイズを取得する
 		private int GetSize_Private( string path )
 		{
-			string manifestName ;
-			string assetBundleName ;
-			string assetName ;
-
-			if( GetManifestNameAndAssetBundleName( path, out manifestName, out assetBundleName, out assetName ) == false )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
 			{
-				return -1 ;
-			}
-
-			//------------------------------------------------
-
-			if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
-			{
-				// マニフェスト名は絶対に必要
-
-				if( m_ManifestHash.ContainsKey( manifestName ) == true )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
 				{
-					return m_ManifestHash[ manifestName ].GetSize( assetBundleName, this ) ;
+					if( m_ManifestHash.ContainsKey( manifestName ) == true )
+					{
+						return m_ManifestHash[ manifestName ].GetSize( assetBundleName ) ;
+					}
 				}
 			}
-
 			return -1 ;
+		}
+
+		/// <summary>
+		/// 指定のアセットバンドルのキャッシュ内での動作を設定する(キャッシュオーバー時に維持するかどうか)
+		/// </summary>
+		/// <param name="path">アセットバンドルのパス</param>
+		/// <param name="keep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
+		/// <returns>結果(true=成功・失敗)</returns>
+		public static bool SetKeepFlag( string path, bool keep )
+		{
+			return m_Instance == null ? false : m_Instance.SetKeepFlag_Private( path, keep ) ;
+		}
+
+		// 指定のアセットバンドルのキャッシュ内での動作を設定する
+		private bool SetKeepFlag_Private( string path, bool keep )
+		{
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == false )
+			{
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+				{
+					if( m_ManifestHash.ContainsKey( manifestName ) == true )
+					{
+						return m_ManifestHash[ manifestName ].SetKeepFlag( assetBundleName, keep ) ;
+					}
+				}
+			}
+			return false ;
 		}
 
 		//-------------------------------------------------------------------
 
 		// 破棄対象のアセットバンドル
-		Dictionary<AssetBundle,int>	m_AutoCleaningAssetBundle = new Dictionary<AssetBundle,int>() ;
+		private readonly Dictionary<AssetBundle,int>	m_AutoCleaningAssetBundle = new Dictionary<AssetBundle,int>() ;
 
 		// 破棄対象のアセットバンドルを追加する
 		private void AddAutoCleaningTarget( AssetBundle assetBundle )
 		{
-			if( assetBundle == null )
+			if( assetBundle != null && m_AutoCleaningAssetBundle.ContainsKey( assetBundle ) == false )
 			{
-				return ;
+				m_AutoCleaningAssetBundle.Add( assetBundle, Time.frameCount ) ;
 			}
-
-			if( m_AutoCleaningAssetBundle.ContainsKey( assetBundle ) == true )
-			{
-				// 既に破棄対象になっている
-				return ;
-			}
-
-			m_AutoCleaningAssetBundle.Add( assetBundle, Time.frameCount ) ;
 		}
 
 		// 破棄対象のアセットバンドルを除去する
 		private void RemoveAutoCleaningTarget( AssetBundle assetBundle )
 		{
-			if( assetBundle == null )
+			if( assetBundle != null && m_AutoCleaningAssetBundle.ContainsKey( assetBundle ) == true )
 			{
-				return ;
+				m_AutoCleaningAssetBundle.Remove( assetBundle ) ;
 			}
-
-			if( m_AutoCleaningAssetBundle.ContainsKey( assetBundle ) == false )
-			{
-				// 破棄対象には含まれていない
-				return ;
-			}
-
-			m_AutoCleaningAssetBundle.Remove( assetBundle ) ;
 		}
 
 		// 自動破棄対象のアセットバンドルを破棄する
 		private void AutoCleaning()
 		{
-			if( m_AutoCleaningAssetBundle.Count == 0 )
+			if( m_AutoCleaningAssetBundle == null || m_AutoCleaningAssetBundle.Count == 0 )
 			{
 				return ;
 			}
 
 			int frameCount = Time.frameCount ;
 
-			int i, l = m_AutoCleaningAssetBundle.Count ;
-
-			AssetBundle[] assetBundles = new AssetBundle[ l ] ;
+			AssetBundle[] assetBundles = new AssetBundle[ m_AutoCleaningAssetBundle.Count ] ;
 			m_AutoCleaningAssetBundle.Keys.CopyTo( assetBundles, 0 ) ;
 
-			for( i  = 0 ; i <  l ; i ++ )
+			foreach( var assetBundle in assetBundles )
 			{
-				if( m_AutoCleaningAssetBundle[ assetBundles[ i ] ] <  frameCount )
+				if( m_AutoCleaningAssetBundle[ assetBundle ] <  frameCount )
 				{
 					// 破棄実行対象
-					Debug.LogWarning( "------->アセットバンドルの自動破棄実行:" + assetBundles[ i ].name ) ;
-					assetBundles[ i ].Unload( false ) ;
-					m_AutoCleaningAssetBundle.Remove( assetBundles[ i ] ) ;
+#if UNITY_EDITOR
+					Debug.LogWarning( "------->アセットバンドルの自動破棄実行:" + assetBundle.name ) ;
+#endif
+					assetBundle.Unload( false ) ;
+					m_AutoCleaningAssetBundle.Remove( assetBundle ) ;
 				}
 			}
 		}

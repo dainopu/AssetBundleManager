@@ -31,11 +31,10 @@ namespace AssetBundleHelper
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_LocalAssetBundleRootPath = value ;
 				}
-				m_Instance.m_LocalAssetBundleRootPath = value ;
 			}
 		}
 
@@ -54,11 +53,10 @@ namespace AssetBundleHelper
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_DataPath = value ;
 				}
-				m_Instance.m_DataPath = value ;
 			}
 		}
 
@@ -72,19 +70,14 @@ namespace AssetBundleHelper
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return "" ;
-				}
-				return m_Instance.m_SystemFileName ;
+				return m_Instance == null ? String.Empty : m_Instance.m_SystemFileName ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_SystemFileName = value ;
 				}
-				m_Instance.m_SystemFileName = value ;
 			}
 		}
 
@@ -98,19 +91,14 @@ namespace AssetBundleHelper
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return 0L ;
-				}
-				return m_Instance.m_ManifestKeepTime ;
+				return m_Instance == null ? 0L : m_Instance.m_ManifestKeepTime ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_ManifestKeepTime = value ;
 				}
-				m_Instance.m_ManifestKeepTime = value ;
 			}
 		}
 
@@ -124,19 +112,14 @@ namespace AssetBundleHelper
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return false ;
-				}
-				return m_Instance.m_SecretPathEnabled ;
+				return m_Instance == null ? false : m_Instance.m_SecretPathEnabled ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_SecretPathEnabled = value ;
 				}
-				m_Instance.m_SecretPathEnabled = value ;
 			}
 		}
 
@@ -150,19 +133,14 @@ namespace AssetBundleHelper
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return false ;
-				}
-				return m_Instance.m_FastLoadEnabled ;
+				return m_Instance == null ? false : m_Instance.m_FastLoadEnabled ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_FastLoadEnabled = value ;
 				}
-				m_Instance.m_FastLoadEnabled = value ;
 			}
 		}
 		
@@ -176,19 +154,14 @@ namespace AssetBundleHelper
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return false ;
-				}
-				return m_Instance.m_LoadManifestOnAwake ;
+				return m_Instance == null ? false : m_Instance.m_LoadManifestOnAwake ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_LoadManifestOnAwake = value ;
 				}
-				m_Instance.m_LoadManifestOnAwake = value ;
 			}
 		}
 		
@@ -206,11 +179,10 @@ namespace AssetBundleHelper
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_UseLocalAsset = value ;
 				}
-				m_Instance.m_UseLocalAsset = value ;
 			}
 		}
 		
@@ -225,19 +197,14 @@ namespace AssetBundleHelper
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return false ;
-				}
-				return m_Instance.m_UseDownload ;
+				return m_Instance == null ? false : m_Instance.m_UseDownload ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_UseDownload = value ;
 				}
-				m_Instance.m_UseDownload = value ;
 			}
 		}
 		
@@ -252,19 +219,14 @@ namespace AssetBundleHelper
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return false ;
-				}
-				return m_Instance.m_UseStreamingAssets ;
+				return m_Instance == null ? false : m_Instance.m_UseStreamingAssets ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_UseStreamingAssets = value ;
 				}
-				m_Instance.m_UseStreamingAssets = value ;
 			}
 		}
 		
@@ -289,19 +251,14 @@ namespace AssetBundleHelper
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return UserResources.None ;
-				}
-				return m_Instance.m_UseResources ;
+				return m_Instance == null ?  UserResources.None : m_Instance.m_UseResources ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_UseResources = value ;
 				}
-				m_Instance.m_UseResources = value ;
 			}
 		}
 		
@@ -326,19 +283,14 @@ namespace AssetBundleHelper
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return LoadPriority.Resources ;
-				}
-				return m_Instance.m_LoadPriorityType ;
+				return m_Instance == null ? LoadPriority.Local : m_Instance.m_LoadPriorityType ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_LoadPriorityType = value ;
 				}
-				m_Instance.m_LoadPriorityType = value ;
 			}
 		}
 		
@@ -352,19 +304,14 @@ namespace AssetBundleHelper
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return "" ;
-				}
-				return m_Instance.m_DefaultManifestName ;
+				return m_Instance == null ? string.Empty : m_Instance.m_DefaultManifestName ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.m_DefaultManifestName = value ;
 				}
-				m_Instance.m_DefaultManifestName = value ;
 			}
 		}
 		

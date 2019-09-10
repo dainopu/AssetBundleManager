@@ -31,24 +31,21 @@ namespace AssetBundleHelper
 		/// <returns>経過秒</returns>
 		internal protected static long GetClientTime()
 		{
-			System.DateTime tUTC = System.DateTime.UtcNow ;
-			tUTC = tUTC.ToUniversalTime() ;
-			System.TimeSpan tTimeSpan = tUTC - UNIX_EPOCH ;
-			return (  long )tTimeSpan.TotalSeconds ;
+			System.DateTime utc = System.DateTime.UtcNow ;
+			utc = utc.ToUniversalTime() ;
+			System.TimeSpan timeSpan = utc - UNIX_EPOCH ;
+			return ( long )timeSpan.TotalSeconds ;
 		}
 
 		// ＣＲＣ値を取得する
-		internal protected static uint GetCRC32( byte[] tData )
+		internal protected static uint GetCRC32( byte[] data )
 		{
-			uint tValue = CRC32_MASK  ;
-		
-			int i, l = tData.Length ;
-			for( i  = 0 ; i <  l ; i ++ )
+			uint crc = CRC32_MASK  ;
+			foreach( var code in data )
 			{
-				tValue = m_CRC32_Table[ ( tValue ^ tData[ i ] ) & 0xFF ] ^ ( tValue >> 8 ) ;
+				crc = m_CRC32_Table[ ( crc ^ code ) & 0xFF ] ^ ( crc >> 8 ) ;
 			}
-		
-			return tValue ^ CRC32_MASK ;
+			return crc ^ CRC32_MASK ;
 		}
 
 		private const uint CRC32_MASK = 0xffffffff ;

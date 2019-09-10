@@ -171,8 +171,7 @@ namespace AssetBundleHelper
 				int i, l = m_ManifestInfo.Count ;
 				for( i  = 0 ; i <  l ; i ++ )
 				{
-					m_ManifestInfo[ i ].assetBundleInfo.Clear() ;
-					m_ManifestInfo[ i ].assetBundleLink.Clear() ;
+					m_ManifestInfo[ i ].Clear() ;
 				}
 			}
 
@@ -301,20 +300,21 @@ namespace AssetBundleHelper
 			}
 			
 			i = assetBundleName.IndexOf( "//" ) ;
-			if( i <  0 )
-			{
-				// 単一アセットのアセットバンドルとみなす
-				i = assetBundleName.LastIndexOf( "/" ) ;
-				if( i <  0 )
-				{
-					assetName = assetBundleName ;
-				}
-				else
-				{
-					assetName = assetBundleName.Substring( i + 1, assetBundleName.Length - ( i + 1 ) ) ;
-				}
-			}
-			else
+//			if( i <  0 )
+//			{
+//				// 単一アセットのアセットバンドルとみなす
+//				i = assetBundleName.LastIndexOf( "/" ) ;
+//				if( i <  0 )
+//				{
+//					assetName = assetBundleName ;
+//				}
+//				else
+//				{
+//					assetName = assetBundleName.Substring( i + 1, assetBundleName.Length - ( i + 1 ) ) ;
+//				}
+//			}
+//			else
+			if( i >= 0 )
 			{
 				// 複合アセットのアセットバンドルとみなす
 				assetName = assetBundleName.Substring( i + 2, assetBundleName.Length - ( i + 2 ) ) ;

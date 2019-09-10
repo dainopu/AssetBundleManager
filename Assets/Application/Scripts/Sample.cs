@@ -117,7 +117,7 @@ namespace AssetableExperiment
 					{
 						sizeName = ( size / ( 1024L * 1024L * 1024L ) ) + "GB" ;
 					}
-					Debug.LogWarning( "マニフェスト " + m.name +" のキャッシュサイズを " + sizeName + " に制限しました。" ) ;
+					Debug.LogWarning( "マニフェスト " + m.ManifestName +" のキャッシュサイズを " + sizeName + " に制限しました。" ) ;
 				}
 			}
 
@@ -129,16 +129,18 @@ namespace AssetableExperiment
 
 			//-----------------
 
-			string path = "Textures/button" ;
+			string assetBundlePath = "Textures/button" ;
 			string[] subAssetName = { "button_0", "button_1" } ;
 			
+			string atlasAssetBundlePath = "Textures/Atlas" ;
+
 			Sprite[] sprite = new Sprite[ 2 ] ;
 
 			int category = 3 ;
-			int type = 0 ;
+			int type = 1 ;
 
 			AssetBundleManager.UseResources = AssetBundleManager.UserResources.None ;       // ネットワーク上のアセットバンドルが見つからない場合は Resources から探す
-			AssetBundleManager.UseLocalAsset = true ;
+			AssetBundleManager.UseLocalAsset = false ;
 
 			if( category == 0 )
 			{
@@ -150,7 +152,7 @@ namespace AssetableExperiment
 	//				yield return request ;
 	//				sprite = request.Asset as Sprite ;
 
-					yield return AssetBundleManager.LoadAssetAsync<Sprite>( path, ( _ ) => { sprite[ 0 ] = _ ; } ) ;
+					yield return AssetBundleManager.LoadAssetAsync<Sprite>( assetBundlePath, ( _ ) => { sprite[ 0 ] = _ ; } ) ;
 				}
 				else
 				if( type == 1 )
@@ -158,20 +160,20 @@ namespace AssetableExperiment
 					// Sync(仮 : 1.5～2.0 ms|実 : 6.5～7.0 ms)
 	//				if( AssetBundleManager.Exists( path ) == false )
 	//				{
-						sprite[ 0 ] = AssetBundleManager.LoadAsset<Sprite>( path ) ;
+						sprite[ 0 ] = AssetBundleManager.LoadAsset<Sprite>( assetBundlePath ) ;
 	//				}
 				}
 				else
 				if( type == 2 )
 				{
 					// Local Asset - Simple(1.5～2.0 ms)
-					sprite[ 0 ] = Asset.Load<Sprite>( path, "png" ) ;
+					sprite[ 0 ] = Asset.Load<Sprite>( assetBundlePath, "png" ) ;
 				}
 				else
 				if( type == 3 )
 				{
 					// Resources(0.5 ms)
-					sprite[ 0 ] = Resources.Load<Sprite>( path ) ;
+					sprite[ 0 ] = Resources.Load<Sprite>( assetBundlePath ) ;
 				}
 			}
 			else
@@ -185,7 +187,7 @@ namespace AssetableExperiment
 	//				yield return request ;
 	//				sprite = request.Asset as Sprite ;
 					
-					yield return AssetBundleManager.LoadSubAssetAsync<Sprite>( path, subAssetName[ 0 ], ( _ ) => { sprite[ 0 ] = _ ; } ) ;
+					yield return AssetBundleManager.LoadSubAssetAsync<Sprite>( assetBundlePath, subAssetName[ 0 ], ( _ ) => { sprite[ 0 ] = _ ; } ) ;
 				}
 				else
 				if( type == 1 )
@@ -193,7 +195,7 @@ namespace AssetableExperiment
 					// Sync(仮 : 1.5～2.0 ms|実 : 6.5～7.0 ms)
 	//				if( AssetBundleManager.Exists( path ) == false )
 	//				{
-						sprite[ 0 ] = AssetBundleManager.LoadSubAsset<Sprite>( path, subAssetName[ 0 ] ) ;
+						sprite[ 0 ] = AssetBundleManager.LoadSubAsset<Sprite>( assetBundlePath, subAssetName[ 0 ] ) ;
 	//				}
 				}
 			}
@@ -208,8 +210,8 @@ namespace AssetableExperiment
 	//				yield return request ;
 	//				sprite = request.Asset as Sprite ;
 					
-					yield return AssetBundleManager.LoadSubAssetAsync<Sprite>( path, subAssetName[ 0 ], ( _ ) => { sprite[ 0 ] = _ ; }, AssetBundleManager.CachingType.Same ) ;
-					yield return AssetBundleManager.LoadSubAssetAsync<Sprite>( path, subAssetName[ 1 ], ( _ ) => { sprite[ 1 ] = _ ; }, AssetBundleManager.CachingType.Same ) ;
+					yield return AssetBundleManager.LoadSubAssetAsync<Sprite>( assetBundlePath, subAssetName[ 0 ], ( _ ) => { sprite[ 0 ] = _ ; }, AssetBundleManager.CachingType.Same ) ;
+					yield return AssetBundleManager.LoadSubAssetAsync<Sprite>( assetBundlePath, subAssetName[ 1 ], ( _ ) => { sprite[ 1 ] = _ ; }, AssetBundleManager.CachingType.Same ) ;
 				}
 				else
 				if( type == 1 )
@@ -217,13 +219,77 @@ namespace AssetableExperiment
 					// Sync(仮 : 1.5～2.0 ms|実 : 6.5～7.0 ms)
 	//				if( AssetBundleManager.Exists( path ) == false )
 	//				{
-						sprite[ 0 ] = AssetBundleManager.LoadSubAsset<Sprite>( path, subAssetName[ 0 ], AssetBundleManager.CachingType.Same ) ;
-						sprite[ 1 ] = AssetBundleManager.LoadSubAsset<Sprite>( path, subAssetName[ 1 ], AssetBundleManager.CachingType.Same ) ;
+						sprite[ 0 ] = AssetBundleManager.LoadSubAsset<Sprite>( assetBundlePath, subAssetName[ 0 ], AssetBundleManager.CachingType.Same ) ;
+						sprite[ 1 ] = AssetBundleManager.LoadSubAsset<Sprite>( assetBundlePath, subAssetName[ 1 ], AssetBundleManager.CachingType.Same ) ;
 	//				}
 				}
 			}
 			else
 			if( category == 3 )
+			{
+				if( type == 0 )
+				{
+					// Async(? ms)
+	//				var request = AssetBundleManager.LoadAssetAsync<Sprite>( path ) ;
+	//				yield return request ;
+	//				sprite = request.Asset as Sprite ;
+					Sprite[] sprites = null ;
+					yield return AssetBundleManager.LoadAllAssetsAsync<Sprite>( atlasAssetBundlePath, ( _ ) => { sprites = _ ; } ) ;
+
+					if( sprites != null )
+					{
+						sprite[ 0 ] = sprites[ 0 ] ;
+						sprite[ 1 ] = sprites[ 1 ] ;
+					}
+				}
+				else
+				if( type == 1 )
+				{
+					// Sync(仮 : 1.5～2.0 ms|実 : 6.5～7.0 ms)
+	//				if( AssetBundleManager.Exists( path ) == false )
+	//				{
+						Sprite[] sprites = AssetBundleManager.LoadAllAssets<Sprite>( atlasAssetBundlePath ) ;
+	//				}
+
+					sprite[ 0 ] = sprites[ 0 ] ;
+					sprite[ 1 ] = sprites[ 1 ] ;
+				}
+
+			}
+			else
+			if( category == 4 )
+			{
+				if( type == 0 )
+				{
+					// Async(? ms)
+	//				var request = AssetBundleManager.LoadAssetAsync<Sprite>( path ) ;
+	//				yield return request ;
+	//				sprite = request.Asset as Sprite ;
+					Sprite[] sprites = null ;
+					yield return AssetBundleManager.LoadAllSubAssetsAsync<Sprite>( assetBundlePath, ( _ ) => { sprites = _ ; } ) ;
+
+					if( sprites != null )
+					{
+						sprite[ 0 ] = sprites[ 0 ] ;
+						sprite[ 1 ] = sprites[ 1 ] ;
+					}
+				}
+				else
+				if( type == 1 )
+				{
+					// Sync(仮 : 1.5～2.0 ms|実 : 6.5～7.0 ms)
+	//				if( AssetBundleManager.Exists( path ) == false )
+	//				{
+						Sprite[] sprites = AssetBundleManager.LoadAllSubAssets<Sprite>( assetBundlePath ) ;
+	//				}
+
+					sprite[ 0 ] = sprites[ 0 ] ;
+					sprite[ 1 ] = sprites[ 1 ] ;
+				}
+
+			}
+			else
+			if( category == 5 )
 			{
 				if( type == 0 )
 				{

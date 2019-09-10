@@ -1,5 +1,5 @@
 ManifestFileVersion: 0
-CRC: 1519020475
+CRC: 1348927461
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
@@ -9,5 +9,8 @@ AssetBundleManifest:
       Name: textures/button_s
       Dependencies: {}
     Info_2:
+      Name: textures/atlas
+      Dependencies: {}
+    Info_3:
       Name: scenes/overlayscene
       Dependencies: {}

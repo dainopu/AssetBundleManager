@@ -82,35 +82,26 @@ namespace AssetBundleHelper
 		/// <summary>
 		/// リソースキャッシュを有効にするかどうか(デフォルトは有効)
 		/// </summary>
-		public static bool resourceCacheEnabled
+		public static bool ResourceCacheEnabled
 		{
 			get
 			{
-				if( m_Instance == null )
-				{
-					return false ;
-				}
-				return m_Instance.resourceCacheEnabled_Private ;
+				return m_Instance == null ? false : m_Instance.ResourceCacheEnabled_Private ;
 			}
 			set
 			{
-				if( m_Instance == null )
+				if( m_Instance != null )
 				{
-					return ;
+					m_Instance.ResourceCacheEnabled_Private = value ;
 				}
-				m_Instance.resourceCacheEnabled_Private = value ;
 			}
 		}
 		
-		private bool resourceCacheEnabled_Private
+		private bool ResourceCacheEnabled_Private
 		{
 			get
 			{
-				if( m_ResourceCache == null )
-				{
-					return false ;
-				}
-				return true ;
+				return !( m_ResourceCache == null ) ;
 			}
 			set
 			{
@@ -138,37 +129,32 @@ namespace AssetBundleHelper
 		/// リソースキャッシュをクリアする
 		/// </summary>
 		/// <returns>結果(true=成功・false=失敗)</returns>
-		public static bool ClearResourceCache( bool tUnloadUnusedAssets )
+		public static bool ClearResourceCache( bool unloadUnusedAssets )
 		{
-			if( m_Instance == null )
-			{
-				// インスタンスが生成されていない
-				return false ;
-			}
-
-			return m_Instance.ClearResourceCache_Private( tUnloadUnusedAssets ) ;
+			return m_Instance == null ? false : m_Instance.ClearResourceCache_Private( unloadUnusedAssets ) ;
 		}
 
 		// リソースキャッシュをクリアする
-		private bool ClearResourceCache_Private( bool tUnloadUnusedAssets )
+		private bool ClearResourceCache_Private( bool unloadUnusedAssets )
 		{
-			// 各マニフェストのアセットバンドルキャッシュもクリアする
-			int i, l = m_ManifestInfo.Count ;
-			for( i  = 0 ; i <  l ; i ++ )
+			if( m_ManifestInfo == null || m_ManifestInfo.Count >  0 )
 			{
-				m_ManifestInfo[ i ].ClearAssetBundleCache() ;
+				foreach( var manifestInfo in m_ManifestInfo )
+				{
+					// 各マニフェストのアセットバンドルキャッシュもクリアする
+					manifestInfo.ClearAssetBundleCache() ;
+				}
 			}
 
 			if( m_ResourceCache != null )
 			{
 #if UNITY_EDITOR
-				l = m_ResourceCache.Count ;
-				Debug.Log( "[AssetBundleManager] キャッシュからクリア対象となる展開済みリソース数 = " + l ) ;
+				Debug.Log( "[AssetBundleManager] キャッシュからクリア対象となる展開済みリソース数 = " + m_ResourceCache.Count ) ;
 #endif
 				m_ResourceCache.Clear() ;
 			}
 
-			if( tUnloadUnusedAssets == true )
+			if( unloadUnusedAssets == true )
 			{
 				Resources.UnloadUnusedAssets() ;
 				System.GC.Collect() ;
@@ -183,81 +169,23 @@ namespace AssetBundleHelper
 		/// <returns>結果(true=成功・false=失敗)</returns>
 		public static bool Cleanup()
 		{
-			if( m_Instance == null )
-			{
-				// インスタンスが生成されていない
-				return false ;
-			}
-
-			return m_Instance.Cleanup_Private() ;
+			return m_Instance == null ? false : m_Instance.Cleanup_Private() ;
 		}
 
 		// ローカルストレージ内のアセットバンドルキャッシュをクリアする
 		private  bool Cleanup_Private()
 		{
-			int i, j, l = m_ManifestInfo.Count, m ;
-			for( i  = 0 ; i <  l ; i ++ )
+			if( m_ManifestInfo != null && m_ManifestInfo.Count >  0 )
 			{
-				m = m_ManifestInfo[ i ].assetBundleInfo.Count ;
-				for( j  = 0 ; j <  m ; j ++ )
+				foreach( var manifestInfo in m_ManifestInfo )
 				{
-					// 全てのアセットバンドルのダウンロードし直しが必要になる
-					m_ManifestInfo[ i ].assetBundleInfo[ j ].update = true ;
+					manifestInfo.SetAllUpdateRequired() ;	// 更新が必要扱いにする
 				}
 			}
-
-			return StorageAccessor_Remove( "", true ) ;
+			return StorageAccessor_Remove( string.Empty, true ) ;
 		}
 
 		//-------------------------------------------------------------------
 
-		/// <summary>
-		/// 指定のアセットバンドルのキャッシュ内での動作を設定する
-		/// </summary>
-		/// <param name="tPath">アセットバンドルのパス</param>
-		/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
-		/// <returns>結果(true=成功・失敗)</returns>
-		public static bool SetKeepFlag( string tPath, bool tKeep )
-		{
-			if( m_Instance == null )
-			{
-				// インスタンスが生成されていない
-				return false ;
-			}
-
-			return m_Instance.SetKeepFlag_Private( tPath, tKeep ) ;
-		}
-
-		// 指定のアセットバンドルのキャッシュ内での動作を設定する
-		private bool SetKeepFlag_Private( string tPath, bool tKeep )
-		{
-			string tManifestName = "" ;
-			string tAssetBundleName = "" ;
-			string tAssetName = "" ;
-
-			if( GetManifestNameAndAssetBundleName( tPath, out tManifestName, out tAssetBundleName, out tAssetName ) == false )
-			{
-				return false ;
-			}
-
-			//------------------------------------------------
-
-			if( string.IsNullOrEmpty( tManifestName ) == false && string.IsNullOrEmpty( tAssetBundleName ) == false )
-			{
-				// マニフェスト名は絶対に必要
-				if( m_ManifestHash.ContainsKey( tManifestName ) == true )
-				{
-					// 指定の名前のマニフェストインフォは存在する
-
-					// マニフェストインフォを取得する
-					ManifestInfo tManifestInfo = m_ManifestHash[ tManifestName ] ;
-
-					// 以下はサブクラス内に移動しても良い
-					return tManifestInfo.SetKeepFlag( tAssetBundleName, tKeep ) ;
-				}
-			}
-
-			return false ;
-		}
 	}
 }

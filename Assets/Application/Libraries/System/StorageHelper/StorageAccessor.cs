@@ -13,7 +13,7 @@ using UnityEngine.Networking ;
 namespace StorageHelper
 {
 	/// <summary>
-	/// ストレージアクセサクラス Version 2018/06/18 0
+	/// ストレージアクセサクラス Version 2019/09/10 0
 	/// </summary>
 	public class StorageAccessor
 	{
@@ -35,7 +35,7 @@ namespace StorageHelper
 #if UNITY_EDITOR || UNITY_STANDALONE
 	
 		// デバッグ用のテンポラリデータフォルダ
-		public const string temporaryDataFoler = "/TemporaryDataFolder" ;
+		public const string TemporaryDataFoler = "/TemporaryDataFolder" ;
 	
 #endif
 
@@ -43,15 +43,15 @@ namespace StorageHelper
 	
 		private static string CreateTemporaryDataFolder()
 		{
-			string tPath = Directory.GetCurrentDirectory().Replace( "\\", "/" ) + temporaryDataFoler ;
+			string path = Directory.GetCurrentDirectory().Replace( "\\", "/" ) + TemporaryDataFoler ;
 		
-			if( Directory.Exists( tPath ) == false )
+			if( Directory.Exists( path ) == false )
 			{
 				// テンポラリが無いので生成する
-				Directory.CreateDirectory( tPath ) ;
+				Directory.CreateDirectory( path ) ;
 			}
 
-			return tPath ;
+			return path ;
 		}
 	
 #endif
@@ -65,26 +65,21 @@ namespace StorageHelper
 			get
 			{
 				// あえてメソッド化しているのは、引数で挙動を変える可能性もあるため。
-				string tPath = "" ;
+				string path = "" ;
 		
 #if UNITY_EDITOR || UNITY_STANDALONE
-		
-				tPath = CreateTemporaryDataFolder() ;
-		
+				path = CreateTemporaryDataFolder() ;
 #else
-		
-				tPath = Application.persistentDataPath ;
-		
+				path = Application.persistentDataPath ;
 #endif
 			
-				return tPath + "/" ;
+				return path + "/" ;
 			}
 		}
 		
 		public static void Setup()
 		{
 #if UNITY_EDITOR || UNITY_STANDALONE
-
 			CreateTemporaryDataFolder() ;
 #endif
 		}
@@ -95,44 +90,44 @@ namespace StorageHelper
 		/// <param name="tPath_0"></param>
 		/// <param name="tPath_1"></param>
 		/// <returns></returns>
-		public static string Combine( string tPath_0, string tPath_1 )
+		public static string Combine( string path_0, string path_1 )
 		{
-			if( string.IsNullOrEmpty( tPath_1 ) == false )
+			if( string.IsNullOrEmpty( path_1 ) == false )
 			{
-				if( tPath_1[ 0 ] == '!' || tPath_1[ 0 ] == '@' )
+				if( path_1[ 0 ] == '!' || path_1[ 0 ] == '@' )
 				{
 					// 絶対パス
-					return tPath_1.Substring( 1, tPath_1.Length - 1 ) ;
+					return path_1.Substring( 1, path_1.Length - 1 ) ;
 				}
 			}
 			
-			if( string.IsNullOrEmpty( tPath_0 ) == true )
+			if( string.IsNullOrEmpty( path_0 ) == true )
 			{
-				return tPath_1 ;
+				return path_1 ;
 			}
 
-			tPath_0 = tPath_0.Replace( "\\", "/" ) ;
+			path_0 = path_0.Replace( "\\", "/" ) ;
 
-			if( string.IsNullOrEmpty( tPath_1 ) == true )
+			if( string.IsNullOrEmpty( path_1 ) == true )
 			{
-				return tPath_0 ;
+				return path_0 ;
 			}
 
-			tPath_1 = tPath_1.Replace( "\\", "/" ) ;
+			path_1 = path_1.Replace( "\\", "/" ) ;
 
-			int l0 = tPath_0.Length ;
-			if( tPath_0[ l0 - 1 ] == '/' )
+			int l0 = path_0.Length ;
+			if( path_0[ l0 - 1 ] == '/' )
 			{
-				tPath_0 = tPath_0.Substring( 0, l0 - 1 ) ;
+				path_0 = path_0.Substring( 0, l0 - 1 ) ;
 			}
 
-			int l1 = tPath_1.Length ;
-			if( tPath_1[ 0 ] == '/' )
+			int l1 = path_1.Length ;
+			if( path_1[ 0 ] == '/' )
 			{
-				tPath_1 = tPath_1.Substring( 1, l1 - 1 ) ;
+				path_1 = path_1.Substring( 1, l1 - 1 ) ;
 			}
 
-			return tPath_0 + "/" + tPath_1 ;
+			return path_0 + "/" + path_1 ;
 		}
 
 		//-----------------------------------------------------------
@@ -146,34 +141,34 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で暗号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で暗号化は行わない)</param>
 		/// <returns>結果(true=成功・false=失敗)</returns>
-		public static bool Save( string tName, byte[] tData, bool tMakeFolder = false, string tKey = null, string tVector = null )
+		public static bool Save( string path, byte[] data, bool makeFolder = false, string key = null, string vector = null )
 		{
-			if( string.IsNullOrEmpty( tName ) == true || tData == null )
+			if( string.IsNullOrEmpty( path ) == true || data == null )
 			{
 				#if UNITY_EDITOR
-				Debug.LogError( "Storage Data File Save Error : Name = " + tName + " Data = " + tData ) ;
+				Debug.LogError( "Storage Data File Save Error : Path = " + path + " Data = " + data ) ;
 				#endif
 				return false ;
 			}
 
-			if( string.IsNullOrEmpty( tKey ) == false && string.IsNullOrEmpty( tVector ) == false )
+			if( string.IsNullOrEmpty( key ) == false && string.IsNullOrEmpty( vector ) == false )
 			{
 				// 暗号化する
-				tData = Encrypt( tData, tKey, tVector ) ;
+				data = Encrypt( data, key, vector ) ;
 			}
 
-			string tPath = Combine( Path, tName ) ;
+			string fullPath = Combine( Path, path ) ;
 
 			// 名前にフォルダが含まれているかチェックする
-			int i = tPath.LastIndexOf( '/' ) ;
+			int i = fullPath.LastIndexOf( '/' ) ;
 			if( i >= 0 )
 			{
 				// フォルダが含まれている
-				string tFolderName = tPath.Substring( 0, i ) ;
+				string folderName = fullPath.Substring( 0, i ) ;
 
-				if( Directory.Exists( tFolderName ) == false )
+				if( Directory.Exists( folderName ) == false )
 				{
-					if( tMakeFolder == false )
+					if( makeFolder == false )
 					{
 						// セーブ出来ません
 						return false ;
@@ -181,21 +176,21 @@ namespace StorageHelper
 					else
 					{
 						// フォルダを生成する(多階層をまとめて生成出来る)
-						Directory.CreateDirectory( tFolderName ) ;
+						Directory.CreateDirectory( folderName ) ;
 						
 						// Apple 審査のリジェクト回避用コード
 						#if !UNITY_EDITOR &&( UNITY_IOS || UNITY_IPHONE )
-							UnityEngine.iOS.Device.SetNoBackupFlag( tFolderName ) ;
+							UnityEngine.iOS.Device.SetNoBackupFlag( folderName ) ;
 						#endif
 					}
 				}
 			}
 
-			File.WriteAllBytes( tPath, tData ) ;
+			File.WriteAllBytes( fullPath, data ) ;
 
 			// Apple 審査のリジェクト回避用コード
 			#if !UNITY_EDITOR &&( UNITY_IOS || UNITY_IPHONE )
-				UnityEngine.iOS.Device.SetNoBackupFlag( tPath ) ;
+				UnityEngine.iOS.Device.SetNoBackupFlag( fullPath ) ;
 			#endif
 
 			return true ;
@@ -210,19 +205,19 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で暗号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で暗号化は行わない)</param>
 		/// <returns>結果(true=成功・false=失敗)</returns>
-		public static bool SaveText( string tName, string tText, bool tMakeFolder = false, string tKey = null, string tVector = null )
+		public static bool SaveText( string path, string text, bool makeFolder = false, string key = null, string vector = null )
 		{
-			if( string.IsNullOrEmpty( tName ) == true || string.IsNullOrEmpty( tText ) == true )
+			if( string.IsNullOrEmpty( path ) == true || string.IsNullOrEmpty( text ) == true )
 			{
 				#if UNITY_EDITOR
-				Debug.LogError( "Storage Text File Save Error : Name = " + tName + " Text = " + tText ) ;
+				Debug.LogError( "Storage Text File Save Error : Path = " + path + " Text = " + text ) ;
 				#endif
 				return false ;
 			}
 		
-			byte[] tData = Encoding.UTF8.GetBytes( tText ) ;
+			byte[] data = Encoding.UTF8.GetBytes( text ) ;
 
-			return Save( tName, tData, tMakeFolder, tKey, tVector ) ;
+			return Save( path, data, makeFolder, key, vector ) ;
 		}
 
 		//-----------------------------------------------------------
@@ -234,42 +229,42 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で複合化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で複合化は行わない)</param>
 		/// <returns>バイト配列(null で失敗)</returns>
-		public static byte[] Load( string tName, string tKey = null, string tVector = null )
+		public static byte[] Load( string path, string key = null, string vector = null )
 		{
-			if( string.IsNullOrEmpty( tName ) == true )
+			if( string.IsNullOrEmpty( path ) == true )
 			{
 				#if UNITY_EDITOR
-				Debug.LogError( "Storage Data File Load Error : Name = " + tName ) ;
+				Debug.LogError( "Storage Data File Load Error : Path = " + path ) ;
 				#endif
 				return null ;
 			}
 
-			string tPath = Combine( Path, tName ) ;
+			string fullPath = Combine( Path, path ) ;
 
-			if( File.Exists( tPath ) == false )
+			if( File.Exists( fullPath ) == false )
 			{
 				#if UNITY_EDITOR
-				Debug.LogWarning( "Storage Data File Load Error : Name = " + tName ) ;
+				Debug.LogWarning( "Storage Data File Load Error : Path = " + path ) ;
 				#endif
 				return null ;
 			}
 
-			byte[] tData = File.ReadAllBytes( tPath ) ;
-			if( tData == null )
+			byte[] data = File.ReadAllBytes( fullPath ) ;
+			if( data == null )
 			{
 				#if UNITY_EDITOR
-				Debug.LogError( "Storage Data File Load Error : Name = " + tName ) ;
+				Debug.LogError( "Storage Data File Load Error : Path = " + path ) ;
 				#endif
 				return null ;
 			}
 
-			if( string.IsNullOrEmpty( tKey ) == false && string.IsNullOrEmpty( tVector ) == false )
+			if( string.IsNullOrEmpty( key ) == false && string.IsNullOrEmpty( vector ) == false )
 			{
 				// 復号化する
-				tData = Decrypt( tData, tKey, tVector ) ;
+				data = Decrypt( data, key, vector ) ;
 			}
 
-			return tData ;
+			return data ;
 		}
 
 		/// <summary>
@@ -279,68 +274,66 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で複合化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で複合化は行わない)</param>
 		/// <returns>バイト配列(null で失敗)</returns>
-		public static byte[] Load( string tName, int tOffset, int tLength )
+		public static byte[] Load( string path, int offset, int length )
 		{
-			if( string.IsNullOrEmpty( tName ) == true )
+			if( string.IsNullOrEmpty( path ) == true )
 			{
 				#if UNITY_EDITOR
-				Debug.LogError( "Storage Data File Load Error : Name = " + tName ) ;
+				Debug.LogError( "Storage Data File Load Error : Path = " + path ) ;
 				#endif
 				return null ;
 			}
 
-			string tPath = Combine( Path, tName ) ;
-
-			if( File.Exists( tPath ) == false )
+			string fullPath = Combine( Path, path ) ;
+			if( File.Exists( fullPath ) == false )
 			{
 				#if UNITY_EDITOR
-				Debug.LogWarning( "Storage Data File Load Error : Name = " + tName ) ;
+				Debug.LogWarning( "Storage Data File Load Error : Path = " + path ) ;
 				#endif
 				return null ;
 			}
 
-			int tSize = GetSize( tName ) ;
-
-			if( tSize <= 0 || tOffset <  0 || tOffset >= tSize )
+			int size = GetSize( path ) ;
+			if( size <= 0 || offset <  0 || offset >= size )
 			{
 				#if UNITY_EDITOR
-				Debug.LogWarning( "Storage Data File Load Error : Name = " + tName ) ;
+				Debug.LogWarning( "Storage Data File Load Error : Path = " + path ) ;
 				#endif
 				return null ;
 			}
 
-			if( ( tOffset + tLength ) >  tSize )
+			if( ( offset + length ) >  size )
 			{
-				tLength = tSize - tOffset ;
+				length = size - offset ;
 			}
 
-			FileStream tStream = File.OpenRead( tPath ) ;
-			if( tStream == null )
+			FileStream stream = File.OpenRead( fullPath ) ;
+			if( stream == null )
 			{
 				#if UNITY_EDITOR
-				Debug.LogWarning( "Storage Data File Load Error : Name = " + tName ) ;
+				Debug.LogWarning( "Storage Data File Load Error : Path = " + path ) ;
 				#endif
 				return null ;
 			}
 
-			tStream.Seek( tOffset, SeekOrigin.Begin ) ;
+			stream.Seek( offset, SeekOrigin.Begin ) ;
 
-			byte[] tData = new byte[ tLength ] ;
-			tSize = tStream.Read( tData, 0, tLength ) ;
+			byte[] data = new byte[ length ] ;
+			size = stream.Read( data, 0, length ) ;
 
-			if( tSize != tLength )
+			if( size != length )
 			{
-				tStream.Close() ;
+				stream.Close() ;
 
 				#if UNITY_EDITOR
-				Debug.LogWarning( "Storage Data File Load Error : Name = " + tName ) ;
+				Debug.LogWarning( "Storage Data File Load Error : Path = " + path ) ;
 				#endif
 				return null ;
 			}
 
-			tStream.Close() ;
+			stream.Close() ;
 
-			return tData ;
+			return data ;
 		}
 
 		/// <summary>
@@ -350,28 +343,28 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で復号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で復号化は行わない)</param>
 		/// <returns>文字列(null で失敗)</returns>
-		public static string LoadText( string tName, string tKey = null, string tVector = null )
+		public static string LoadText( string path, string key = null, string vector = null )
 		{
-			byte[] tData = Load( tName, tKey, tVector ) ;
-			if( tData == null )
+			byte[] data = Load( path, key, vector ) ;
+			if( data == null )
 			{
 				return null ;
 			}
 
-			if( tData.Length >= 3 )
+			if( data.Length >= 3 )
 			{
-				if( tData[ 0 ] == 0xEF && tData[ 1 ] == 0xBB && tData[ 2 ] == 0xBF )
+				if( data[ 0 ] == 0xEF && data[ 1 ] == 0xBB && data[ 2 ] == 0xBF )
 				{
 					// BOM 突き
-					return Encoding.UTF8.GetString( tData, 3, tData.Length - 3 ) ;
+					return Encoding.UTF8.GetString( data, 3, data.Length - 3 ) ;
 				}
 			}
 
-			return Encoding.UTF8.GetString( tData ) ;
+			return Encoding.UTF8.GetString( data ) ;
 		}
 
 		//-----------------------------------------------------------
-/*
+#if false
 		/// <summary>
 		/// オブジェクトをバイナリデータ化して返す
 		/// </summary>
@@ -410,8 +403,7 @@ namespace StorageHelper
 
 			return tObject ;
 		}
-*/
-
+#endif
 		//-----------------------------------------------------------
 
 		/// <summary>
@@ -421,21 +413,21 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で復号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で復号化は行わない)</param>
 		/// <returns>テクスチャのインスタンス(null で失敗)</returns>
-		public static Texture2D LoadTexture( string tName, string tKey = null, string tVector = null )
+		public static Texture2D LoadTexture( string path, string key = null, string vector = null )
 		{
-			byte[] tData = Load( tName, tKey, tVector ) ;
-			if( tData == null )
+			byte[] data = Load( path, key, vector ) ;
+			if( data == null )
 			{
 				return null ;
 			}
 		
 			// イメージデータは取得出来た
-			Texture2D tTexture = new Texture2D( 4, 4, TextureFormat.ARGB32, false, true ) ;	// MipMap を事前に切るのがミソ
-			tTexture.LoadImage( tData ) ;
+			Texture2D texture = new Texture2D( 4, 4, TextureFormat.ARGB32, false, true ) ;	// MipMap を事前に切るのがミソ
+			texture.LoadImage( data ) ;
 		
 	//		Debug.Log( "ミップマップカウント:" + tTexture.mipmapCount ) ;	// これが１になってなっていればＯＫ
 		
-			return tTexture ;
+			return texture ;
 		}
 
 		/// <summary>
@@ -448,37 +440,32 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で復号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で復号化は行わない)</param>
 		/// <returns>列挙子</returns>
-		public static IEnumerator LoadAudioClip( string name, AudioClip[] output, bool stream = false, AudioType audioType = AudioType.WAV, string key = null, string vector = null )
+		public static IEnumerator LoadAudioClip( string path, Action<AudioClip> onLoaded, AudioType audioType = AudioType.WAV )
 		{
-			if( output == null || output.Length == 0 )
-			{
-				yield break ;
-			}
-
-			if( Exists( name ) != Target.File )
+			if( Exists( path ) != Target.File )
 			{
 				yield break ;	// ファイルが存在しない
 			}
 
-			string path = Combine( Path, name ) ;
+			string fullPath = Combine( Path, path ) ;
 
-			name = name.ToLower() ;
-			if( name.IndexOf( "wav" ) >= 0 )
+			string extension = fullPath.ToLower() ;
+			if( extension.IndexOf( "wav" ) >= 0 )
 			{
 				audioType = AudioType.WAV ;
 			}
 			else
-			if( name.IndexOf( "ogg" ) >= 0 )
+			if( extension.IndexOf( "ogg" ) >= 0 )
 			{
 				audioType = AudioType.OGGVORBIS ;
 			}
 			else
-			if( name.IndexOf( "mp3" ) >= 0 )
+			if( extension.IndexOf( "mp3" ) >= 0 )
 			{
 				audioType = AudioType.MPEG ;
 			}
 
-			UnityWebRequest	www = UnityWebRequestMultimedia.GetAudioClip( "file://" + path, audioType ) ;
+			UnityWebRequest	www = UnityWebRequestMultimedia.GetAudioClip( "file://" + fullPath, audioType ) ;
 			yield return www.SendWebRequest() ;
 			if( www.isHttpError || www.isNetworkError )
 			{
@@ -487,9 +474,8 @@ namespace StorageHelper
 			
 			AudioClip audioClip = DownloadHandlerAudioClip.GetContent( www ) ;
 			www.Dispose() ;
-			www = null ;
 
-			output[ 0 ] = audioClip ;
+			onLoaded?.Invoke( audioClip ) ;
 		}
 
 		/// <summary>
@@ -499,30 +485,30 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で復号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で復号化は行わない)</param>
 		/// <returns>アセットバンドルのインスタンス(null で失敗)</returns>
-		public static AssetBundle LoadAssetBundle( string tName, string tKey = null, string tVector = null )
+		public static AssetBundle LoadAssetBundle( string path, string key = null, string vector = null )
 		{
-			if( string.IsNullOrEmpty( tKey ) == true && string.IsNullOrEmpty( tVector ) == true )
+			if( string.IsNullOrEmpty( key ) == true && string.IsNullOrEmpty( vector ) == true )
 			{
-				if( Exists( tName ) != Target.File )
+				if( Exists( path ) != Target.File )
 				{
 					return null ;	// ファイルが存在しない
 				}
 
-				string tPath = Combine( Path, tName ) ;
+				string fullPath = Combine( Path, path ) ;
 
 				// 暗号化がされていなければファイルから直接アセットバンドル化を行う(メモリ消費量が少ない)
 //				Debug.LogWarning( "Path:" + tPath ) ;
-				return AssetBundle.LoadFromFile( tPath ) ;
+				return AssetBundle.LoadFromFile( fullPath ) ;
 			}
 			
-			byte[] tData = Load( tName, tKey, tVector ) ;
-			if( tData == null )
+			byte[] data = Load( path, key, vector ) ;
+			if( data == null )
 			{
 				return null ;
 			}
 			
 			// 暗号化がされている場合は一旦メモリに展開してからアセットバンドル化を行う(メモリ消費量が大きい)
-			return AssetBundle.LoadFromMemory( tData ) ;
+			return AssetBundle.LoadFromMemory( data ) ;
 		}
 
 		/// <summary>
@@ -533,69 +519,60 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で復号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で復号化は行わない)</param>
 		/// <returns>列挙子</returns>
-		public static IEnumerator LoadAssetBundle( string tName, AssetBundle[] rAssetBundle, string tKey = null, string tVector = null )
+		public static IEnumerator LoadAssetBundleAsync( string path, Action<AssetBundle> onLoaded, string key = null, string vector = null )
 		{
-			AssetBundleCreateRequest tR ;
+			AssetBundleCreateRequest request ;
 
-			if( string.IsNullOrEmpty( tKey ) == true && string.IsNullOrEmpty( tVector ) == true )
+			if( string.IsNullOrEmpty( key ) == true && string.IsNullOrEmpty( vector ) == true )
 			{
-				if( Exists( tName ) != Target.File )
+				if( Exists( path ) != Target.File )
 				{
 					yield break ;	// ファイルが存在しない
 				}
 
-				string tPath = Combine( Path, tName ) ;
+				string fullPath = Combine( Path, path ) ;
 
 				// 暗号化がされていなければファイルから直接アセットバンドル化を行う(メモリ消費量が少ない)
-				tR = AssetBundle.LoadFromFileAsync( tPath ) ;
-				yield return tR ;
+				request = AssetBundle.LoadFromFileAsync( fullPath ) ;
+				yield return request ;
 
-				if( tR.isDone == false )
+				if( request.isDone == false )
 				{
 					yield break ;
 				}
 
-				if( rAssetBundle != null && rAssetBundle.Length >  0 )
+				onLoaded?.Invoke( request.assetBundle ) ;
+				if( onLoaded == null && request.assetBundle != null )
 				{
-					rAssetBundle[ 0 ] = tR.assetBundle ;
-				}
-				else
-				{
-					if( tR.assetBundle != null )
-					{
-						tR.assetBundle.Unload( true ) ;
-					}
+					request.assetBundle.Unload( true ) ;
 				}		
 
 				yield break ;
 			}
 
+			//----------------------------------------------------------
 
-			byte[] tData = Load( tName, tKey, tVector ) ;
-			if( tData == null )
+			// ここはいずれストリーミングに変えるかもしれない
+
+			byte[] data = Load( path, key, vector ) ;
+			if( data == null )
 			{
 				yield break ;
 			}
 		
 			// 暗号化がされている場合は一旦メモリに展開してからアセットバンドル化を行う(メモリ消費量が大きい)
-			tR = AssetBundle.LoadFromMemoryAsync( tData ) ;
-			yield return tR ;
+			request = AssetBundle.LoadFromMemoryAsync( data ) ;
+			yield return request ;
 
-			if( tR.isDone == false )
+			if( request.isDone == false )
 			{
 				yield break ;
 			}
 
-			if( rAssetBundle != null && rAssetBundle.Length >  0 )
+			onLoaded?.Invoke( request.assetBundle ) ;
+			if( onLoaded == null && request.assetBundle != null )
 			{
-				rAssetBundle[ 0 ] = tR.assetBundle ;
-			}
-			else
-			{
-				if( tR.assetBundle != null )
-				{
-					tR.assetBundle.Unload( true ) ;
-				}
+				request.assetBundle.Unload( true ) ;
 			}		
 		}
 
@@ -607,26 +584,25 @@ namespace StorageHelper
 		/// <param name="tName">ファイル名(相対パス)</param>
 		/// <param name="tIsCancelOnInput">タップで再生を中止させられるようにするかどうか</param>
 		/// <returns>結果(true=成功・false=失敗)</returns>
-		public static bool PlayMovie( string tName, bool tIsCancelOnInput )
+		public static bool PlayMovie( string path, bool isCancelOnInput )
 		{
-			if( Exists( tName ) != Target.File )
+			if( Exists( path ) != Target.File )
 			{
 				return false ;	// ファイルが存在しない
 			}
 
-			bool tResult = true ;
+			bool result = true ;
 
-			string tPath = Combine( Path, tName ) ;
+			string fullPath = Combine( Path, path ) ;
 
 #if UNITY_EDITOR || UNITY_STANDALONE
-			Application.OpenURL( "file://" + tPath ) ;
+			Application.OpenURL( "file://" + path ) ;
 #elif !UNITY_EDITOR && UNITY_ANDROID
-			tResult = Handheld.PlayFullScreenMovie( tPath, Color.black, ( tIsCancelOnInput ) ? FullScreenMovieControlMode.CancelOnInput : FullScreenMovieControlMode.Hidden, FullScreenMovieScalingMode.AspectFit ) ;
+			result = Handheld.PlayFullScreenMovie( fullPath, Color.black, ( isCancelOnInput ) ? FullScreenMovieControlMode.CancelOnInput : FullScreenMovieControlMode.Hidden, FullScreenMovieScalingMode.AspectFit ) ;
 #elif !UNITY_EDITOR && ( UNITY_IOS || UNITY_IPHONE )
-			tResult = Handheld.PlayFullScreenMovie( "file://" + tPath, Color.black, ( tIsCancelOnInput ) ? FullScreenMovieControlMode.CancelOnInput : FullScreenMovieControlMode.Hidden, FullScreenMovieScalingMode.AspectFit ) ;
+			result = Handheld.PlayFullScreenMovie( "file://" + fullPath, Color.black, ( isCancelOnInput ) ? FullScreenMovieControlMode.CancelOnInput : FullScreenMovieControlMode.Hidden, FullScreenMovieScalingMode.AspectFit ) ;
 #endif
-		
-			return tResult ;
+			return result ;
 		}
 
 		//-----------------------------------------------------------
@@ -636,26 +612,26 @@ namespace StorageHelper
 		/// </summary>
 		/// <param name="tName">ファイル名(相対パス)</param>
 		/// <returns>ファイルのサイズ(-1 でファイルが存在しない)</returns>
-		public static int GetSize( string tName )
+		public static int GetSize( string path )
 		{
-			if( string.IsNullOrEmpty( tName ) == true )
+			if( string.IsNullOrEmpty( path ) == true )
 			{
-				#if UNITY_EDITOR
-				Debug.LogError( "Storage Exist Error : Name = " + tName ) ;
-				#endif
+#if UNITY_EDITOR
+				Debug.LogError( "Storage Exist Error : Path = " + path ) ;
+#endif
 				return -1 ;
 			}
 
-			string tPath = Combine( Path, tName ) ;
+			string fullPath = Combine( Path, path ) ;
 		
-			if( File.Exists( tPath ) == false )
+			if( File.Exists( fullPath ) == false )
 			{
 				return -1 ;
 			}
 		
-			FileInfo tInfo = new FileInfo( tPath ) ;
+			FileInfo info = new FileInfo( fullPath ) ;
 		
-			return ( int )tInfo.Length ;
+			return ( int )info.Length ;
 		}
 	
 		/// <summary>
@@ -663,22 +639,22 @@ namespace StorageHelper
 		/// </summary>
 		/// <param name="tName">フォルダ名(相対パス)</param>
 		/// <returns>ファイル名の一覧が格納された文字列の配列</returns>
-		public static string[] GetFiles( string tName )
+		public static string[] GetFiles( string path )
 		{
-			if( string.IsNullOrEmpty( tName ) == true )
+			if( string.IsNullOrEmpty( path ) == true )
 			{
 				return null ;
 			}
 
-			string tPath = Combine( Path, tName ) ;
+			string fullPath = Combine( Path, path ) ;
 
-			if( Directory.Exists( tPath ) == false )
+			if( Directory.Exists( fullPath ) == false )
 			{
 				// 対象はフォルダではない
 				return null ;
 			}
 
-			return Directory.GetFiles( tPath ) ;
+			return Directory.GetFiles( fullPath ) ;
 		}
 
 		/// <summary>
@@ -686,22 +662,22 @@ namespace StorageHelper
 		/// </summary>
 		/// <param name="tName">フォルダ名(相対パス)</param>
 		/// <returns>フォルダ名の一覧が格納された文字列の配列</returns>
-		public static string[] GetFolders( string tName )
+		public static string[] GetFolders( string path )
 		{
-			if( string.IsNullOrEmpty( tName ) == true )
+			if( string.IsNullOrEmpty( path ) == true )
 			{
 				return null ;
 			}
 
-			string tPath = Combine( Path, tName ) ;
+			string fullPath = Combine( Path, path ) ;
 
-			if( Directory.Exists( tPath ) == false )
+			if( Directory.Exists( fullPath ) == false )
 			{
 				// 対象はフォルダではない
 				return null ;
 			}
 
-			return Directory.GetDirectories( tPath ) ;
+			return Directory.GetDirectories( fullPath ) ;
 		}
 
 		/// <summary>
@@ -709,24 +685,24 @@ namespace StorageHelper
 		/// </summary>
 		/// <param name="tName">フォルダ名(相対パス)</param>
 		/// <returns>ファイルおよびフォルダの数</returns>
-		public static int GetCount( string tName )
+		public static int GetCount( string path )
 		{
-			string[] tFileList   = GetFiles( tName ) ;
-			string[] tFolderList = GetFolders( tName ) ;
+			string[] fileList   = GetFiles( path ) ;
+			string[] folderList = GetFolders( path ) ;
 
-			int tCount = 0 ;
+			int count = 0 ;
 
-			if( tFileList != null )
+			if( fileList != null )
 			{
-				tCount = tCount + tFileList.Length ;
+				count += fileList.Length ;
 			}
 
-			if( tFolderList != null )
+			if( folderList != null )
 			{
-				tCount = tCount + tFolderList.Length ;
+				count += folderList.Length ;
 			}
 
-			return tCount ;
+			return count ;
 		}
 
 		/// <summary>
@@ -734,24 +710,24 @@ namespace StorageHelper
 		/// </summary>
 		/// <param name="tName">ファイルまたはフォルダの名前(相対パス)</param>
 		/// <returns>結果(-1=名前が不正・0=存在しない・1=ファイルが存在する・2=フォルダが存在する)</returns>
-		public static Target Exists( string tName )
+		public static Target Exists( string path )
 		{
-			if( string.IsNullOrEmpty( tName ) == true )
+			if( string.IsNullOrEmpty( path ) == true )
 			{
-				#if UNITY_EDITOR
-				Debug.LogError( "Storage Exist Error : Name = " + tName ) ;
-				#endif
+#if UNITY_EDITOR
+				Debug.LogError( "Storage Exist Error : Path = " + path ) ;
+#endif
 				return Target.None ;
 			}
 
-			string tPath = Combine( Path, tName ) ;
+			string fullPath = Combine( Path, path ) ;
 
-			if( File.Exists( tPath ) == true )
+			if( File.Exists( fullPath ) == true )
 			{
 				return Target.File ;
 			}
 			else
-			if( Directory.Exists( tPath ) == true )
+			if( Directory.Exists( fullPath ) == true )
 			{
 				return Target.Folder ;
 			}
@@ -765,58 +741,55 @@ namespace StorageHelper
 		/// <param name="tName">ファイルまたはフォルダの名前(相対パス)</param>
 		/// <param name="tAbsolute">削除対象がフォルダの場合に内部にファイルまたはフォルダが存在していても強制的に削除するかどうか</param>
 		/// <returns>結果(true=成功・false=失敗)</returns>
-		public static bool Move( string tNameOld, string tNameNew )
+		public static bool Move( string path_0, string path_1 )
 		{
-			if( string.IsNullOrEmpty( tNameOld ) == true || string.IsNullOrEmpty( tNameNew ) )
+			if( string.IsNullOrEmpty( path_0 ) == true || string.IsNullOrEmpty( path_1 ) )
 			{
-				#if UNITY_EDITOR
+#if UNITY_EDITOR
 				Debug.LogError( "Storage Move Error" ) ;
-				#endif
+#endif
 				return false ;
 			}
 
-			if( tNameOld.Equals( tNameNew ) == true )
+			if( path_0.Equals( path_1 ) == true )
 			{
 				// パスが同じ
 				return true ;
 			}
 
-			string tPathOld = Combine( Path, tNameOld ) ;
-			string tPathNew = Combine( Path, tNameNew ) ;
+			string fullPath_0 = Combine( Path, path_0 ) ;
+			string fullPath_1 = Combine( Path, path_1 ) ;
 			
-			if( File.Exists( tPathOld ) == false && Directory.Exists( tPathOld ) == false )
+			if( File.Exists( fullPath_0 ) == false && Directory.Exists( fullPath_0 ) == false )
 			{
 				// 移動元のファイルかフォルダ存在しない
 				return false ;
 			}
 
-			if( File.Exists( tPathNew ) == true || Directory.Exists( tPathNew ) == true )
+			if( File.Exists( fullPath_1 ) == true || Directory.Exists( fullPath_1 ) == true )
 			{
 				// 移動先にファイルかフォルダが存在する
 				return false ;
 			}
 
-			if( File.Exists( tPathOld ) == true )
+			if( File.Exists( fullPath_0 ) == true )
 			{
 				// 移動元はファイル
-				File.Move( tPathOld, tPathNew ) ;
+				File.Move( fullPath_0, fullPath_1 ) ;
 			}
 			else
-			if( Directory.Exists( tPathOld ) == true )
+			if( Directory.Exists( fullPath_0 ) == true )
 			{
 				// 移動元はフォルダ
-				Directory.Move( tPathOld, tPathNew ) ;
+				Directory.Move( fullPath_0, fullPath_1 ) ;
 			}
 			
 			// Apple 審査のリジェクト回避用コード
-			#if !UNITY_EDITOR &&( UNITY_IOS || UNITY_IPHONE )
-				UnityEngine.iOS.Device.SetNoBackupFlag( tPathNew ) ;
-			#endif
-
+#if !UNITY_EDITOR && ( UNITY_IOS || UNITY_IPHONE )
+				UnityEngine.iOS.Device.SetNoBackupFlag( fullPath_1 ) ;
+#endif
 			return true ;
 		}
-
-
 
 		/// <summary>
 		/// 指定のファイルまたはフォルダを削除する
@@ -824,38 +797,38 @@ namespace StorageHelper
 		/// <param name="tName">ファイルまたはフォルダの名前(相対パス)</param>
 		/// <param name="tAbsolute">削除対象がフォルダの場合に内部にファイルまたはフォルダが存在していても強制的に削除するかどうか</param>
 		/// <returns>結果(true=成功・false=失敗)</returns>
-		public static bool Remove( string tName, bool tAbsolute = false )
+		public static bool Remove( string path, bool absolute = false )
 		{
-			if( string.IsNullOrEmpty( tName ) == true )
+			if( string.IsNullOrEmpty( path ) == true )
 			{
-				#if UNITY_EDITOR
-				Debug.LogError( "Storage Remove Error : Name = " + tName ) ;
-				#endif
+#if UNITY_EDITOR
+				Debug.LogError( "Storage Remove Error : Path = " + path ) ;
+#endif
 				return false ;
 			}
 
-			string tPath = Combine( Path, tName ) ;
+			string fullPath = Combine( Path, path ) ;
 		
-			if( File.Exists( tPath ) == true )
+			if( File.Exists( fullPath ) == true )
 			{
 				// ファイルが存在する
-				File.Delete( tPath ) ;
+				File.Delete( fullPath ) ;
 
 				return true ;
 			}
 			else
-			if( Directory.Exists( tPath ) == true )
+			if( Directory.Exists( fullPath ) == true )
 			{
 				// ディレクトリが存在する
 				
-				if( tAbsolute == false )
+				if( absolute == false )
 				{
 					// 内包するファイルとフォルダの数を確認する
-					if( GetCount( tName ) >  0 )
+					if( GetCount( path ) >  0 )
 					{
 						return false ;	// 削除は出来ない
 					}
-					Directory.Delete( tPath ) ;
+					Directory.Delete( fullPath ) ;
 
 					return true ;
 				}
@@ -864,7 +837,7 @@ namespace StorageHelper
 					// 強制削除可能
 
 					// 再帰的に内包するファイルとフォルダを全て削除する
-					Directory.Delete( tPath, true ) ;
+					Directory.Delete( fullPath, true ) ;
 
 					return true ;
 				}
@@ -877,28 +850,20 @@ namespace StorageHelper
 		/// 指定したフォルダ以下の内包されるファイルとフォルダが存在しないフォルダを全て削除する
 		/// </summary>
 		/// <param name="tName">フォルダの名前(相対パス)</param>
-		public static void RemoveAllEmptyFolders( string tName = "" )
+		public static void RemoveAllEmptyFolders( string path = "" )
 		{
-			if( tName == null )
-			{
-				tName = "" ;
-			}
-
-			string tPath = Combine( Path, tName ) ;
-
-			RemoveEmptyFolderAllLoop( tPath ) ;	// ルートフォルダは残す
+			path = path ?? string.Empty ;
+			RemoveEmptyFolderAllLoop( Combine( Path, path ) ) ;	// ルートフォルダは残す
 		}
 
 		// 指定したフォルダ以下の内包されるファイルとフォルダが存在しないフォルダを全て削除する
-		private static bool RemoveEmptyFolderAllLoop( string tCurrentPath )
+		private static bool RemoveEmptyFolderAllLoop( string currentPath )
 		{
-			int i ;
-		
-			string tPath ;
+			string fullPath ;
 		
 			//-----------------------------------------------------
 		
-			if( Directory.Exists( tCurrentPath ) == false )
+			if( Directory.Exists( currentPath ) == false )
 			{
 				return false ;
 			}
@@ -906,37 +871,37 @@ namespace StorageHelper
 			//-----------------------------------------------------
 		
 			// ファイル
-			int f = 0 ;
-			string[] tFA = Directory.GetFiles( tCurrentPath ) ;
-			if( tFA != null && tFA.Length >  0 )
+			int fc = 0 ;
+			string[] fa = Directory.GetFiles( currentPath ) ;
+			if( fa != null && fa.Length >  0 )
 			{
-				f = tFA.Length ;
+				fc = fa.Length ;
 			}
 
 			// フォルダ
-			int d = 0 ;
-			string[] tDA = Directory.GetDirectories( tCurrentPath ) ;
-			if( tDA != null && tDA.Length >  0 )
+			int dc = 0 ;
+			string[] da = Directory.GetDirectories( currentPath ) ;
+			if( da != null && da.Length >  0 )
 			{
 				// サブフォルダがあるのでさらに検査していく
-				for( i  = 0 ; i <  tDA.Length ; i ++ )
+				foreach( var ds in da )
 				{
-					tPath = tDA[ i ] + "/" ;
-					if( RemoveEmptyFolderAllLoop( tPath ) == false )
+					fullPath = ds + "/" ;
+					if( RemoveEmptyFolderAllLoop( fullPath ) == false )
 					{
 						// このフォルダは削除してはいけない
 
-						d ++ ;	// 残っているフォルダ増加
+						dc ++ ;	// 残っているフォルダ増加
 					}
 					else
 					{
 						// このフォルダは削除して良い
-						Directory.Delete( tPath, true ) ;
+						Directory.Delete( fullPath, true ) ;
 					}
 				}
 			}
 
-			if( f >  0 || d >  0 )
+			if( fc >  0 || dc >  0 )
 			{
 				// このフォルダは削除してはいけない
 				return false ;
@@ -957,63 +922,66 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー</param>
 		/// <param name="tVector">暗号化ベクター</param>
 		/// <returns>暗号化後のバイト配列</returns>
-		public static byte[] Encrypt( byte[] tOriginalData, string tKey, string tVector )
+		public static byte[] Encrypt( byte[] originalData, string key, string vector )
 		{
 			// オリジナルのサイズがわからなくなるので保存する
-			byte[] tData = new byte[ 4 + tOriginalData.Length ] ;
-			long tSize = tOriginalData.Length ;
+			byte[] data = new byte[ 4 + originalData.Length ] ;
+			long size = originalData.Length ;
 		
-			tData[ 0 ] = ( byte )( ( tSize >>  0 ) & 0xFF ) ;
-			tData[ 1 ] = ( byte )( ( tSize >>  8 ) & 0xFF ) ;
-			tData[ 2 ] = ( byte )( ( tSize >> 16 ) & 0xFF ) ;
-			tData[ 3 ] = ( byte )( ( tSize >> 24 ) & 0xFF ) ;
+			data[ 0 ] = ( byte )( ( size >>  0 ) & 0xFF ) ;
+			data[ 1 ] = ( byte )( ( size >>  8 ) & 0xFF ) ;
+			data[ 2 ] = ( byte )( ( size >> 16 ) & 0xFF ) ;
+			data[ 3 ] = ( byte )( ( size >> 24 ) & 0xFF ) ;
 	
-			System.Array.Copy( tOriginalData, 0, tData, 4, tSize ) ;
+			System.Array.Copy( originalData, 0, data, 4, size ) ;
 		
 			//-----------------------------------------------------
 		
 			// 暗号化用の種別オブジェクト生成
 	//		TripleDESCryptoServiceProvider tKind = new TripleDESCryptoServiceProvider() ;
 
-			RijndaelManaged tKind = new RijndaelManaged() ;
-			tKind.Padding = PaddingMode.Zeros ;
-			tKind.Mode = CipherMode.CBC ;
-			tKind.KeySize   = 256 ;
-			tKind.BlockSize = 256 ;
-		
+			RijndaelManaged kind = new RijndaelManaged()
+			{
+				Padding = PaddingMode.Zeros,
+				Mode = CipherMode.CBC,
+				KeySize   = 256,
+				BlockSize = 256
+			} ;
+
 			//-----------------------------------------------------
 		
 			// 暗号用のキー情報をセットする
-			byte[] aKey    = Encoding.UTF8.GetBytes( tKey    ) ;
-			byte[] aVector = Encoding.UTF8.GetBytes( tVector ) ;
+			byte[] aKey    = Encoding.UTF8.GetBytes( key    ) ;
+			byte[] aVector = Encoding.UTF8.GetBytes( vector ) ;
 		
-			ICryptoTransform tEncryptor = tKind.CreateEncryptor( aKey, aVector ) ;
+			ICryptoTransform encryptor = kind.CreateEncryptor( aKey, aVector ) ;
 		
 			//-----------------------------------------------------
 		
-			MemoryStream tMemoryStream = new MemoryStream() ;
+			MemoryStream memoryStream = new MemoryStream() ;
 		
 			// 暗号化
-			CryptoStream tCryptoStream = new CryptoStream( tMemoryStream, tEncryptor, CryptoStreamMode.Write ) ;
+			CryptoStream cryptoStream = new CryptoStream( memoryStream, encryptor, CryptoStreamMode.Write ) ;
 		
- 			tCryptoStream.Write( tData, 0, tData.Length ) ;
-			tCryptoStream.FlushFinalBlock() ;
+ 			cryptoStream.Write( data, 0, data.Length ) ;
+			cryptoStream.FlushFinalBlock() ;
 		
-			tCryptoStream.Close() ;
+			cryptoStream.Close() ;
 		
-			byte[] tCryptoData = tMemoryStream.ToArray() ;
+			byte[] cryptoData = memoryStream.ToArray() ;
 		
- 			tMemoryStream.Close() ;
-		
-			//-----------------------------------------------------
-		
-			tEncryptor.Dispose() ;
-		
-			tKind.Clear() ;
+ 			memoryStream.Close() ;
 		
 			//-----------------------------------------------------
 		
-			return tCryptoData ;
+			encryptor.Dispose() ;
+		
+			kind.Clear() ;
+			kind.Dispose() ;
+		
+			//-----------------------------------------------------
+		
+			return cryptoData ;
 		}
 
 		/// <summary>
@@ -1023,17 +991,17 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー</param>
 		/// <param name="tVector">暗号化ベクター</param>
 		/// <returns>暗号化後の文字列</returns>
-		public static string Encrypt( string tText, string tKey, string tVector )
+		public static string Encrypt( string text, string key, string vector )
 		{
-			if( string.IsNullOrEmpty( tText ) == true )
+			if( string.IsNullOrEmpty( text ) == true )
 			{
 				return null ;
 			}
 		
-			byte[] tOriginalData = Encoding.UTF8.GetBytes( tText ) ;
-			byte[] tCryptoData = Encrypt( tOriginalData, tKey, tVector ) ;
+			byte[] originalData = Encoding.UTF8.GetBytes( text ) ;
+			byte[] cryptoData = Encrypt( originalData, key, vector ) ;
 		
-			return Convert.ToBase64String( tCryptoData ) ;
+			return Convert.ToBase64String( cryptoData ) ;
 		}
 
 		/// <summary>
@@ -1043,56 +1011,58 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー</param>
 		/// <param name="tVector">暗号化ベクター</param>
 		/// <returns>復号化されたバイト配列</returns>
-		public static byte[] Decrypt( byte[] tCryptoData, string tKey, string tVector )
+		public static byte[] Decrypt( byte[] cryptoData, string key, string vector )
 		{
 			// 暗号化用の種別オブジェクト生成
 	//		TripleDESCryptoServiceProvider tKind = new TripleDESCryptoServiceProvider() ;
 		
-			RijndaelManaged tKind = new RijndaelManaged() ;
-			tKind.Padding = PaddingMode.Zeros ;
-			tKind.Mode = CipherMode.CBC ;
-			tKind.KeySize   = 256 ;
-			tKind.BlockSize = 256 ;
-		
+			RijndaelManaged kind = new RijndaelManaged()
+			{
+				Padding = PaddingMode.Zeros,
+				Mode = CipherMode.CBC,
+				KeySize   = 256,
+				BlockSize = 256
+			} ;
+
 			//-----------------------------------------------------
 		
 			// 暗号用のキー情報をセットする
-			byte[] aKey    = Encoding.UTF8.GetBytes( tKey    ) ;
-			byte[] aVector = Encoding.UTF8.GetBytes( tVector ) ;
+			byte[] aKey    = Encoding.UTF8.GetBytes( key    ) ;
+			byte[] aVector = Encoding.UTF8.GetBytes( vector ) ;
 		
-			ICryptoTransform tDecryptor = tKind.CreateDecryptor( aKey, aVector ) ;
-		
-			//-----------------------------------------------------
-		
-			byte[] tData = new byte[ tCryptoData.Length ] ;
+			ICryptoTransform decryptor = kind.CreateDecryptor( aKey, aVector ) ;
 		
 			//-----------------------------------------------------
 		
-			MemoryStream tMemoryStream = new MemoryStream( tCryptoData ) ;
+			byte[] data = new byte[ cryptoData.Length ] ;
+		
+			//-----------------------------------------------------
+		
+			MemoryStream memoryStream = new MemoryStream( cryptoData ) ;
 		
 			// 復号化
-			CryptoStream tCryptoStream = new CryptoStream( tMemoryStream, tDecryptor, CryptoStreamMode.Read ) ;
+			CryptoStream cryptoStream = new CryptoStream( memoryStream, decryptor, CryptoStreamMode.Read ) ;
 		
+			cryptoStream.Read( data, 0, data.Length ) ;
+			cryptoStream.Close() ;
 		
-			tCryptoStream.Read( tData, 0, tData.Length ) ;
-			tCryptoStream.Close() ;
-		
-			tMemoryStream.Close() ;
+			memoryStream.Close() ;
  		
 			//-----------------------------------------------------
 		
-			tDecryptor.Dispose() ;
+			decryptor.Dispose() ;
 		
-			tKind.Clear() ;
+			kind.Clear() ;
+			kind.Dispose() ;
 		
 			//-----------------------------------------------------
 		
-			long tSize = ( ( long )tData[ 0 ] <<  0 ) | ( ( long )tData[ 1 ] <<  8 ) | ( ( long )tData[ 2 ] << 16 ) | ( ( long )tData[ 3 ] ) ;
+			long size = ( ( long )data[ 0 ] <<  0 ) | ( ( long )data[ 1 ] <<  8 ) | ( ( long )data[ 2 ] << 16 ) | ( ( long )data[ 3 ] ) ;
 		
-			byte[] tOriginalData = new byte[ tSize ] ;
-			System.Array.Copy( tData, 4, tOriginalData, 0, tSize ) ;
+			byte[] originalData = new byte[ size ] ;
+			System.Array.Copy( data, 4, originalData, 0, size ) ;
 		
-			return tOriginalData ;
+			return originalData ;
 		}
 	
 		/// <summary>
@@ -1102,26 +1072,26 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー</param>
 		/// <param name="tVector">暗号化ベクター</param>
 		/// <returns>復号化された文字列</returns>
-		public static string Decrypt( string tText, string tKey, string tVector )
+		public static string Decrypt( string text, string key, string vector )
 		{
-			if( string.IsNullOrEmpty( tText ) == true )
+			if( string.IsNullOrEmpty( text ) == true )
 			{
 				return null ;
 			}
 
-			byte[] tCryptoData ;
+			byte[] cryptoData ;
 			try
 			{
-				tCryptoData = Convert.FromBase64String( tText ) ;
+				cryptoData = Convert.FromBase64String( text ) ;
 			}
 			catch( System.FormatException )
 			{
 				Debug.LogWarning( "データが壊れています" ) ;
-				return "";
+				return string.Empty ;
 			}
-			byte[] tOriginalData = Decrypt( tCryptoData, tKey, tVector ) ;
+			byte[] originalData = Decrypt( cryptoData, key, vector ) ;
 		
-			return Encoding.UTF8.GetString( tOriginalData ) ;
+			return Encoding.UTF8.GetString( originalData ) ;
 		}
 
 		//-------------------------------------------------------
@@ -1131,25 +1101,26 @@ namespace StorageHelper
 		/// </summary>
 		/// <param name="tData">ハッシュコードを取得する対象のバイト配列</param>
 		/// <returns>ハッシュコード文字列</returns>
-		public static string GetMD5Hash( byte[] tData )
+		public static string GetMD5Hash( byte[] data )
 		{
 			// MD5CryptoServiceProviderオブジェクトを作成
-			System.Security.Cryptography.MD5CryptoServiceProvider tMD5 = new System.Security.Cryptography.MD5CryptoServiceProvider() ;
+			System.Security.Cryptography.MD5CryptoServiceProvider md5 = new System.Security.Cryptography.MD5CryptoServiceProvider() ;
 		
 			// ハッシュ値を計算する
-			byte[] tBytes = tMD5.ComputeHash( tData ) ;
+			byte[] hash = md5.ComputeHash( data ) ;
 		
 			// リソースを解放する
-			tMD5.Clear() ;
+			md5.Clear() ;
+			md5.Dispose() ;
 		
 			// byte型配列を16進数の文字列に変換
-			System.Text.StringBuilder tResult = new System.Text.StringBuilder() ;
-			foreach( byte tByte in tBytes )
+			System.Text.StringBuilder result = new System.Text.StringBuilder() ;
+			foreach( byte code in hash )
 			{
-				tResult.Append( tByte.ToString( "x2" ) ) ;
+				result.Append( code.ToString( "x2" ) ) ;
 			}
 		
-			return tResult.ToString() ;
+			return result.ToString() ;
 		}
 
 		/// <summary>
@@ -1157,10 +1128,10 @@ namespace StorageHelper
 		/// </summary>
 		/// <param name="tText">ハッシュコードを取得する対象の文字列</param>
 		/// <returns>ハッシュコード文字列</returns>
-		public static string GetMD5Hash( string tText )
+		public static string GetMD5Hash( string text )
 		{
 			// 文字列をbyte型配列に変換する
-			return GetMD5Hash( System.Text.Encoding.UTF8.GetBytes( tText ) ) ;
+			return GetMD5Hash( System.Text.Encoding.UTF8.GetBytes( text ) ) ;
 		}
 		
 		//-------------------------------------------------------
@@ -1173,62 +1144,59 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で復号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で復号化は行わない)</param>
 		/// <returns>列挙子</returns>
-		public static IEnumerator LoadFromStreamingAssets( string tName, byte[][] rData, string tKey = null, string tVector = null )
+		public static IEnumerator LoadFromStreamingAssets( string path, Action<byte[]> onLoaded, string key = null, string vector = null )
 		{
-			if( string.IsNullOrEmpty( tName ) == true )
+			if( string.IsNullOrEmpty( path ) == true )
 			{
-				#if UNITY_EDITOR
-				Debug.LogError( "Storage Data File Load Error : Name = " + tName + " Data = " + rData ) ;
-				#endif
+#if UNITY_EDITOR
+				Debug.LogError( "Storage Data File Load Error : Name = " + path ) ;
+#endif
 				yield break ;
 			}
 
 
-			byte[] tData = null ;
+			byte[] data = null ;
 
-			#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
 
-			string path = Application.streamingAssetsPath + "/" + tName ;
-			UnityWebRequest request = UnityWebRequest.Get(path);
-			request.SendWebRequest();
-			yield return request;
+			path = Application.streamingAssetsPath + "/" + path ;
+			UnityWebRequest request = UnityWebRequest.Get( path ) ;
+			request.SendWebRequest() ;
+			yield return request ;
 
 			if( request.isDone == true && string.IsNullOrEmpty( request.error ) == true )
 			{
-				tData = request.downloadHandler.data ;
+				data = request.downloadHandler.data ;
 			}
 
 			request.Dispose() ;
 
-			#else
+#else
 		
-			string tPath = Application.streamingAssetsPath + "/" + tName ;
+			path = Application.streamingAssetsPath + "/" + path ;
 
-			if( File.Exists( tPath ) == true )
+			if( File.Exists( path ) == true )
 			{
-				tData = File.ReadAllBytes( tPath ) ;
+				data = File.ReadAllBytes( path ) ;
 			}
 
-			#endif
+#endif
 
-			if( tData == null )
+			if( data == null )
 			{
-				#if UNITY_EDITOR
-				Debug.LogWarning( "Storage Data File Load Error : Name = " + tName ) ;
-				#endif
+#if UNITY_EDITOR
+				Debug.LogWarning( "Storage Data File Load Error : path = " + path ) ;
+#endif
 				yield break ;
 			}
 
-			if( string.IsNullOrEmpty( tKey ) == false && string.IsNullOrEmpty( tVector ) == false )
+			if( string.IsNullOrEmpty( key ) == false && string.IsNullOrEmpty( vector ) == false )
 			{
 				// 復号化する
-				tData = Encrypt( tData, tKey, tVector ) ;
+				data = Encrypt( data, key, vector ) ;
 			}
 
-			if( rData != null && rData.Length >  0 )
-			{
-				rData[ 0 ] = tData ;
-			}
+			onLoaded?.Invoke( data ) ;
 		}
 
 		/// <summary>
@@ -1239,15 +1207,17 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で復号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で復号化は行わない)</param>
 		/// <returns>列挙子</returns>
-		public static IEnumerator LoadTextFromStreamingAssets( string tName, string[] rText, string tKey = null, string tVector = null  )
+		public static IEnumerator LoadTextFromStreamingAssets( string path, Action<string> onLoaded, string key = null, string vector = null  )
 		{
-			byte[][] rData = new byte[ 1 ][] ;
+			byte[] data = null ;
 
-			yield return LoadFromStreamingAssets( tName, rData, tKey, tVector ) ;
+			yield return LoadFromStreamingAssets( path, ( _ ) => { data = _ ; }, key, vector ) ;
 
-			if( rData[ 0 ] != null && rText != null && rText.Length >  0 )
+			if( data != null && data.Length >  0 )
 			{
-				rText[ 0 ] = Encoding.UTF8.GetString( rData[ 0 ] ) ;
+				string text = Encoding.UTF8.GetString( data ) ;
+
+				onLoaded?.Invoke( text ) ;
 			}
 		}
 
@@ -1259,19 +1229,19 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で復号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で復号化は行わない)</param>
 		/// <returns>列挙子</returns>
-		public static IEnumerator LoadTextureFromStreamingAssets( string tName, Texture2D[] rTexture, string tKey = null, string tVector = null )
+		public static IEnumerator LoadTextureFromStreamingAssets( string path, Action<Texture2D> onLoaded, string key = null, string vector = null )
 		{
-			byte[][] rData = new byte[ 1 ][] ;
+			byte[] data = null ;
 
-			yield return LoadFromStreamingAssets( tName, rData, tKey, tVector ) ;
+			yield return LoadFromStreamingAssets( path, ( _ ) => { data = _ ; }, key, vector ) ;
 
-			if( rData[ 0 ] != null && rTexture != null && rTexture.Length >  0 )
+			if( data != null && data.Length >  0 )
 			{
 				// イメージデータは取得出来た
-				Texture2D tTexture = new Texture2D( 4, 4, TextureFormat.ARGB32, false, true ) ;	// MipMap を事前に切るのがミソ
-				tTexture.LoadImage( rData[ 0 ] ) ;
+				Texture2D texture = new Texture2D( 4, 4, TextureFormat.ARGB32, false, true ) ;	// MipMap を事前に切るのがミソ
+				texture.LoadImage( data ) ;
 
-				rTexture[ 0 ] = tTexture ;
+				onLoaded?.Invoke( texture ) ;
 			}
 		}
 
@@ -1283,57 +1253,59 @@ namespace StorageHelper
 		/// <param name="tKey">暗号化キー(null で復号化は行わない)</param>
 		/// <param name="tVector">暗号化ベクター(null で復号化は行わない)</param>
 		/// <returns>列挙子</returns>
-		public static IEnumerator LoadAssetBundleFromStreamingAssets( string tName, AssetBundle[] rAssetBundle, string tKey = null, string tVector = null )
+		public static IEnumerator LoadAssetBundleFromStreamingAssets( string path, Action<AssetBundle> onLoaded, string key = null, string vector = null )
 		{
-			if( string.IsNullOrEmpty( tKey ) == true && string.IsNullOrEmpty( tVector ) == true )
+			AssetBundle assetBundle = null ;
+
+			if( string.IsNullOrEmpty( key ) == true && string.IsNullOrEmpty( vector ) == true )
 			{
-				AssetBundle tAssetBundle = null ;
+#if UNITY_ANDROID && !UNITY_EDITOR
 
-				#if UNITY_ANDROID && !UNITY_EDITOR
-
-				string path = Application.streamingAssetsPath + "/" + tName ;
-				UnityWebRequest request = UnityWebRequest.Get(path);
-				request.SendWebRequest();
-				yield return request;
+				path = Application.streamingAssetsPath + "/" + path ;
+				UnityWebRequest request = UnityWebRequest.Get( path ) ;
+				request.SendWebRequest() ;
+				yield return request ;
 
 				if( request.isDone == true && string.IsNullOrEmpty( request.error ) == true )
 				{
 					if( request.downloadHandler.data != null && request.downloadHandler.data.Length >  0 )
 					{
-						tAssetBundle = AssetBundle.LoadFromMemory( request.downloadHandler.data ) ;
+						assetBundle = AssetBundle.LoadFromMemory( request.downloadHandler.data ) ;
 					}
 				}
 
 				request.Dispose() ;
 
-				#else
+#else
 
-				string tPath = Application.streamingAssetsPath + "/" + tName ;
-				if( File.Exists( tPath ) == true )
+				path = Application.streamingAssetsPath + "/" + path ;
+				if( File.Exists( path ) == true )
 				{
 					// 暗号化がされていなければファイルから直接アセットバンドル化を行う(メモリ消費量が少ない)
-					tAssetBundle = AssetBundle.LoadFromFile( tPath ) ;
+					assetBundle = AssetBundle.LoadFromFile( path ) ;
 				}
 
-				#endif
+#endif
 
-				if( rAssetBundle != null && rAssetBundle.Length >  0 )
+				if( assetBundle != null )
 				{
-					rAssetBundle[ 0 ] = tAssetBundle ;
+					onLoaded?.Invoke( assetBundle ) ;
 				}
 
 				yield break ;
 			}
 
 
-			byte[][] rData = new byte[ 1 ][] ;
+			byte[] data = null ;
 
-			yield return LoadFromStreamingAssets( tName, rData, tKey, tVector ) ;
+			yield return LoadFromStreamingAssets( path, ( _ ) => { data = _ ; }, key, vector ) ;
 		
-			if( rData[ 0 ] != null && rAssetBundle != null && rAssetBundle.Length >  0 )
+			if( data != null && data.Length >  0 )
 			{
 				// 暗号化がされている場合は一旦メモリに展開してからアセットバンドル化を行う(メモリ消費量が大きい)
-				rAssetBundle[ 0 ] = AssetBundle.LoadFromMemory( rData[ 0 ] ) ;
+				assetBundle = AssetBundle.LoadFromMemory( data ) ;
+
+				onLoaded?.Invoke( assetBundle ) ;
 			}
 		}
 
@@ -1344,21 +1316,21 @@ namespace StorageHelper
 		/// <param name="tName">ファイル名(相対パス)</param>
 		/// <param name="tIsCancelOnInput">タップで再生を中止させられるようにするかどうか</param>
 		/// <returns>結果(true=成功・false=失敗)</returns>
-		public static bool PlayMovieFromStreamingAssets( string tName, bool tIsCancelOnInput )
+		public static bool PlayMovieFromStreamingAssets( string path, bool isCancelOnInput )
 		{
-			bool tResult = true ;
+			bool result = true ;
 		
-			#if !UNITY_EDITOR && UNITY_ANDROID
+#if !UNITY_EDITOR && UNITY_ANDROID
 
-			tResult = Handheld.PlayFullScreenMovie( tName, Color.black, ( tIsCancelOnInput ) ? FullScreenMovieControlMode.CancelOnInput : FullScreenMovieControlMode.Hidden, FullScreenMovieScalingMode.AspectFit ) ;
+			result = Handheld.PlayFullScreenMovie( path, Color.black, ( isCancelOnInput ) ? FullScreenMovieControlMode.CancelOnInput : FullScreenMovieControlMode.Hidden, FullScreenMovieScalingMode.AspectFit ) ;
 
-			#elif!UNITY_EDITOR &&  ( UNITY_IOS || UNITY_IPHONE )
+#elif !UNITY_EDITOR && ( UNITY_IOS || UNITY_IPHONE )
 
-			tResult = Handheld.PlayFullScreenMovie( tName, Color.black, ( tIsCancelOnInput ) ? FullScreenMovieControlMode.CancelOnInput : FullScreenMovieControlMode.Hidden, FullScreenMovieScalingMode.AspectFit ) ;
+			result = Handheld.PlayFullScreenMovie( path, Color.black, ( isCancelOnInput ) ? FullScreenMovieControlMode.CancelOnInput : FullScreenMovieControlMode.Hidden, FullScreenMovieScalingMode.AspectFit ) ;
 
-			#endif
+#endif
 
-			return tResult ;
+			return result ;
 		}
 
 
@@ -1368,20 +1340,20 @@ namespace StorageHelper
 		/// 固有識別子を取得する(取得毎に値が変わる可能性があるため最初に保存したものを使いまわす)
 		/// </summary>
 		/// <returns></returns>
-		public static string GetUUID( string tPath = "UUID" )
+		public static string GetUUID( string path = "UUID" )
 		{
-			string tKey		= "lkirwf897+22#bbtrm8814z5qq=498j5" ;
-			string tVector	= "741952hheeyy66#cs!9hjv887mxx7@8y" ;
+			string key		= "lkirwf897+22#bbtrm8814z5qq=498j5" ;
+			string vector	= "741952hheeyy66#cs!9hjv887mxx7@8y" ;
 
-			string tUUID = LoadText( tPath, tKey, tVector ) ;
-			if( string.IsNullOrEmpty( tUUID ) == true )
+			string uuid = LoadText( path, key, vector ) ;
+			if( string.IsNullOrEmpty( uuid ) == true )
 			{
 				// 生成する
-				tUUID = SystemInfo.deviceUniqueIdentifier ;
-				SaveText( tPath, tUUID, false, tKey, tVector ) ;
+				uuid = SystemInfo.deviceUniqueIdentifier ;
+				SaveText( path, uuid, false, key, vector ) ;
 			}
 
-			return tUUID ;
+			return uuid ;
 		}
 	}
 }

@@ -126,17 +126,17 @@ namespace AssetBundleHelper
 
 				List<ManifestDescriptor> manifestDescriptors = new List<ManifestDescriptor>() ;
 
-				for( i  = 0 ; i <  m_ManifestDescriptors.Count ; i ++ )
+				foreach( var manifestDescriptor in m_ManifestDescriptors )
 				{
-					if( ( m_ManifestDescriptors[ i ].TimeStamp - timeStamp ) <  m_ManifestKeepTime )
+					if( ( manifestDescriptor.TimeStamp - timeStamp ) <  m_ManifestKeepTime )
 					{
 						// 維持する
-						manifestDescriptors.Add( m_ManifestDescriptors[ i ] ) ;
+						manifestDescriptors.Add( manifestDescriptor ) ;
 					}
 					else
 					{
 						// 削除する
-						StorageAccessor_Remove( m_ManifestDescriptors[ i ].ManifestName, true ) ;
+						StorageAccessor_Remove( manifestDescriptor.ManifestName, true ) ;
 					}
 				}
 
@@ -167,12 +167,11 @@ namespace AssetBundleHelper
 
 			string text = "" ;
 
-			int i, l = m_ManifestDescriptors.Count ;
-			for( i  = 0 ; i <  l ; i ++ )
+			foreach( var manifestDescriptor in m_ManifestDescriptors )
 			{
-				text += m_ManifestDescriptors[ i ].ManifestName ;
+				text += manifestDescriptor.ManifestName ;
 				text += "\t" ;
-				text += m_ManifestDescriptors[ i ].TimeStamp.ToString() ;
+				text += manifestDescriptor.TimeStamp.ToString() ;
 				text += "\n" ;
 			}
 
@@ -194,13 +193,12 @@ namespace AssetBundleHelper
 				return false ;
 			}
 
-			int i, l = m_ManifestDescriptors.Count ;
-			for( i  = 0 ; i <  l ; i ++ )
+			foreach( var manifestDescriptor in m_ManifestDescriptors )
 			{
-				if( m_ManifestDescriptors[ i ].ManifestName.Equals( manifestName ) == true )
+				if( manifestDescriptor.ManifestName.Equals( manifestName ) == true )
 				{
 					// 既に存在する
-					m_ManifestDescriptors[ i ].TimeStamp = timeStamp ;
+					manifestDescriptor.TimeStamp = timeStamp ;
 					return true ;
 				}
 			}
@@ -210,8 +208,5 @@ namespace AssetBundleHelper
 
 			return true ;
 		}
-
-		//------------------------------------------------------------------------------------
-
 	}
 }
