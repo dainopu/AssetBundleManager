@@ -19,7 +19,7 @@ using StorageHelper ;
 namespace AssetBundleHelper
 {
 	/// <summary>
-	/// アセットバンドルマネージャクラス(シングルトン) Version 2019/09/04 0
+	/// アセットバンドルマネージャクラス(シングルトン) Version 2019/09/10 0
 	/// </summary>
 	public partial class AssetBundleManager : MonoBehaviour
 	{
@@ -167,11 +167,11 @@ namespace AssetBundleHelper
 				m_ManifestInfo = new List<ManifestInfo>() ;
 			}
 			else
+			if( m_ManifestInfo.Count >  0 )
 			{
-				int i, l = m_ManifestInfo.Count ;
-				for( i  = 0 ; i <  l ; i ++ )
+				foreach( var manifestInfo in m_ManifestInfo )
 				{
-					m_ManifestInfo[ i ].Clear() ;
+					manifestInfo.Clear() ;
 				}
 			}
 
@@ -300,20 +300,6 @@ namespace AssetBundleHelper
 			}
 			
 			i = assetBundleName.IndexOf( "//" ) ;
-//			if( i <  0 )
-//			{
-//				// 単一アセットのアセットバンドルとみなす
-//				i = assetBundleName.LastIndexOf( "/" ) ;
-//				if( i <  0 )
-//				{
-//					assetName = assetBundleName ;
-//				}
-//				else
-//				{
-//					assetName = assetBundleName.Substring( i + 1, assetBundleName.Length - ( i + 1 ) ) ;
-//				}
-//			}
-//			else
 			if( i >= 0 )
 			{
 				// 複合アセットのアセットバンドルとみなす

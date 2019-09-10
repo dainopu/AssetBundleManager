@@ -25,7 +25,7 @@ namespace AssetBundleHelper
 	{
 		// ハッシュ生成インスタンス
 		//		private static MD5CryptoServiceProvider mHashGenerator = new MD5CryptoServiceProvider() ;
-		private static HMACSHA256 m_HashGenerator = new HMACSHA256( new byte[]{ 0, 1, 2, 3 } ) ;	// コンストラクタに適当なキー値を入れる事(でないと毎回ランダムになってしまう)
+		private static readonly HMACSHA256 m_HashGenerator = new HMACSHA256( new byte[]{ 0, 1, 2, 3 } ) ;	// コンストラクタに適当なキー値を入れる事(でないと毎回ランダムになってしまう)
 
 		// ハッシュコードを計算する
 		private static string GetHash( string fileName )

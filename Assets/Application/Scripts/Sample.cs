@@ -62,6 +62,8 @@ namespace AssetableExperiment
 
 				AssetBundleManager.FastLoadEnabled = false ;	// 一部同期化で高速化読み出し
 
+/*
+
 				// 実際はマスターの通信が完了してからそちらから取得する
 //				string tDomainName = "http://vms010.ibrains.co.jp/ibrains/moe/" ;
 				string domainName = "http://localhost/Sample/" ;
@@ -118,9 +120,9 @@ namespace AssetableExperiment
 						sizeName = ( size / ( 1024L * 1024L * 1024L ) ) + "GB" ;
 					}
 					Debug.LogWarning( "マニフェスト " + m.ManifestName +" のキャッシュサイズを " + sizeName + " に制限しました。" ) ;
-				}
+				}*/
 			}
-
+			
 			//-------------------------------------------------
 
 			m_FE = true ;
@@ -136,11 +138,11 @@ namespace AssetableExperiment
 
 			Sprite[] sprite = new Sprite[ 2 ] ;
 
-			int category = 3 ;
-			int type = 1 ;
+			int category = 5 ;
+			int type = 0 ;
 
 			AssetBundleManager.UseResources = AssetBundleManager.UserResources.None ;       // ネットワーク上のアセットバンドルが見つからない場合は Resources から探す
-			AssetBundleManager.UseLocalAsset = false ;
+			AssetBundleManager.UseLocalAsset = true ;
 
 			if( category == 0 )
 			{
@@ -291,10 +293,10 @@ namespace AssetableExperiment
 			else
 			if( category == 5 )
 			{
-				if( type == 0 )
-				{
+//				if( type == 0 )
+//				{
 					yield return AssetBundleManager.AddSceneAsync( "scenes/OverlayScene" ) ;
-				}
+//				}
 			}
 
 			ft = Time.realtimeSinceStartup - ft ;

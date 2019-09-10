@@ -96,18 +96,14 @@ namespace AssetBundleHelper
 		{
 			folderPath = m_LocalAssetBundleRootPath + folderPath ;
 			
-			Debug.LogWarning( "----->きた？:" + folderPath ) ;
-
 			if( Directory.Exists( folderPath ) == false )
 			{
-				Debug.LogWarning( "そんなディレクトリは存在しない:" + folderPath ) ;
 				return null ;
 			}
 
 			string[] paths = Directory.GetFiles( folderPath ) ;
 			if( paths == null || paths.Length == 0 )
 			{
-				Debug.LogWarning( "ファイルが１つも存在しない" ) ;
 				return null ;
 			}
 
@@ -132,7 +128,6 @@ namespace AssetBundleHelper
 				return null ;
 			}
 
-			Debug.LogWarning( "----->最終的な対象数:" + temporaryAssets.Count ) ;
 			return temporaryAssets.ToArray() ;
 		}
 
@@ -696,7 +691,7 @@ namespace AssetBundleHelper
 							{
 								for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
 								{
-									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + temporaryAssets[ i ].GetType().ToString() ;
 									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
 									{
 										// キャッシュにあればそれを返す
@@ -715,7 +710,7 @@ namespace AssetBundleHelper
 							{
 								for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
 								{
-									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + temporaryAssets[ i ].GetType().ToString() ;
 									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
 									{
 										// キャッシュにあればそれを返す
@@ -878,7 +873,7 @@ namespace AssetBundleHelper
 							{
 								for( int i  = 0 ; i <  temporaryAssets.Length ; i ++ )
 								{
-									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + temporaryAssets[ i ].GetType().ToString() ;
 									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
 									{
 										// キャッシュにあればそれを返す
@@ -897,7 +892,7 @@ namespace AssetBundleHelper
 							{
 								for( int  i = 0 ; i <  temporaryAssets.Length ; i ++ )
 								{
-									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + type.ToString() ;
+									resourceCachePath = resourcePath + "/" + temporaryAssets[ i ].name + ":" + temporaryAssets[ i ].GetType().ToString() ;
 									if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourcePath ) == true )
 									{
 										// キャッシュにあればそれを返す
