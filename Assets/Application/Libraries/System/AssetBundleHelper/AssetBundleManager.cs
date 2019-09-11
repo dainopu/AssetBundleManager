@@ -19,7 +19,7 @@ using StorageHelper ;
 namespace AssetBundleHelper
 {
 	/// <summary>
-	/// アセットバンドルマネージャクラス(シングルトン) Version 2019/09/10 0
+	/// アセットバンドルマネージャクラス(シングルトン) Version 2019/09/11 0
 	/// </summary>
 	public partial class AssetBundleManager : MonoBehaviour
 	{
@@ -85,9 +85,37 @@ namespace AssetBundleHelper
 				go.AddComponent<AssetBundleManager>() ;
 			}
 
+			//----------------------------------------------------------
+			
+			// 各種初期設定(０フレームでマニフェストのロード要求が走る可能性もあるのでこのタイミングで行う)
+			m_Instance.Setup() ;
+
 			return m_Instance ;
 		}
-	
+		
+		// 各種初期設定を行う
+		private void Setup()
+		{
+			// 保存されている全マニフェスト情報を読み出す
+			LoadSystemFile() ;
+
+			if( m_ManifestInfo == null )
+			{
+				m_ManifestInfo = new List<ManifestInfo>() ;
+			}
+			else
+			if( m_ManifestInfo.Count >  0 )
+			{
+				foreach( var manifestInfo in m_ManifestInfo )
+				{
+					manifestInfo.Clear() ;
+				}
+			}
+
+			// リソースキャッシュを生成する
+			m_ResourceCache = new Dictionary<string, UnityEngine.Object>() ;
+		}
+
 		/// <summary>
 		/// AssetBundleManagerのシングルトンインスタンスを破棄する
 		/// </summary>
@@ -148,33 +176,10 @@ namespace AssetBundleHelper
 			gameObject.transform.localPosition = Vector3.zero ;
 			gameObject.transform.localRotation = Quaternion.identity ;
 			gameObject.transform.localScale = Vector3.one ;
-		
-			//-----------------------------
-			
-			// データを初期化する
-
-			// リソースキャッシュを生成する
-			m_ResourceCache = new Dictionary<string, UnityEngine.Object>() ;
 		}
 
 		IEnumerator Start()
 		{
-			// 保存されている全マニフェスト情報を読み出す
-			LoadSystemFile() ;
-
-			if( m_ManifestInfo == null )
-			{
-				m_ManifestInfo = new List<ManifestInfo>() ;
-			}
-			else
-			if( m_ManifestInfo.Count >  0 )
-			{
-				foreach( var manifestInfo in m_ManifestInfo )
-				{
-					manifestInfo.Clear() ;
-				}
-			}
-
 			if( m_LoadManifestOnAwake == true )
 			{
 				// 自動でマニフェストをロードする

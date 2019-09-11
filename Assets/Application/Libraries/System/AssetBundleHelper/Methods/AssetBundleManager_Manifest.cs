@@ -65,9 +65,28 @@ namespace AssetBundleHelper
 			/// </summary>
 			public bool		Completed { get ; private set ; } = false ;	// 本来は　private にして、アクセサで readonly にすべきだが、Editor を作成を省略するため、あえて public にする。
 
+			/// <summary>
+			/// アセットバンドルキャッシュに格納可能な最大数
+			/// </summary>
+			public int		AssetBundleCacheLimit = 128 ;
+
+			/// <summary>
+			/// マニフェスト内の全アセットバンドル情報
+			/// </summary>
+			[SerializeField,Header("【アセットバンドル情報】")]
+			private List<AssetBundleInfo> m_AssetBundleInfo = null ;	// ※readonly属性にするとインスペクターで表示できなくなるので付けてはだめ
+
+			/// <summary>
+			/// マニフェスト内の全アセットバンドル情報の高速アクセス用のハッシュリスト
+			/// </summary>
+			private Dictionary<string,AssetBundleInfo> m_AssetBundleHash = null ;	// ショートカットアクセスのためディクショナリも用意する
+
+			//----------------------------------
 
 			// 展開中のマニフェストのインスタンス
 			private AssetBundleManifest	m_Manifest = null ;
+
+			//----------------------------------------------------------
 
 			/// <summary>
 			/// アセットバンドルキャッシュ
@@ -87,12 +106,7 @@ namespace AssetBundleHelper
 			/// <summary>
 			/// アセットバンドルのキャッシュ
 			/// </summary>
-			private readonly Dictionary<string,AssetBundleCacheElement> m_AssetBundleCache = new Dictionary<string, AssetBundleCacheElement>() ;
-
-			/// <summary>
-			/// アセットバンドルキャッシュに格納可能な最大数
-			/// </summary>
-			public int	AssetBundleCacheLimit = 128 ;
+			private Dictionary<string,AssetBundleCacheElement> m_AssetBundleCache = null ;
 
 			/// <summary>
 			/// キャッシュにアセットバンドルを追加する
@@ -162,24 +176,39 @@ namespace AssetBundleHelper
 			/// <summary>
 			/// コンストラクタ
 			/// </summary>
-			public ManifestInfo()
-			{
-				m_AssetBundleInfo = new List<AssetBundleInfo>() ;
-				m_AssetBundleHash = new Dictionary<string, AssetBundleInfo>() ;	// Dictionary は、Inspector 上でインスタンスを生成しても、自動では生成してくれないため、明示的に生成する必要がある。
-			}
-
-			/// <summary>
-			/// コンストラクタ
-			/// </summary>
 			/// <param name="filePath">リモート側のマニフェストのパス</param>
 			/// <param name="cacheSize">マニフェストごとのキャッシュサイズ(0で無制限)</param>
-			public ManifestInfo( string filePath, long cacheSize )
+			public void Setup( string filePath, long cacheSize )
 			{
-				m_AssetBundleInfo = new List<AssetBundleInfo>() ;
-				m_AssetBundleHash = new Dictionary<string, AssetBundleInfo>() ;	// Dictionary は、Inspector 上でインスタンスを生成しても、自動では生成してくれないため、明示的に生成する必要がある。
+				if( m_AssetBundleInfo == null )
+				{
+					m_AssetBundleInfo = new List<AssetBundleInfo>() ;
+				}
+				else
+				{
+					m_AssetBundleInfo.Clear() ;
+				}
+
+				if( m_AssetBundleHash == null )
+				{
+					m_AssetBundleHash = new Dictionary<string, AssetBundleInfo>() ;
+				}
+				else
+				{
+					m_AssetBundleHash.Clear() ;
+				}
 
 				FilePath	= filePath ;
 				CacheSize	= cacheSize ;
+
+				if( m_AssetBundleCache == null )
+				{
+					m_AssetBundleCache = new Dictionary<string, AssetBundleCacheElement>() ;
+				}
+				else
+				{
+					m_AssetBundleCache.Clear() ;
+				}
 			}
 
 			//-----------------------------------------------------------------------------------
@@ -213,9 +242,16 @@ namespace AssetBundleHelper
 				public uint		Crc = 0 ;
 
 				/// <summary>
+				/// タグ
+				/// </summary>
+				public string[]	Tags = null ;
+
+				/// <summary>
 				/// 最終更新日時
 				/// </summary>
 				public long		LastUpdateTime = 0 ;
+
+				//---------------------------------
 
 				/// <summary>
 				/// キャッシュオーバーする際に破棄可能にするかどうかを示す
@@ -238,15 +274,30 @@ namespace AssetBundleHelper
 				/// <param name="tPath">マニフェスト内での相対パス</param>
 				/// <param name="tHash">ハッシュ値</param>
 				/// <param name="tTime">最終更新日時</param>
-				public AssetBundleInfo( string path, string hash, int size, uint crc, long lastUpdateTime )
+				public AssetBundleInfo( string path, string hash, int size, uint crc, string[] tags, long lastUpdateTime )
 				{
 					Path			= path ;
 					Hash			= hash ;
 					Size			= size ;
 					Crc				= crc ;
+					Tags			= tags ;
 					LastUpdateTime	= lastUpdateTime ;
 				}
 
+				/// <summary>
+				/// 指定したタグに該当するかどうか
+				/// </summary>
+				/// <param name="tag"></param>
+				/// <returns></returns>
+				public bool ContainsTag( string tag )
+				{
+					if( Tags == null || Tags.Length == 0 )
+					{
+						return false ;
+					}
+
+					return Tags.Contains( tag ) ;
+				}
 
 				// 対象がプレハブの場合にシェーダーを付け直す(Unity Editor で Platform が Android iOS の場合の固有バグ対策コード)
 				private UnityEngine.Object ReplaceShader( UnityEngine.Object asset, Type type )
@@ -937,17 +988,6 @@ namespace AssetBundleHelper
 				}
 			}
 
-			/// <summary>
-			/// マニフェスト内の全アセットバンドル情報
-			/// </summary>
-			[SerializeField]
-			private readonly List<AssetBundleInfo> m_AssetBundleInfo ;	// インスペクターで確認可能とするため実体はリストで保持する
-
-			/// <summary>
-			/// マニフェスト内の全アセットバンドル情報の高速アクセス用のハッシュリスト
-			/// </summary>
-			private readonly Dictionary<string,AssetBundleInfo> m_AssetBundleHash ;	// ショートカットアクセスのためディクショナリも用意する
-
 			// マニフェストが展開中かを示す
 			private bool m_Busy = false ;
 
@@ -1095,17 +1135,19 @@ namespace AssetBundleHelper
 			}
 
 			/// <summary>
-			/// アセットバンドルのサイズとＣＲＣ
+			/// アセットバンドルの追加情報
 			/// </summary>
-			public class AssetBundleCrcDescriptor
+			public class AssetBundleAdditionalInfo
 			{
 				public int		Size ;
 				public uint		Crc ;
+				public string[]	Tags ;
 
-				public AssetBundleCrcDescriptor( int size, uint crc )
+				public AssetBundleAdditionalInfo( int size, uint crc, string[] tags )
 				{
 					Size	= size ;
 					Crc		= crc ;
+					Tags	= tags ;
 				}
 			}
 
@@ -1388,12 +1430,13 @@ namespace AssetBundleHelper
 					}
 				}
 
-				Dictionary<string,AssetBundleCrcDescriptor> crcHash = null ;
+				Dictionary<string,AssetBundleAdditionalInfo> additionalInfoHash = null ;
 				int size ;
 				uint crc ;
+				string[] tags ;
 				if( string.IsNullOrEmpty( text ) == false )
 				{
-					crcHash = new Dictionary<string,AssetBundleCrcDescriptor>() ;
+					additionalInfoHash = new Dictionary<string,AssetBundleAdditionalInfo>() ;
 
 					// ＣＲＣデータが取得出来た場合のみアセットバンドル名をキー・ＣＲＣ値をバリューとしたディクショナリを生成する
 					string[] line = text.Split( '\n' ) ;
@@ -1416,8 +1459,13 @@ namespace AssetBundleHelper
 								{
 									uint.TryParse( keyAndValue[ 2 ], out crc ) ;
 								}
+								tags = null ;
+								if( keyAndValue.Length >  3 && string.IsNullOrEmpty( keyAndValue[ 3 ] ) == false )
+								{
+									tags = keyAndValue[ 3 ].Split( ' ' ) ;
+								}
 
-								crcHash.Add( keyAndValue[ 0 ].ToLower(), new AssetBundleCrcDescriptor( size,crc ) ) ;
+								additionalInfoHash.Add( keyAndValue[ 0 ].ToLower(), new AssetBundleAdditionalInfo( size, crc, tags ) ) ;
 							}
 						}
 					}
@@ -1436,13 +1484,15 @@ namespace AssetBundleHelper
 				{
 					size	= 0 ;
 					crc		= 0 ;
-					if( crcHash != null && crcHash.ContainsKey( assetBundleName[ i ] ) == true )
+					tags	= null ;
+					if( additionalInfoHash != null && additionalInfoHash.ContainsKey( assetBundleName[ i ] ) == true )
 					{
-						size	= crcHash[ assetBundleName[ i ] ].Size ;                                                                                                                                                                                                                  
-						crc		= crcHash[ assetBundleName[ i ] ].Crc ;
+						size	= additionalInfoHash[ assetBundleName[ i ] ].Size ;                                                                                                                                                                                                                  
+						crc		= additionalInfoHash[ assetBundleName[ i ] ].Crc ;
+						tags	= additionalInfoHash[ assetBundleName[ i ] ].Tags ;
 					}
 
-					node = new ManifestInfo.AssetBundleInfo( assetBundleName[ i ], assetBundleHash[ i ], size,crc, 0L ) ;
+					node = new ManifestInfo.AssetBundleInfo( assetBundleName[ i ], assetBundleHash[ i ], size, crc, tags, 0L ) ;
 					m_AssetBundleInfo.Add( node ) ;
 					if( m_AssetBundleHash.ContainsKey( assetBundleName[ i ] ) == false )
 					{
@@ -1501,6 +1551,11 @@ namespace AssetBundleHelper
 
 				for( i  = 0 ; i <   line.Length ; i ++ )
 				{
+					if( string.IsNullOrEmpty( line[ i ] ) == true )
+					{
+						continue ;
+					}
+
 					l = line[ i ].Length ;
 					if( line[ i ][ l - 1 ] == '\t' )
 					{
@@ -1509,10 +1564,17 @@ namespace AssetBundleHelper
 					}
 
 					string[] code = line[ i ].Split( '\t' ) ;
+					string[] tags ;
 
-					if( code.Length == 5 )
+					if( code.Length == 6 )
 					{
-						node =  new AssetBundleInfo( code[ 0 ], code[ 1 ], int.Parse( code[ 2 ] ), uint.Parse( code[ 3 ] ), long.Parse( code[ 4 ] ) ) ;
+						// Path Hash Size Crc Tags LastUpdateTime
+						tags = null ;
+						if( string.IsNullOrEmpty( code[ 4 ] ) == false )
+						{
+							tags = code[ 4 ].Split( ' ' ) ; 
+						}
+						node =  new AssetBundleInfo( code[ 0 ], code[ 1 ], int.Parse( code[ 2 ] ), uint.Parse( code[ 3 ] ), tags, long.Parse( code[ 5 ] ) ) ;
 						info.Add( node ) ;
 						if( hash.ContainsKey( code[ 0 ] ) == false )
 						{
@@ -1552,7 +1614,7 @@ namespace AssetBundleHelper
 					}
 				}
 
-				// つぎに参照が無くなったファイルを削除する
+				// 次に参照が無くなったファイルを削除する
 				for( i  = 0 ; i <  info.Count ; i ++ )
 				{
 					assetBundleName = info[ i ].Path ;
@@ -1589,14 +1651,18 @@ namespace AssetBundleHelper
 
 				string text = string.Empty ;
 
-				int i, l = m_AssetBundleInfo.Count ;
-				for( i  = 0 ; i <  l ; i ++ )
+				foreach( var assetBundleInfo in m_AssetBundleInfo )
 				{
-					text += m_AssetBundleInfo[ i ].Path + "\t" ;
-					text += m_AssetBundleInfo[ i ].Hash + "\t" ;
-					text += m_AssetBundleInfo[ i ].Size + "\t" ;
-					text += m_AssetBundleInfo[ i ].Crc  + "\t" ;
-					text += m_AssetBundleInfo[ i ].LastUpdateTime + "\n" ;
+					text += assetBundleInfo.Path + "\t" ;
+					text += assetBundleInfo.Hash + "\t" ;
+					text += assetBundleInfo.Size + "\t" ;
+					text += assetBundleInfo.Crc  + "\t" ;
+					if( assetBundleInfo.Tags != null && assetBundleInfo.Tags.Length >  0 )
+					{
+						text += string.Join( " ", assetBundleInfo.Tags ) ;
+					}
+					text += "\t" ;
+					text += assetBundleInfo.LastUpdateTime + "\n" ;
 				}
 
 				return StorageAccessor_SaveText( path, text, true ) ;
@@ -1607,6 +1673,8 @@ namespace AssetBundleHelper
 			// ローカルにアセットバンドルが存在しない場合にリモートから取得しローカルに保存する
 			private IEnumerator LoadAssetBundleFromRemote_Coroutine( AssetBundleInfo assetBundleInfo, string assetBundleLocalPath, bool keepChange, bool keep, Request request, AssetBundleManager instance )
 			{
+				request.Length = assetBundleInfo.Size ;
+
 				string assetBundleRemotePath ;
 				byte[] data = null ;
 
@@ -1625,6 +1693,7 @@ namespace AssetBundleHelper
 								yield return instance.StartCoroutine( StorageAccessor.LoadFromStreamingAssets( assetBundleRemotePath, ( _ ) => { data = _ ; } ) ) ;
 								if( data != null && data.Length >  0 )
 								{
+									request.Offset = data.Length ;
 									request.Progress = 1.0f ;
 								}
 							}
@@ -1646,6 +1715,7 @@ namespace AssetBundleHelper
 								{
 									Progress = www.downloadProgress ;
 
+									request.Offset = ( int )www.downloadedBytes ;
 									request.Progress = Progress ;
 
 									if( www.isHttpError == true || www.isNetworkError == true || string.IsNullOrEmpty( www.error ) == false )
@@ -2217,7 +2287,7 @@ namespace AssetBundleHelper
 				// このアセットバンドルが更新対象になっているか確認する
 				if( assetBundleInfo.UpdateRequired == true )
 				{
-					// キャッシュから削除する
+					// 更新対象になっているのでキャッシュから削除する
 					RemoveAssetBundleCache( assetBundleName ) ;
 
 					// 更新対象になっているので取得不可
@@ -2265,9 +2335,10 @@ namespace AssetBundleHelper
 
 						//-------------------------------
 
+						// 依存するアセットバンドルでキャッシュにためていないものはためていく
 						for( i  = 0 ; i <  l ; i ++ )
 						{
-							dependentAssetBundleName = dependentAssetBundleNames[ i ].ToLower() ;	// 保険で小文字か化
+							dependentAssetBundleName = dependentAssetBundleNames[ i ].ToLower() ;	// 保険で小文字化
 
 //							Debug.LogWarning( "同期:依存するアセットバンドル名:" + tDependentAssetBundleName ) ;
 
@@ -2313,7 +2384,7 @@ namespace AssetBundleHelper
 				}
 				else
 				{
-					// キャッシュに存在する
+					// 既にキャッシュに存在するのでそれを使用する
 					assetBundle = m_AssetBundleCache[ assetBundleName ].AssetBundle ;
 				}
 
@@ -2324,10 +2395,10 @@ namespace AssetBundleHelper
 			/// <summary>
 			/// アセットバンドルを取得する(非同期版)　※呼び出し非推奨
 			/// </summary>
-			/// <param name="tAssetBundleName">アセットバンドル名</param>
-			/// <param name="rAssetBundle">アセットバンドルのインスタンスを格納するための要素数１以上の配列</param>
-			/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
-			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
+			/// <param name="assetBundleName">アセットバンドル名</param>
+			/// <param name="onLoaded">アセットバンドルのインスタンスを格納するための要素数１以上の配列</param>
+			/// <param name="keep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
+			/// <param name="instance">アセットバンドルマネージャのインスタンス</param>
 			/// <returns>列挙子</returns>
 			internal protected IEnumerator LoadAssetBundle_Coroutine( string assetBundleName, Action<AssetBundle> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance )
 			{
@@ -2522,21 +2593,22 @@ namespace AssetBundleHelper
 			}
 			
 			/// <summary>
-			/// アセットバンドルのダウンロードを行う　※呼び出し非推奨
+			/// アセットバンドルのダウンロードを行う　※直接呼び出し非推奨
 			/// </summary>
 			/// <param name="tAssetBundleName">アセットバンドル名</param>
 			/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <returns>列挙子</returns>
-			internal protected IEnumerator DownloadAssetBundle_Coroutine( string assetBundleName, Action<bool> onLoaded, bool keep, Request request, AssetBundleManager instance )
+			internal protected IEnumerator DownloadAssetBundle_Coroutine( string assetBundlePath, Action<bool> onLoaded, bool keep, Request request, AssetBundleManager instance )
 			{
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// そのファイルが更新対象か確認する
-				if( m_AssetBundleHash.ContainsKey( assetBundleName ) == false )
+				if( m_AssetBundleHash.ContainsKey( assetBundlePath ) == false )
 				{
 					// 指定の名前のアセットバンドルは存在しない
+					request.Error = "Could not load." ;
 					yield break ;
 				}
 
@@ -2545,7 +2617,7 @@ namespace AssetBundleHelper
 				// 指定の名前のアセットバンドルインフォは存在する
 
 				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
 
 				// ローカルのパス
 				string assetBundleLocalPath = ManifestName + "/" + assetBundleInfo.Path ;
@@ -2553,7 +2625,7 @@ namespace AssetBundleHelper
 				// このアセットバンドルが更新対象になっているか確認する
 				if( assetBundleInfo.UpdateRequired == true )
 				{
-					RemoveAssetBundleCache( assetBundleName ) ;
+					RemoveAssetBundleCache( assetBundlePath ) ;
 
 					// 更新対象になっているのでダウンロードを試みる
 					yield return instance.StartCoroutine( LoadAssetBundleFromRemote_Coroutine( assetBundleInfo, assetBundleLocalPath, true, keep, request, instance ) ) ;
@@ -2562,6 +2634,77 @@ namespace AssetBundleHelper
 					{
 						// ダウンロード失敗
 						request.Error = "Could not load." ;
+						yield break ;
+					}
+				}
+
+				// 成功
+				onLoaded?.Invoke( true ) ;
+			}
+
+			/// <summary>
+			/// タグで指定されたアセットバンドルのダウンロードを行う　※直接呼び出し非推奨
+			/// </summary>
+			/// <param name="tAssetBundleName">アセットバンドル名</param>
+			/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
+			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
+			/// <returns>列挙子</returns>
+			internal protected IEnumerator DownloadAssetBundleWithTags_Coroutine( string[] tags, Action<bool> onLoaded, bool keep, Request request, AssetBundleManager instance )
+			{
+				string[] assetBundlePaths =	GetAllAssetBundlePathsWithTags( tags, true, true ) ;
+
+				if( assetBundlePaths == null || assetBundlePaths.Length == 0 )
+				{
+					// ダウンロード対象となるファイルが見つからない
+					request.Error = "Target not found." ;
+					yield break ;
+				}
+
+				//---------------------------------------------------------
+				
+				// トータルサイズを計算する
+				int length = 0 ;
+				foreach( var assetBundlePath in assetBundlePaths )
+				{
+					AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
+					length += assetBundleInfo.Size ;
+				}
+				request.Length = length ;
+
+				// ダウンロードを行う
+				int offset = 0 ;
+				foreach( var assetBundlePath in assetBundlePaths )
+				{
+					AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
+
+					// ローカルのパス
+					string assetBundleLocalPath = ManifestName + "/" + assetBundleInfo.Path ;
+
+					// 念のためキャッシュから削除する
+					RemoveAssetBundleCache( assetBundlePath ) ;
+
+					// 更新対象になっているのでダウンロードを試みる
+					Request subRequest = new Request() ;
+					instance.StartCoroutine( LoadAssetBundleFromRemote_Coroutine( assetBundleInfo, assetBundleLocalPath, true, keep, subRequest, instance ) ) ;
+
+					offset = request.Offset ;
+					while( true )
+					{
+						// ダウンロード終了を待つ
+						request.Offset = offset + subRequest.Offset ;
+						request.Progress = ( float )request.Offset / ( float )request.Length ;
+
+						if( subRequest.IsDone == true || string.IsNullOrEmpty( subRequest.Error ) == false )
+						{
+							break ;
+						}
+						yield return null ;
+					}
+
+					if( assetBundleInfo.UpdateRequired == true )
+					{
+						// ダウンロード失敗
+						request.Error = "Could not load " + assetBundlePath ;
 						yield break ;
 					}
 				}
@@ -2756,17 +2899,76 @@ namespace AssetBundleHelper
 			/// <returns>アセットバンドルのパス一覧</returns>
 			internal protected string[] GetAllAssetBundlePaths( bool updateRequiredOnly = true )
 			{
-				List<string> path = new List<string>() ;
+				List<string> paths = new List<string>() ;
 
 				foreach( var assetBundleInfo in m_AssetBundleInfo )
 				{
 					if( updateRequiredOnly == false || ( updateRequiredOnly == true && assetBundleInfo.UpdateRequired == true ) )
 					{
-						path.Add( assetBundleInfo.Path ) ;
+						paths.Add( assetBundleInfo.Path ) ;
 					}
 				}
 
-				return path.ToArray() ;
+				if( paths.Count == 0 )
+				{
+					return null ;
+				}
+
+				return paths.ToArray() ;
+			}
+
+			/// <summary>
+			/// アセットパンドルのパス一覧を取得する
+			/// </summary>
+			/// <param name="tNeedUpdateOnly">更新が必要なものみに対象を限定するかどうか</param>
+			/// <returns>アセットバンドルのパス一覧</returns>
+			internal protected string[] GetAllAssetBundlePathsWithTags( string[] tags, bool updateRequiredOnly = true, bool isDependency = true )
+			{
+				List<string> paths = new List<string>() ;
+
+				foreach( var assetBundleInfo in m_AssetBundleInfo )
+				{
+					if( updateRequiredOnly == false || ( updateRequiredOnly == true && assetBundleInfo.UpdateRequired == true ) )
+					{
+						foreach( var tag in tags )
+						{
+							if( assetBundleInfo.ContainsTag( tag ) == true )
+							{
+								paths.Add( assetBundleInfo.Path ) ;
+							}
+						}
+					}
+				}
+
+				if( paths.Count == 0 )
+				{
+					return null ;
+				}
+
+				if( isDependency == true )
+				{
+					// 依存関係にあるものも含めて取得する
+					List<string> temporaryPaths = new List<string>() ;
+					foreach( var path in paths )
+					{
+						temporaryPaths.Add( path ) ;	// まずは自身を追加する
+
+						string[] dependentAssetBundlePaths = GetAllDependentAssetBundlePaths( path, updateRequiredOnly ) ;
+						if( dependentAssetBundlePaths != null && dependentAssetBundlePaths.Length >  0 )
+						{
+							foreach( var dependentAssetBundlePath in dependentAssetBundlePaths )
+							{
+								if( temporaryPaths.Contains( dependentAssetBundlePath ) == false )
+								{
+									temporaryPaths.Add( dependentAssetBundlePath ) ;	// 未追加の場合のみ追加する
+								}
+							}
+						}
+					}
+					paths = temporaryPaths ;
+				}
+
+				return paths.ToArray() ;
 			}
 
 			//--------------------------------------------------------------
@@ -2776,14 +2978,14 @@ namespace AssetBundleHelper
 			/// </summary>
 			/// <param name="tNeedUpdateOnly">更新が必要なものみに対象を限定するかどうか</param>
 			/// <returns>アセットバンドルのパス一覧</returns>
-			internal protected string[] GetAllDependentAssetBundlePaths( string assetBundleName, bool updateRequiredOnly = true )
+			internal protected string[] GetAllDependentAssetBundlePaths( string assetBundlePath, bool updateRequiredOnly = true )
 			{
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+				assetBundlePath = assetBundlePath.ToLower() ;
 
-				string[] dependentAssetBundleNames = m_Manifest.GetAllDependencies( assetBundleName ) ;
+				string[] dependentAssetBundlePaths = m_Manifest.GetAllDependencies( assetBundlePath ) ;
 
-				if( dependentAssetBundleNames == null || dependentAssetBundleNames.Length == 0 )
+				if( dependentAssetBundlePaths == null || dependentAssetBundlePaths.Length == 0 )
 				{
 					return null ;	// 依存するアセットバンドル存在しない
 				}
@@ -2791,38 +2993,38 @@ namespace AssetBundleHelper
 				if( updateRequiredOnly == false )
 				{
 					// そのまま返す
-					return dependentAssetBundleNames ;
+					return dependentAssetBundlePaths ;
 				}
 
 				//---------------------------------------------------------
 
 				// 更新が必要なもののみ返す
 
-				List<string> path = new List<string>() ;
+				List<string> paths = new List<string>() ;
 
-				string			dependentAssetBundleName ;
+				string			dependentAssetBundlePath ;
 				AssetBundleInfo	dependentAssetBundleInfo ;
 
-				for( int i  = 0 ; i <  dependentAssetBundleNames.Length ; i ++ )
+				for( int i  = 0 ; i <  dependentAssetBundlePaths.Length ; i ++ )
 				{
-					dependentAssetBundleName = dependentAssetBundleNames[ i ].ToLower() ;	// 保険で小文字化
+					dependentAssetBundlePath = dependentAssetBundlePaths[ i ].ToLower() ;	// 保険で小文字化
 
 //					Debug.LogWarning( "依存するアセットバンドル名:" + tDependentAssetBundleName ) ;
 
-					dependentAssetBundleInfo = m_AssetBundleHash[ dependentAssetBundleName ] ;
+					dependentAssetBundleInfo = m_AssetBundleHash[ dependentAssetBundlePath ] ;
 					if( dependentAssetBundleInfo.UpdateRequired == true )
 					{
-						// 更新対象であるため取得不可
-						path.Add( dependentAssetBundleNames[ i ] ) ;
+						// 更新対象限定
+						paths.Add( dependentAssetBundlePath ) ;
 					}
 				}
 
-				if( path.Count == 0 )
+				if( paths.Count == 0 )
 				{
 					return null ;
 				}
 
-				return path.ToArray() ;
+				return paths.ToArray() ;
 			}
 
 			//--------------------------------------------------------------
@@ -2833,15 +3035,15 @@ namespace AssetBundleHelper
 			/// <param name="tAssetBundleName">アセットバンドル名</param>
 			/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
 			/// <returns>結果(true=成功・失敗)</returns>
-			public bool SetKeepFlag( string assetBundleName, bool keep )
+			public bool SetKeepFlag( string assetBundlePath, bool keep )
 			{
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// そのファイルが更新対象か確認する
-				if( m_AssetBundleHash.ContainsKey( assetBundleName ) == true )
+				if( m_AssetBundleHash.ContainsKey( assetBundlePath ) == true )
 				{
-					m_AssetBundleHash[ assetBundleName ].Keep = keep ;
+					m_AssetBundleHash[ assetBundlePath ].Keep = keep ;
 					return true ;
 				}
 

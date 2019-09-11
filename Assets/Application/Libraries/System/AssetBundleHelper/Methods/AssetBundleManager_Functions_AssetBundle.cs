@@ -313,13 +313,13 @@ namespace AssetBundleHelper
 		// 一般タイプに対する拡張子
 		internal protected readonly Dictionary<Type,List<string>> m_TypeToExtension = new Dictionary<Type, List<string>>()
 		{
-			{ typeof( Sprite ),		new List<string>{ ".png", ".jpg", ".bmp", ".tiff",		} },
-			{ typeof( GameObject ), new List<string>{ ".prefab", ".asset"					} },
-			{ typeof( AudioClip ),	new List<string>{ ".wav", ".ogg", ".mp3",				} },
+			{ typeof( Sprite ),		new List<string>{ ".png", ".jpg", ".gif", ".bmp", ".tiff",				} },
+			{ typeof( GameObject ), new List<string>{ ".prefab", ".asset"									} },
+			{ typeof( AudioClip ),	new List<string>{ ".wav", ".ogg", ".mp3",								} },
 			{ typeof( TextAsset ),	new List<string>{ ".txt", ".bytes", ".html", ".xml", ".json", ".yml"	} },
-			{ typeof( Texture2D ),	new List<string>{ ".png", ".jpg", ".bmp", ".tiff",		} },
-			{ typeof( Texture ),	new List<string>{ ".png", ".jpg", ".bmp", ".tiff",		} },
-			{ typeof( Material ),	new List<string>{ ".mat",								} },
+			{ typeof( Texture2D ),	new List<string>{ ".png", ".jpg", ".gif", ".bmp", ".tiff",				} },
+			{ typeof( Texture ),	new List<string>{ ".png", ".jpg", ".gif", ".bmp", ".tiff",				} },
+			{ typeof( Material ),	new List<string>{ ".mat",												} },
 		} ;
 
 		// 不明タイプに対する拡張子
@@ -382,7 +382,7 @@ namespace AssetBundleHelper
 			// キャッシュにあればそれを返す
 			if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourceCachePath ) == true )
 			{
-				return ( m_ResourceCache[ resourceCachePath ] ) ;
+				return m_ResourceCache[ resourceCachePath ] ;
 			}
 
 			//------------------------------------------------
@@ -1779,7 +1779,6 @@ namespace AssetBundleHelper
 								result = string.IsNullOrEmpty( request.Error ) ;
 							}
 						}
-
 #if UNITY_EDITOR
 						if( m_UseLocalAsset == true && result == false )
 						{
@@ -1793,7 +1792,6 @@ namespace AssetBundleHelper
 							}
 						}
 #endif
-
 					}
 					else
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
@@ -2103,18 +2101,96 @@ namespace AssetBundleHelper
 				}
 			}
 
-			if( result == false )
+			if( string.IsNullOrEmpty( request.Error ) == true )
 			{
-				if( string.IsNullOrEmpty( request.Error ) == true )
-				{
-					request.Error = "Could not load." ;
-				}
+				request.Error = "Could not load." ;
 				yield break ;
 			}
 
 			request.IsDone = true ;
 		}
 		
+
+		/// <summary>
+		/// タグで指定したアセットバンドルのダウンロードを行う(非同期)
+		/// </summary>
+		/// <param name="tPath">アセットバンドルのパス</param>
+		/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
+		/// <returns>アセットバンドルのダウンロードリクエストクラスのインスタンス</returns>
+		public static Request DownloadAssetBundleWithTagAsync( string tag, bool keep = false )
+		{
+			return DownloadAssetBundleWithTagsAsync( new string[]{ tag }, keep ) ;
+		}
+		public static Request DownloadAssetBundleWithTagsAsync( string[] tags, bool keep = false )
+		{
+			if( m_Instance == null )
+			{
+				// インスタンスが生成されていない
+				return null ;
+			}
+
+			Request request = new Request() ;
+			m_Instance.StartCoroutine( m_Instance.DownloadAssetBundleWithTagsAsync_Private( m_Instance.m_DefaultManifestName, tags, keep, request ) ) ;
+			return request ;
+		}
+
+		/// <summary>
+		/// タグで指定したアセットバンドルのダウンロードを行う(非同期)
+		/// </summary>
+		/// <param name="tPath">アセットバンドルのパス</param>
+		/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
+		/// <returns>アセットバンドルのダウンロードリクエストクラスのインスタンス</returns>
+		public static Request DownloadAssetBundleWithTagAsync( string manifestName, string tag, bool keep = false )
+		{
+			return DownloadAssetBundleWithTagsAsync( manifestName, new string[]{ tag }, keep ) ;
+		}
+		public static Request DownloadAssetBundleWithTagsAsync( string manifestName, string[] tags, bool keep = false )
+		{
+			if( m_Instance == null )
+			{
+				// インスタンスが生成されていない
+				return null ;
+			}
+
+			Request request = new Request() ;
+			m_Instance.StartCoroutine( m_Instance.DownloadAssetBundleWithTagsAsync_Private( manifestName, tags, keep, request ) ) ;
+			return request ;
+		}
+
+		// タグで指定したアセットバンドルのダウンロードを行う
+		private IEnumerator DownloadAssetBundleWithTagsAsync_Private( string manifestName, string[] tags, bool keep, Request request )
+		{
+			if( tags == null || tags.Length == 0 )
+			{
+				if( string.IsNullOrEmpty( request.Error ) == true )
+				{
+					request.Error = "Invalid tags." ;
+				}
+				yield break ;
+			}
+
+			//--------------------------
+
+			bool result = false ;
+
+			if( string.IsNullOrEmpty( manifestName ) == false )
+			{
+				if( m_ManifestHash.ContainsKey( manifestName ) == true )
+				{
+					yield return StartCoroutine( m_ManifestHash[ manifestName ].DownloadAssetBundleWithTags_Coroutine( tags, ( _ ) => { result = _ ; }, keep, request, this ) ) ;
+				}
+			}
+
+			if( string.IsNullOrEmpty( request.Error ) == true )
+			{
+				request.Error = "Could not load." ;
+				yield break ;
+			}
+
+			request.IsDone = true ;
+		}
+		
+
 		//-----------------------------------
 
 		/// <summary>

@@ -323,8 +323,8 @@ namespace AssetBundleHelper
 		/// <summary>
 		/// 全マニフェスト情報
 		/// </summary>
-		[SerializeField,Header("マニフェスト情報")]
-		private List<ManifestInfo> m_ManifestInfo = new List<ManifestInfo>() ;
+		[SerializeField,Header("【マニフェスト情報】")]
+		private List<ManifestInfo> m_ManifestInfo = null ;
 
 		//-----------------------------------------------------------
 	}

@@ -142,7 +142,10 @@ namespace AssetBundleHelper
 			if( manifestInfo == null )
 			{
 				// 未登録(新規に登録する)
-				m_ManifestInfo.Add( new ManifestInfo( filePath, cacheSize ) ) ;
+				manifestInfo = new ManifestInfo() ;
+				manifestInfo.Setup( filePath, cacheSize ) ;
+
+				m_ManifestInfo.Add( manifestInfo ) ;
 				UpdateManifestHash() ;
 			}
 			else
@@ -434,6 +437,100 @@ namespace AssetBundleHelper
 			return manifestInfo.GetAllAssetBundlePaths( updateRequiredOnly ) ;
 		}
 
+		//---------------------------
+
+		/// <summary>
+		/// マニフェストのアセットパンドルのパス一覧を取得する
+		/// </summary>
+		/// <param name="tManifestName">マニフェスト名</param>
+		/// <param name="tNeedUpdateOnly">更新が必要なものみに対象を限定するかどうか</param>
+		/// <returns>マニフェストのアセットバンドルのパス一覧</returns>
+		public static string[] GetAllAssetBundlePathsWithTag( string tag, bool updateRequiredOnly = false, bool isDependency = false )
+		{
+			return GetAllAssetBundlePathsWithTags( new string[]{ tag }, updateRequiredOnly, isDependency ) ;
+		}
+		public static string[] GetAllAssetBundlePathsWithTags( string[] tags, bool updateRequiredOnly = false, bool isDependency = false )
+		{
+			return m_Instance?.GetAllAssetBundlePathsWithTags_Private( m_Instance.m_DefaultManifestName, tags, updateRequiredOnly, isDependency ) ;
+		}
+		
+		/// <summary>
+		/// マニフェストのアセットパンドルのパス一覧を取得する
+		/// </summary>
+		/// <param name="tManifestName">マニフェスト名</param>
+		/// <param name="tNeedUpdateOnly">更新が必要なものみに対象を限定するかどうか</param>
+		/// <returns>マニフェストのアセットバンドルのパス一覧</returns>
+		public static string[] GetAllAssetBundlePathsWithTag( string manifestName, string tag, bool updateRequiredOnly = false, bool isDependency = false )
+		{
+			return GetAllAssetBundlePathsWithTags( manifestName, new string[]{ tag }, updateRequiredOnly, isDependency ) ;
+		}
+		public static string[] GetAllAssetBundlePathsWithTags( string manifestName, string[] tags, bool updateRequiredOnly = false, bool isDependency = false )
+		{
+			return m_Instance?.GetAllAssetBundlePathsWithTags_Private( manifestName, tags, updateRequiredOnly, isDependency ) ;
+		}
+
+		// マニフェストのアセットパンドルのパス一覧を取得する
+		private string[] GetAllAssetBundlePathsWithTags_Private( string manifestName, string[] tags, bool updateRequiredOnly, bool isDependency )
+		{
+			if( string.IsNullOrEmpty( manifestName ) == true || m_ManifestInfo == null || m_ManifestInfo.Count == 0 )
+			{
+				return null ;
+			}
+
+			manifestName = manifestName.ToLower() ;
+			var manifestInfo = m_ManifestInfo.FirstOrDefault( _ => _.ManifestName.ToLower() == manifestName ) ;
+			if( manifestInfo == null )
+			{
+				return null ;
+			}
+
+			// アセットバンドルのパス一覧を取得する
+			return manifestInfo.GetAllAssetBundlePathsWithTags( tags, updateRequiredOnly, isDependency ) ;
+		}
+
+		//-------------------------------------------------------------------
+
+		/// <summary>
+		/// 依存関係にあるアセットバンドルのパス一覧を取得する
+		/// </summary>
+		/// <param name="tManifestName">マニフェスト名</param>
+		/// <param name="tNeedUpdateOnly">更新が必要なものみに対象を限定するかどうか</param>
+		/// <returns>マニフェストのアセットバンドルのパス一覧</returns>
+		public static string[] GetAllDependentAssetBundlePaths( string assetBundleName, bool updateRequiredOnly = false )
+		{
+			return m_Instance?.GetAllDependentAssetBundlePaths_Private( m_Instance.m_DefaultManifestName, assetBundleName, updateRequiredOnly ) ;
+		}
+		
+		/// <summary>
+		/// 依存関係にあるアセットパンドルのパス一覧を取得する
+		/// </summary>
+		/// <param name="tManifestName">マニフェスト名</param>
+		/// <param name="tNeedUpdateOnly">更新が必要なものみに対象を限定するかどうか</param>
+		/// <returns>マニフェストのアセットバンドルのパス一覧</returns>
+		public static string[] GetAllDependentAssetBundlePaths( string manifestName, string assetBundleName, bool updateRequiredOnly = false )
+		{
+			return m_Instance?.GetAllDependentAssetBundlePaths_Private( manifestName, assetBundleName, updateRequiredOnly ) ;
+		}
+
+		// マニフェストのアセットパンドルのパス一覧を取得する
+		private string[] GetAllDependentAssetBundlePaths_Private( string manifestName, string assetBundleName, bool updateRequiredOnly )
+		{
+			if( string.IsNullOrEmpty( manifestName ) == true || m_ManifestInfo == null || m_ManifestInfo.Count == 0 )
+			{
+				return null ;
+			}
+
+			manifestName = manifestName.ToLower() ;
+			var manifestInfo = m_ManifestInfo.FirstOrDefault( _ => _.ManifestName.ToLower() == manifestName ) ;
+			if( manifestInfo == null )
+			{
+				return null ;
+			}
+
+			// アセットバンドルのパス一覧を取得する
+			return manifestInfo.GetAllDependentAssetBundlePaths( assetBundleName, updateRequiredOnly ) ;
+		}
+
 		//-------------------------------------------------------------------
 
 		/// <summary>
@@ -491,49 +588,6 @@ namespace AssetBundleHelper
 			}
 
 			return result ;
-		}
-
-		//-------------------------------------------------------------------
-
-		/// <summary>
-		/// 依存関係にあるアセットバンドルのパス一覧を取得する
-		/// </summary>
-		/// <param name="tManifestName">マニフェスト名</param>
-		/// <param name="tNeedUpdateOnly">更新が必要なものみに対象を限定するかどうか</param>
-		/// <returns>マニフェストのアセットバンドルのパス一覧</returns>
-		public static string[] GetAllDependentAssetBundlePaths( string assetBundleName, bool updateRequiredOnly = false )
-		{
-			return m_Instance?.GetAllDependentAssetBundlePaths_Private( m_Instance.m_DefaultManifestName, assetBundleName, updateRequiredOnly ) ;
-		}
-		
-		/// <summary>
-		/// 依存関係にあるアセットパンドルのパス一覧を取得する
-		/// </summary>
-		/// <param name="tManifestName">マニフェスト名</param>
-		/// <param name="tNeedUpdateOnly">更新が必要なものみに対象を限定するかどうか</param>
-		/// <returns>マニフェストのアセットバンドルのパス一覧</returns>
-		public static string[] GetAllDependentAssetBundlePaths( string manifestName, string assetBundleName, bool updateRequiredOnly = false )
-		{
-			return m_Instance?.GetAllDependentAssetBundlePaths_Private( manifestName, assetBundleName, updateRequiredOnly ) ;
-		}
-
-		// マニフェストのアセットパンドルのパス一覧を取得する
-		private string[] GetAllDependentAssetBundlePaths_Private( string manifestName, string assetBundleName, bool updateRequiredOnly )
-		{
-			if( string.IsNullOrEmpty( manifestName ) == true || m_ManifestInfo == null || m_ManifestInfo.Count == 0 )
-			{
-				return null ;
-			}
-
-			manifestName = manifestName.ToLower() ;
-			var manifestInfo = m_ManifestInfo.FirstOrDefault( _ => _.ManifestName.ToLower() == manifestName ) ;
-			if( manifestInfo == null )
-			{
-				return null ;
-			}
-
-			// アセットバンドルのパス一覧を取得する
-			return manifestInfo.GetAllDependentAssetBundlePaths( assetBundleName, updateRequiredOnly ) ;
 		}
 	}
 }

@@ -18,9 +18,6 @@ namespace AssetableExperiment
 		[SerializeField]
 		protected UIImage[] m_Image = new UIImage[ 2 ] ;
 
-		private bool m_FE ;
-		private int m_FC ;
-
 		void Awake()
 		{
 			// 描画フレームレートの設定（３０）
@@ -125,9 +122,7 @@ namespace AssetableExperiment
 			
 			//-------------------------------------------------
 
-			m_FE = true ;
-			m_FC = 0 ;
-			float ft = Time.realtimeSinceStartup ;
+			StartClock() ;
 
 			//-----------------
 
@@ -138,11 +133,11 @@ namespace AssetableExperiment
 
 			Sprite[] sprite = new Sprite[ 2 ] ;
 
-			int category = 5 ;
+			int category = 0 ;
 			int type = 0 ;
 
 			AssetBundleManager.UseResources = AssetBundleManager.UserResources.None ;       // ネットワーク上のアセットバンドルが見つからない場合は Resources から探す
-			AssetBundleManager.UseLocalAsset = true ;
+			AssetBundleManager.UseLocalAsset = false ;
 
 			if( category == 0 )
 			{
@@ -154,7 +149,12 @@ namespace AssetableExperiment
 	//				yield return request ;
 	//				sprite = request.Asset as Sprite ;
 
-					yield return AssetBundleManager.LoadAssetAsync<Sprite>( assetBundlePath, ( _ ) => { sprite[ 0 ] = _ ; } ) ;
+					yield return AssetBundleManager.LoadAssetAsync<Sprite>( assetBundlePath, ( _ ) => { sprite[ 0 ] = _ ; }, AssetBundleManager.CachingType.Same ) ;
+
+					StopClock() ;
+					StartClock() ;
+
+					sprite[ 0 ] = AssetBundleManager.LoadAsset<Sprite>( assetBundlePath, AssetBundleManager.CachingType.Same ) ;
 				}
 				else
 				if( type == 1 )
@@ -299,8 +299,6 @@ namespace AssetableExperiment
 //				}
 			}
 
-			ft = Time.realtimeSinceStartup - ft ;
-			Debug.LogWarning( "経過フレーム数:" + m_FC + " 経過タイム: " + ft ) ;
 
 			if( sprite != null && m_Image[ 0 ] != null )
 			{
@@ -315,9 +313,24 @@ namespace AssetableExperiment
 
 			//-----------------
 
+			StopClock() ;
+
 			//-------------------------------------------------
 
 			yield break ;
+		}
+
+		//-----------------------------------------------------------
+
+		private bool	m_FE ;
+		private int		m_FC ;
+		private float	m_FT ;
+
+		private void StartClock()
+		{
+			m_FE = true ;
+			m_FC = 0 ;
+			m_FT = Time.realtimeSinceStartup ;
 		}
 
 		void Update()
@@ -327,7 +340,15 @@ namespace AssetableExperiment
 				m_FC ++ ;
 			}
 		}
+
+		private void StopClock()
+		{
+			float ft = Time.realtimeSinceStartup - m_FT ;
+			Debug.LogWarning( "経過フレーム数:" + m_FC + " 経過タイム: " + ft ) ;
+
+		}
 	}
+
 
 
 	public class Asset

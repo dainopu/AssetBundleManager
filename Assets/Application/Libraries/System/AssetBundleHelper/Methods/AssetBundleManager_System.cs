@@ -110,7 +110,6 @@ namespace AssetBundleHelper
 				if( code.Length == 2 )
 				{
 					// 既に実体を失っているものはリストから除外する
-
 					if( StorageAccessor_Exists( code[ 0 ] ) == StorageAccessor.Target.Folder )
 					{
 						m_ManifestDescriptors.Add( new ManifestDescriptor( code[ 0 ], long.Parse( code[ 1 ] ) ) ) ;
@@ -165,7 +164,7 @@ namespace AssetBundleHelper
 
 			//----------------------------------
 
-			string text = "" ;
+			string text = string.Empty ;
 
 			foreach( var manifestDescriptor in m_ManifestDescriptors )
 			{
