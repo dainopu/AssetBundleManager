@@ -80,12 +80,18 @@ namespace AssetBundleHelper
 			/// <returns></returns>
 			public T[] GetAssets<T>() where T : UnityEngine.Object
 			{
-				if( Assets == null )
+				if( Assets == null || Assets.Length == 0 )
 				{
 					return null ;
 				}
 
-				return Assets as T[] ;
+				T[] assets = new T[ Assets.Length ] ;
+				for( int i  = 0 ; i <  Assets.Length ; i ++ )
+				{
+					assets[ i ] = Assets[ i ] as T ;
+				}
+				
+				return assets ;
 			}
 
 			/// <summary>
