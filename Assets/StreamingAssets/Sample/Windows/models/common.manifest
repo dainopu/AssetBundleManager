@@ -1,0 +1,16 @@
+ManifestFileVersion: 0
+CRC: 1985086478
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 64843fe846265965d1b6b52d0bf2005c
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: f19fbf085e00d23fbc8d6cf7b345590b
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+Assets:
+- Assets/Application/AssetBundle/Models/Common/Textures/marie_face_lineMask.tif
+Dependencies: []

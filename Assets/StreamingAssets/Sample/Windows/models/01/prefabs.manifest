@@ -1,0 +1,49 @@
+ManifestFileVersion: 0
+CRC: 2356923537
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 5a6a271b9493ad4de2d4a48685d695b1
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: ee7e4895f8b5ef276c36b51dabcd03a7
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 74
+  Script: {instanceID: 0}
+- Class: 90
+  Script: {instanceID: 0}
+- Class: 91
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: 03118221f4bfcd74ba0ad8075da02411, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: af276926b0db1c248a93ab3c1134a6c2, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: f228c6e846db8bd4ca8c289bdb7565b9, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 625e9c3b94e3dc64ea82f6e29062b3d6, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 57ee23be7c6aba14ab648d37977b2dbb, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 137
+  Script: {instanceID: 0}
+Assets:
+- Assets/Application/AssetBundle/Models/01/Prefabs/Model.prefab
+Dependencies:
+- C:/Developments/Unity/Unity2019.2/AssetBundleManager/Assets/StreamingAssets/Sample/Windows/models/common

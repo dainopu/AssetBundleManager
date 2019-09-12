@@ -1,5 +1,5 @@
 ManifestFileVersion: 0
-CRC: 1348927461
+CRC: 3818818636
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
@@ -13,4 +13,11 @@ AssetBundleManifest:
       Dependencies: {}
     Info_3:
       Name: scenes/overlayscene
+      Dependencies: {}
+    Info_4:
+      Name: models/01/prefabs
+      Dependencies:
+        Dependency_0: models/common
+    Info_5:
+      Name: models/common
       Dependencies: {}

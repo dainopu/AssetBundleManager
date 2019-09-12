@@ -1,7 +1,6 @@
 ﻿using System.Collections ;
 using System.Collections.Generic ;
 using UnityEngine ;
-using UnityEngine.AddressableAssets ;
 
 using AssetBundleHelper ;
 
@@ -10,6 +9,7 @@ using UnityEditor ;
 #endif
 
 using uGUIHelper ;
+using TransformHelper ;
 
 namespace AssetableExperiment
 {
@@ -17,6 +17,9 @@ namespace AssetableExperiment
 	{
 		[SerializeField]
 		protected UIImage[] m_Image = new UIImage[ 2 ] ;
+
+		[SerializeField]
+		protected SoftTransform	m_ModelBase ;
 
 		void Awake()
 		{
@@ -55,7 +58,7 @@ namespace AssetableExperiment
 //				AssetBundleManager.localPriority = AssetBundleManager.LocalPriority.High ; // 優先 Resources > StreamingAssets > AssetBundle
 				AssetBundleManager.LoadPriorityType = AssetBundleManager.LoadPriority.Local ;	// 優先 StreamingAssets > Resources > AssetBundle
 				Debug.LogWarning( "[注意]各種アセットは StreamingAssets を優先的に使用します" ) ;
-				AssetBundleManager.UseStreamingAssets = false ;	// ネットワーク上のアセットバンドルが見つからない場合は StreamingAssets から探す
+				AssetBundleManager.UseStreamingAssets = true ;	// ネットワーク上のアセットバンドルが見つからない場合は StreamingAssets から探す
 
 				AssetBundleManager.FastLoadEnabled = false ;	// 一部同期化で高速化読み出し
 
@@ -133,8 +136,8 @@ namespace AssetableExperiment
 
 			Sprite[] sprite = new Sprite[ 2 ] ;
 
-			int category = 3 ;
-			int type = 1 ;
+			int category = 8 ;
+			int type = 0 ;
 
 			AssetBundleManager.UseResources = AssetBundleManager.UserResources.None ;       // ネットワーク上のアセットバンドルが見つからない場合は Resources から探す
 			AssetBundleManager.UseLocalAsset = false ;
@@ -373,7 +376,27 @@ namespace AssetableExperiment
 					Debug.LogWarning( "------> 既にダウンロード済み" ) ;
 				}
 			}
+			else
+			if( category == 8 )
+			{
+				string modelPath = "Models/01/Prefabs//Model" ;
+				GameObject modelPrefab = null ;
 
+				if( type == 0 )
+				{
+					yield return AssetBundleManager.LoadAssetAsync<GameObject>( modelPath, ( _ ) => { modelPrefab = _ ; }, AssetBundleManager.CachingType.Same ) ;
+				}
+				else
+				if( type == 1 )
+				{
+					modelPrefab = AssetBundleManager.LoadAsset<GameObject>( modelPath ) ;
+				}
+
+				if( m_ModelBase != null && modelPrefab != null )
+				{
+					m_ModelBase.AddPrefab( modelPrefab ) ;
+				}
+			}
 
 			if( sprite != null && m_Image[ 0 ] != null )
 			{

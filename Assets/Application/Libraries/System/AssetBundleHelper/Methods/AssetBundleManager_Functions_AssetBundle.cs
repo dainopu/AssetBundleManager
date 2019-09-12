@@ -313,13 +313,22 @@ namespace AssetBundleHelper
 		// 一般タイプに対する拡張子
 		internal protected readonly Dictionary<Type,List<string>> m_TypeToExtension = new Dictionary<Type, List<string>>()
 		{
-			{ typeof( Sprite ),		new List<string>{ ".png", ".jpg", ".gif", ".bmp", ".tiff",				} },
-			{ typeof( GameObject ), new List<string>{ ".prefab", ".asset"									} },
-			{ typeof( AudioClip ),	new List<string>{ ".wav", ".ogg", ".mp3",								} },
-			{ typeof( TextAsset ),	new List<string>{ ".txt", ".bytes", ".html", ".xml", ".json", ".yml"	} },
-			{ typeof( Texture2D ),	new List<string>{ ".png", ".jpg", ".gif", ".bmp", ".tiff",				} },
-			{ typeof( Texture ),	new List<string>{ ".png", ".jpg", ".gif", ".bmp", ".tiff",				} },
-			{ typeof( Material ),	new List<string>{ ".mat",												} },
+			{ typeof( Sprite ),						new List<string>{ ".png", ".jpg", ".tga", ".gif", ".bmp", ".tiff",											} },
+			{ typeof( GameObject ),					new List<string>{ ".prefab", ".asset",																		} },
+			{ typeof( AudioClip ),					new List<string>{ ".wav", ".ogg", ".mp3", ".aif", ".aiff", ".xm", ".mod", ".it", ".s3m",					} },
+			{ typeof( TextAsset ),					new List<string>{ ".txt", ".json", ".bytes", ".csv", ".html", ".xml",  ".yml", ".htm", ".fnt"				} },
+			{ typeof( Texture2D ),					new List<string>{ ".png", ".jpg", ".tga", ".psd", ".gif", ".bmp", ".tif", ".tiff", ".iff", ".pict"			} },
+			{ typeof( Texture ),					new List<string>{ ".png", ".jpg", ".tga", ".psd", ".gif", ".bmp", ".tif", ".tiff", ".iff", ".pict", ".exr"	} },
+			{ typeof( AnimationClip ),				new List<string>{ ".anim",																					} },
+			{ typeof( Font ),						new List<string>{ ".ttf", ".otf", ".dfont", 																} },
+			{ typeof( Material ),					new List<string>{ ".mat", ".material",																		} },
+			{ typeof( Cubemap ),					new List<string>{ ".hdr", ".cubemap",																		} },
+			{ typeof( RuntimeAnimatorController ),	new List<string>{ ".controller",																			} },
+			{ typeof( Mesh ),						new List<string>{ ".fbx", ".obj", ".max", ".blend", 														} },
+			{ typeof( Shader ),						new List<string>{ ".shader", 																				} },
+			{ typeof( PhysicMaterial ),				new List<string>{ ".physicmaterial", 																		} },
+			{ typeof( AvatarMask ),					new List<string>{ ".mask", 																		} },
+//			{ typeof( MovieTexture ),				new List<string>{ ".mp4", ".mov", ".asf", ".avi", ".mpg", ".mpeg"											} },
 		} ;
 
 		// 不明タイプに対する拡張子

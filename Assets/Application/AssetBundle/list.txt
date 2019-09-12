@@ -1,2 +1,4 @@
 Textures/*,t1 t2
 Scenes/*,s1
+Models/*/Prefabs
+Models/Common/
