@@ -113,15 +113,15 @@ namespace AssetBundleHelper
 			/// </summary>
 			/// <param name="tName"></param>
 			/// <param name="tAssetBundle"></param>
-			public void AddAssetBundleCache( string assetBundleName, AssetBundle assetBundle, AssetBundleManager instance )
+			public void AddAssetBundleCache( string assetBundlePath, AssetBundle assetBundle, AssetBundleManager instance )
 			{
 				// キャッシュに追加されるアセットバンドルは自動破棄対象にはしない
 				instance.RemoveAutoCleaningTarget( assetBundle ) ;
 
-				if( m_AssetBundleCache.ContainsKey( assetBundleName ) == true )
+				if( m_AssetBundleCache.ContainsKey( assetBundlePath ) == true )
 				{
 					// 既に登録済みなので最終アクセス時間を更新して戻る
-					m_AssetBundleCache[ assetBundleName ].LastAccessTime = Time.realtimeSinceStartup ;
+					m_AssetBundleCache[ assetBundlePath ].LastAccessTime = Time.realtimeSinceStartup ;
 					return ;
 				}
 
@@ -135,19 +135,19 @@ namespace AssetBundleHelper
 				}
 
 				// キャッシュを追加する
-				m_AssetBundleCache.Add( assetBundleName, new AssetBundleCacheElement( assetBundle, Time.realtimeSinceStartup ) ) ;
+				m_AssetBundleCache.Add( assetBundlePath, new AssetBundleCacheElement( assetBundle, Time.realtimeSinceStartup ) ) ;
 			}
 
 			// キャッシュからアセットバンドルを削除する
-			public void RemoveAssetBundleCache( string assetBundleName )
+			public void RemoveAssetBundleCache( string assetBundlePath )
 			{
-				if( m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					return ;	// 元々キャッシュには存在しない
 				}
 
-				m_AssetBundleCache[ assetBundleName ].AssetBundle.Unload( false ) ;
-				m_AssetBundleCache.Remove( assetBundleName ) ;
+				m_AssetBundleCache[ assetBundlePath ].AssetBundle.Unload( false ) ;
+				m_AssetBundleCache.Remove( assetBundlePath ) ;
 			}
 
 			/// <summary>
@@ -388,7 +388,7 @@ namespace AssetBundleHelper
 				/// <param name="tAssetBundleName">アセットバンドル名</param>
 				/// <param name="tName">アセット名</param>
 				/// <returns>アセットに含まれる任意のコンポーネントのインスタンス</returns>
-				internal protected UnityEngine.Object LoadAsset( AssetBundle assetBundle, string assetBundleName, string assetName, Type type, AssetBundleManager instance )
+				internal protected UnityEngine.Object LoadAsset( AssetBundle assetBundle, string assetBundlePath, string assetName, Type type, AssetBundleManager instance )
 				{
 					string path ;
 
@@ -396,12 +396,12 @@ namespace AssetBundleHelper
 					if( string.IsNullOrEmpty( assetName ) == true )
 					{
 						// アセットバンドル＝単一アセットのケース
-						path = ( instance.m_LocalAssetBundleRootPath + assetBundleName ).ToLower() ;
+						path = ( instance.m_LocalAssetBundleRootPath + assetBundlePath ).ToLower() ;
 					}
 					else
 					{
 						// アセットバンドル＝複合アセットのケース
-						path = ( instance.m_LocalAssetBundleRootPath + assetBundleName + "/" + assetName ).ToLower() ;
+						path = ( instance.m_LocalAssetBundleRootPath + assetBundlePath + "/" + assetName ).ToLower() ;
 					}
 
 					// まずはそのままロードしてみる
@@ -615,9 +615,9 @@ namespace AssetBundleHelper
 				/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 				/// <param name="tResourcePath">アセットのリソースパス</param>
 				/// <returns>サブアセットに含まれる任意のコンポーネントのインスタンス</returns>
-				internal protected UnityEngine.Object LoadSubAsset( AssetBundle assetBundle, string assetBundleName, string assetName, string subAssetName, Type type, AssetBundleManager instance, string resourcePath )
+				internal protected UnityEngine.Object LoadSubAsset( AssetBundle assetBundle, string assetBundlePath, string assetName, string subAssetName, Type type, AssetBundleManager instance, string resourcePath )
 				{
-					UnityEngine.Object[] subAssets = LoadAllSubAssets( assetBundle, assetBundleName, assetName, type, instance, resourcePath ) ;
+					UnityEngine.Object[] subAssets = LoadAllSubAssets( assetBundle, assetBundlePath, assetName, type, instance, resourcePath ) ;
 					if( subAssets == null || subAssets.Length == 0 )
 					{
 						return null ;
@@ -713,19 +713,19 @@ namespace AssetBundleHelper
 				/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 				/// <param name="tResourcePath">アセットのリソースパス</param>
 				/// <returns>全てのサブアセットに含まれる任意のコンポーネントのインスタンス</returns>
-				internal protected UnityEngine.Object[] LoadAllSubAssets( AssetBundle assetBundle, string assetBundleName, string assetName, Type type, AssetBundleManager instance, string resourcePath )
+				internal protected UnityEngine.Object[] LoadAllSubAssets( AssetBundle assetBundle, string assetBundlePath, string assetName, Type type, AssetBundleManager instance, string resourcePath )
 				{
 					string path ;
 
 					if( string.IsNullOrEmpty( assetName ) == true )
 					{
 						// アセットバンドル＝単一アセットのケース
-						path = ( instance.m_LocalAssetBundleRootPath + assetBundleName ).ToLower() ;
+						path = ( instance.m_LocalAssetBundleRootPath + assetBundlePath ).ToLower() ;
 					}
 					else
 					{
 						// アセットバンドル＝複合アセットのケース
-						path = ( instance.m_LocalAssetBundleRootPath + assetBundleName + "/" + assetName ).ToLower() ;
+						path = ( instance.m_LocalAssetBundleRootPath + assetBundlePath + "/" + assetName ).ToLower() ;
 					}
 
 					UnityEngine.Object[] assets = assetBundle.LoadAssetWithSubAssets( path, type ) ;	// 注意：該当が無くても配列数０のインスタンスが返る
@@ -1249,8 +1249,7 @@ namespace AssetBundleHelper
 
 				//------------------------------------
 
-				string[] assetBundleName ;
-				string[] assetBundleHash ;
+				KeyValuePair<string,string>[] assetBundlePathAndHashs ;
 				
 				if( LegacyType == false )
 				{
@@ -1279,8 +1278,8 @@ namespace AssetBundleHelper
 						yield break ;
 					}
 
-					assetBundleName = m_Manifest.GetAllAssetBundles() ;
-					if( assetBundleName == null || assetBundleName.Length == 0 )
+					string[] assetBundlePaths = m_Manifest.GetAllAssetBundles() ;
+					if( assetBundlePaths == null || assetBundlePaths.Length == 0 )
 					{
 						// 内包されるアセットバンドルが存在しない
 						assetBundle.Unload( true ) ;
@@ -1291,13 +1290,12 @@ namespace AssetBundleHelper
 						yield break ;
 					}
 					
-					// ハッシュを取得
-					l = assetBundleName.Length ;
-					assetBundleHash = new string[ l ] ;
-
+					// パスとハッシュを取得
+					l = assetBundlePaths.Length ;
+					assetBundlePathAndHashs = new KeyValuePair<string, string>[ l ] ;
 					for( i  = 0 ; i <  l ; i ++ )
 					{
-						assetBundleHash[ i ] = m_Manifest.GetAssetBundleHash( assetBundleName[ i ] ).ToString() ;
+						assetBundlePathAndHashs[ i ] = new KeyValuePair<string, string>( assetBundlePaths[ i ], m_Manifest.GetAssetBundleHash( assetBundlePaths[ i ] ).ToString() ) ;
 					}
 
 					assetBundle.Unload( false ) ;
@@ -1345,9 +1343,8 @@ namespace AssetBundleHelper
 						yield break ;
 					}
 
-					assetBundleName = new string[ l ] ;
-					assetBundleHash = new string[ l ] ;
-
+					// パスとハッシュを取得
+					assetBundlePathAndHashs = new KeyValuePair<string, string>[ l ] ;
 					for( i  = 0 ; i <  l ; i ++ )
 					{
 						string[] column = row[ i ].Split( ',' ) ;
@@ -1355,9 +1352,7 @@ namespace AssetBundleHelper
 						{
 							break ;
 						}
-
-						assetBundleName[ i ] = column[ 0 ] ;
-						assetBundleHash[ i ] = column[ 1 ] ;
+						assetBundlePathAndHashs[ i ] = new KeyValuePair<string, string>( column[ 0 ], column[ 1 ] ) ;
 					}
 
 					if( i <  l )
@@ -1479,24 +1474,23 @@ namespace AssetBundleHelper
 
 				ManifestInfo.AssetBundleInfo node ;
 
-				l = assetBundleName.Length ;
-				for( i  = 0 ; i <  l ; i ++ )
+				foreach( var assetBundlePathAndHash in assetBundlePathAndHashs )
 				{
 					size	= 0 ;
 					crc		= 0 ;
 					tags	= null ;
-					if( additionalInfoHash != null && additionalInfoHash.ContainsKey( assetBundleName[ i ] ) == true )
+					if( additionalInfoHash != null && additionalInfoHash.ContainsKey( assetBundlePathAndHash.Key ) == true )
 					{
-						size	= additionalInfoHash[ assetBundleName[ i ] ].Size ;                                                                                                                                                                                                                  
-						crc		= additionalInfoHash[ assetBundleName[ i ] ].Crc ;
-						tags	= additionalInfoHash[ assetBundleName[ i ] ].Tags ;
+						size	= additionalInfoHash[ assetBundlePathAndHash.Key ].Size ;                                                                                                                                                                                                                  
+						crc		= additionalInfoHash[ assetBundlePathAndHash.Key ].Crc ;
+						tags	= additionalInfoHash[ assetBundlePathAndHash.Key ].Tags ;
 					}
 
-					node = new ManifestInfo.AssetBundleInfo( assetBundleName[ i ], assetBundleHash[ i ], size, crc, tags, 0L ) ;
+					node = new ManifestInfo.AssetBundleInfo( assetBundlePathAndHash.Key, assetBundlePathAndHash.Value, size, crc, tags, 0L ) ;
 					m_AssetBundleInfo.Add( node ) ;
-					if( m_AssetBundleHash.ContainsKey( assetBundleName[ i ] ) == false )
+					if( m_AssetBundleHash.ContainsKey( assetBundlePathAndHash.Key ) == false )
 					{
-						m_AssetBundleHash.Add( assetBundleName[ i ], node ) ;
+						m_AssetBundleHash.Add( assetBundlePathAndHash.Key, node ) ;
 					}
 				}
 
@@ -1586,42 +1580,42 @@ namespace AssetBundleHelper
 				//----------------------------------------------
 					
 				// まずはリモートから見て更新の必要の無いものをチェックする
-				string assetBundleName ;
+				string assetBundlePath ;
 				int size ;
 
-				for( i  = 0 ; i <  m_AssetBundleInfo.Count ; i ++ )
+				foreach( var assetBundleInfo in m_AssetBundleInfo )
 				{
-					assetBundleName = m_AssetBundleInfo[ i ].Path ;
-					if( hash.ContainsKey( assetBundleName ) == true )
+					assetBundlePath = assetBundleInfo.Path ;
+					if( hash.ContainsKey( assetBundlePath ) == true )
 					{
 						// 既に記録した事がある
-						node =  hash[ assetBundleName ] ;
+						node =  hash[ assetBundlePath ] ;
 
-						if( m_AssetBundleInfo[ i ].Hash == node.Hash && m_AssetBundleInfo[ i ].Size == node.Size )
+						if( assetBundleInfo.Hash == node.Hash && assetBundleInfo.Size == node.Size )
 						{
 							// ハッシュは同じである
 
 							// 実体の存在する場所
-							size = StorageAccessor_GetSize( manifestName + "/" + assetBundleName ) ;
+							size = StorageAccessor_GetSize( manifestName + "/" + assetBundlePath ) ;
 							if( size >  0 )
 							{
 								// このファイルは更新しない
-								m_AssetBundleInfo[ i ].LastUpdateTime	= node.LastUpdateTime ;
-								m_AssetBundleInfo[ i ].Size				= size ;		// ＣＲＣファイルでのサイズと同じになるはず(ＣＲＣファイルにもサイズを持たせる事：サイズ部分にＣＲＣ値がずれて入り半日潰すバグを発生させた事があった事を忘れるな)
-								m_AssetBundleInfo[ i ].UpdateRequired	= false ;
+								assetBundleInfo.LastUpdateTime	= node.LastUpdateTime ;
+								assetBundleInfo.Size			= size ;		// ＣＲＣファイルでのサイズと同じになるはず(ＣＲＣファイルにもサイズを持たせる事：サイズ部分にＣＲＣ値がずれて入り半日潰すバグを発生させた事があった事を忘れるな)
+								assetBundleInfo.UpdateRequired	= false ;
 							}
 						}
 					}
 				}
 
 				// 次に参照が無くなったファイルを削除する
-				for( i  = 0 ; i <  info.Count ; i ++ )
+				foreach( var assetBundleInfo in info )
 				{
-					assetBundleName = info[ i ].Path ;
-					if( m_AssetBundleHash.ContainsKey( assetBundleName ) == false )
+					assetBundlePath = assetBundleInfo.Path ;
+					if( m_AssetBundleHash.ContainsKey( assetBundlePath ) == false )
 					{
 						// このファイルは参照が無くなる
-						StorageAccessor_Remove( manifestName + "/" + assetBundleName ) ;
+						StorageAccessor_Remove( manifestName + "/" + assetBundlePath ) ;
 					}
 				}
 
@@ -1673,7 +1667,8 @@ namespace AssetBundleHelper
 			// ローカルにアセットバンドルが存在しない場合にリモートから取得しローカルに保存する
 			private IEnumerator LoadAssetBundleFromRemote_Coroutine( AssetBundleInfo assetBundleInfo, string assetBundleLocalPath, bool keepChange, bool keep, Request request, AssetBundleManager instance )
 			{
-				request.Length = assetBundleInfo.Size ;
+				request.EntireDataSize = assetBundleInfo.Size ;
+				request.EntireFileCount = 1 ;
 
 				string assetBundleRemotePath ;
 				byte[] data = null ;
@@ -1693,7 +1688,8 @@ namespace AssetBundleHelper
 								yield return instance.StartCoroutine( StorageAccessor.LoadFromStreamingAssets( assetBundleRemotePath, ( _ ) => { data = _ ; } ) ) ;
 								if( data != null && data.Length >  0 )
 								{
-									request.Offset = data.Length ;
+									request.StoredDataSize = data.Length ;
+									request.StoredFileCount = 1 ;
 									request.Progress = 1.0f ;
 								}
 							}
@@ -1715,17 +1711,17 @@ namespace AssetBundleHelper
 								{
 									Progress = www.downloadProgress ;
 
-									request.Offset = ( int )www.downloadedBytes ;
+									request.StoredDataSize = ( int )www.downloadedBytes ;
 									request.Progress = Progress ;
-
-									if( www.isHttpError == true || www.isNetworkError == true || string.IsNullOrEmpty( www.error ) == false )
-									{
-										Error = www.error ;
-										break ;
-									}
 
 									if( www.isDone == true )
 									{
+										request.StoredFileCount = 1 ;
+										break ;
+									}
+									if( www.isHttpError == true || www.isNetworkError == true || string.IsNullOrEmpty( www.error ) == false )
+									{
+										Error = www.error ;
 										break ;
 									}
 
@@ -1817,6 +1813,15 @@ namespace AssetBundleHelper
 				}
 
 				m_Busy = false ;
+
+				//---------------------------------
+
+				if( string.IsNullOrEmpty( request.Error ) == false )
+				{
+					yield break ;	// 失敗
+				}
+
+				request.IsDone = true ;	// １ファイルのダウンロード完了
 			}
 
 			//---------------------------------------------------------
@@ -1831,9 +1836,9 @@ namespace AssetBundleHelper
 			/// <param name="tAssetName">アセット名</param>
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <returns>アセットに含まれる任意のコンポーネントのインスタンス</returns>
-			internal protected UnityEngine.Object LoadAsset( string assetBundleName, string assetName, Type type, bool assetBundleCaching, AssetBundleManager instance )
+			internal protected UnityEngine.Object LoadAsset( string assetBundlePath, string assetName, Type type, bool assetBundleCaching, AssetBundleManager instance )
 			{
-				AssetBundle assetBundle = LoadAssetBundle( assetBundleName, assetBundleCaching, instance ) ;
+				AssetBundle assetBundle = LoadAssetBundle( assetBundlePath, assetBundleCaching, instance ) ;
 				if( assetBundle == null )
 				{
 					return null ;	// 失敗
@@ -1842,24 +1847,19 @@ namespace AssetBundleHelper
 				//---------------------------------------------------------
 
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
-
-				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットのロード
-				UnityEngine.Object asset = assetBundleInfo.LoadAsset( assetBundle, assetBundleName, assetName, type, instance ) ;
+				UnityEngine.Object asset = m_AssetBundleHash[ assetBundlePath ].LoadAsset( assetBundle, assetBundlePath, assetName, type, instance ) ;
 
-				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					// キャッシュにためない場合はアセットパンドルのインスタンスは破棄する
 #if UNITY_EDITOR
 					// デバッグログを出力するとなぜか UnityEditor 上でのエラーが出なくなる
-					Debug.LogWarning( "----- LoadAsset アセットバンドルを破棄する: [ " + assetBundleName + " ] ( " + assetName + " : " + type + " )" ) ;
+					Debug.LogWarning( "----- LoadAsset アセットバンドルを破棄対象にする: [ " + assetBundlePath + " ] ( " + assetName + " : " + type + " )" ) ;
 #endif
-
 					// どうもアセットのロードは非同期で行われているらしく、その最中に破棄を実行するとエラーになってしまう。基本的に同期ロードは使えないということか。
-//					tAssetBundle.Unload( false ) ;
 					instance.AddAutoCleaningTarget( assetBundle ) ;
 				}
 
@@ -1875,13 +1875,12 @@ namespace AssetBundleHelper
 			/// <param name="rAsset">アセットに含まれる任意のコンポーネントのインスタンスを格納するための要素数１以上の配列</param>
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <returns>列挙子</returns>
-			internal protected IEnumerator LoadAsset_Coroutine( string assetBundleName, string assetName, Type type, Action<UnityEngine.Object> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance )
+			internal protected IEnumerator LoadAsset_Coroutine( string assetBundlePath, string assetName, Type type, Action<UnityEngine.Object> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance )
 			{
 				AssetBundle assetBundle = null ;
 				
 				// 必ず非同期ダウンロードを試みる(依存関係にあるアセットバンドルのロードも行う必要があるため)
-				yield return instance.StartCoroutine( LoadAssetBundle_Coroutine( assetBundleName, ( _ ) => { assetBundle = _ ; }, keep, request, assetBundleCaching, instance ) ) ;
-
+				yield return instance.StartCoroutine( LoadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { assetBundle = _ ; }, keep, request, assetBundleCaching, instance ) ) ;
 				if( assetBundle == null )
 				{
 					yield break ;	// アセットバンドルが展開出来ない
@@ -1890,10 +1889,10 @@ namespace AssetBundleHelper
 				//---------------------------------------------------------
 
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
 
 				UnityEngine.Object asset ;
 
@@ -1907,7 +1906,7 @@ namespace AssetBundleHelper
 //				else
 //				{
 					// 同期
-					asset = assetBundleInfo.LoadAsset( assetBundle, assetBundleName, assetName, type, instance ) ;
+					asset = assetBundleInfo.LoadAsset( assetBundle, assetBundlePath, assetName, type, instance ) ;
 //				}
 
 				if( asset != null )
@@ -1915,15 +1914,14 @@ namespace AssetBundleHelper
 					onLoaded?.Invoke( asset ) ;
 				}
 
-				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					// キャッシュにためない場合はアセットパンドルのインスタンスは破棄する
 #if UNITY_EDITOR
 					// デバッグログを出力するとなぜか UnityEditor 上でのエラーが出なくなる
-					Debug.LogWarning( "----- LoadAsset_Coroutine アセットバンドルの自動破棄予約: [ " + assetBundleName + " ] ( " + assetName + " : " + type + " )" ) ;
+					Debug.LogWarning( "----- LoadAsset_Coroutine アセットバンドルを破棄対象にする: [ " + assetBundlePath + " ] ( " + assetName + " : " + type + " )" ) ;
 //					yield return null ;	// １フレームおくとUnityEditor上でのエラーが出なくなる
 #endif
-//					tAssetBundle.Unload( false ) ;
 					instance.AddAutoCleaningTarget( assetBundle ) ;
 				}
 			}
@@ -1941,9 +1939,9 @@ namespace AssetBundleHelper
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <param name="tResourcePath">アセットのリソースパス</param>
 			/// <returns>全てのサブアセットに含まれる任意のコンポーネントのインスタンス</returns>
-			internal protected UnityEngine.Object[] LoadAllAssets( string assetBundleName, Type type, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
+			internal protected UnityEngine.Object[] LoadAllAssets( string assetBundlePath, Type type, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
 			{
-				AssetBundle assetBundle = LoadAssetBundle( assetBundleName, assetBundleCaching, instance ) ;
+				AssetBundle assetBundle = LoadAssetBundle( assetBundlePath, assetBundleCaching, instance ) ;
 				if( assetBundle == null )
 				{
 					return null ;	// 失敗
@@ -1952,22 +1950,18 @@ namespace AssetBundleHelper
 				//---------------------------------------------------------
 
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
-
-				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットのロード
-				UnityEngine.Object[] assets = assetBundleInfo.LoadAllAssets( assetBundle, type, instance, resourcePath ) ;
+				UnityEngine.Object[] assets = m_AssetBundleHash[ assetBundlePath ].LoadAllAssets( assetBundle, type, instance, resourcePath ) ;
 
-				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					// キャッシュにためない場合はアセットパンドルのインスタンスは破棄する
 #if UNITY_EDITOR
 					// デバッグログを出力するとなぜか UnityEditor 上でのエラーが出なくなる
-					Debug.LogWarning( "----- LoadAllSubAssets アセットバンドルを破棄する: [ " + assetBundleName + " ] ( " + type + " )" ) ;
+					Debug.LogWarning( "----- LoadAllSubAssets アセットバンドルを破棄対象にする: [ " + assetBundlePath + " ] ( " + type + " )" ) ;
 #endif
-//					assetBundle.Unload( false ) ;
 					instance.AddAutoCleaningTarget( assetBundle ) ;
 				}
 
@@ -1984,12 +1978,12 @@ namespace AssetBundleHelper
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <param name="tResourcePath">アセットのリソースパス</param>
 			/// <returns>列挙子</returns>
-			internal protected IEnumerator LoadAllAssets_Coroutine( string assetBundleName, Type type, Action<UnityEngine.Object[]> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
+			internal protected IEnumerator LoadAllAssets_Coroutine( string assetBundlePath, Type type, Action<UnityEngine.Object[]> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
 			{
 				AssetBundle assetBundle = null ;
 				
 				// 必ず非同期ダウンロードを試みる(依存関係にあるアセットバンドルのロードも行う必要があるため)
-				yield return instance.StartCoroutine( LoadAssetBundle_Coroutine( assetBundleName, ( _ ) => { assetBundle = _ ; }, keep, request, assetBundleCaching, instance ) ) ;
+				yield return instance.StartCoroutine( LoadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { assetBundle = _ ; }, keep, request, assetBundleCaching, instance ) ) ;
 				if( assetBundle == null )
 				{
 					yield break ;	// アセットバンドルが展開出来ない
@@ -1998,10 +1992,10 @@ namespace AssetBundleHelper
 				//---------------------------------------------------------
 
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
 
 				// アセットバンドルが読み出せた(あと一息)
 				UnityEngine.Object[] assets = null ;
@@ -2024,15 +2018,14 @@ namespace AssetBundleHelper
 					onLoaded?.Invoke( assets ) ;
 				}
 
-				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					// キャッシュにためない場合はアセットパンドルのインスタンスは破棄する
 #if UNITY_EDITOR
 					// デバッグログを出力するとなぜか UnityEditor 上でのエラーが出なくなる
-					Debug.LogWarning( "----- LoadAllSubAssets_Coroutine アセットバンドルを破棄する: [ " + assetBundleName + " ] ( " + type + " )" ) ;
+					Debug.LogWarning( "----- LoadAllSubAssets_Coroutine アセットバンドルを破棄対象にする: [ " + assetBundlePath + " ] ( " + type + " )" ) ;
 //					yield return null ;	// １フレームおくとUnityEditor上でのエラーが出なくなる
 #endif
-//					assetBundle.Unload( false ) ;
 					instance.AddAutoCleaningTarget( assetBundle ) ;
 				}
 			}
@@ -2051,9 +2044,9 @@ namespace AssetBundleHelper
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <param name="tResourcePath">アセットのリソースパス</param>
 			/// <returns>サブアセットに含まれる任意のコンポーネントのインスタンス</returns>
-			internal protected UnityEngine.Object LoadSubAsset( string assetBundleName, string assetName, string subAssetName, Type type, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
+			internal protected UnityEngine.Object LoadSubAsset( string assetBundlePath, string assetName, string subAssetName, Type type, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
 			{
-				AssetBundle assetBundle = LoadAssetBundle( assetBundleName, assetBundleCaching, instance ) ;
+				AssetBundle assetBundle = LoadAssetBundle( assetBundlePath, assetBundleCaching, instance ) ;
 				if( assetBundle == null )
 				{
 					return null ;	// 失敗
@@ -2062,22 +2055,18 @@ namespace AssetBundleHelper
 				//---------------------------------------------------------
 
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
-
-				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットのロード
-				UnityEngine.Object asset = assetBundleInfo.LoadSubAsset( assetBundle, assetBundleName, assetName, subAssetName, type, instance, resourcePath ) ;
+				UnityEngine.Object asset = m_AssetBundleHash[ assetBundlePath ].LoadSubAsset( assetBundle, assetBundlePath, assetName, subAssetName, type, instance, resourcePath ) ;
 
-				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					// キャッシュにためない場合はアセットパンドルのインスタンスは破棄する
 #if UNITY_EDITOR
 					// デバッグログを出力するとなぜか UnityEditor 上でのエラーが出なくなる
-					Debug.LogWarning( "----- LoadSubAsset アセットバンドルを破棄する: [ " + assetBundleName + " ] ( " + assetName + " : " + type + " )" ) ;
+					Debug.LogWarning( "----- LoadSubAsset アセットバンドルを破棄する: [ " + assetBundlePath + " ] ( " + assetName + " : " + type + " )" ) ;
 #endif
-//					tAssetBundle.Unload( false ) ;
 					instance.AddAutoCleaningTarget( assetBundle ) ;
 				}
 
@@ -2095,12 +2084,12 @@ namespace AssetBundleHelper
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <param name="tResourcePath">アセットのリソースパス</param>
 			/// <returns>列挙子</returns>
-			internal protected IEnumerator LoadSubAsset_Coroutine( string assetBundleName, string assetName, string subAssetName, Type type, Action<UnityEngine.Object> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
+			internal protected IEnumerator LoadSubAsset_Coroutine( string assetBundlePath, string assetName, string subAssetName, Type type, Action<UnityEngine.Object> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
 			{
 				AssetBundle assetBundle = null ;
 				
 				// 必ず非同期ダウンロードを試みる(依存関係にあるアセットバンドルのロードも行う必要があるため)
-				yield return instance.StartCoroutine( LoadAssetBundle_Coroutine( assetBundleName, ( _ ) => { assetBundle = _ ; }, keep, request, assetBundleCaching, instance ) ) ;
+				yield return instance.StartCoroutine( LoadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { assetBundle = _ ; }, keep, request, assetBundleCaching, instance ) ) ;
 				if( assetBundle == null )
 				{
 					yield break ;	// アセットバンドルが展開出来ない
@@ -2109,10 +2098,10 @@ namespace AssetBundleHelper
 				//---------------------------------------------------------
 
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
 
 				UnityEngine.Object asset ;
 
@@ -2125,7 +2114,7 @@ namespace AssetBundleHelper
 //				else
 //				{
 					// 同期
-					asset = assetBundleInfo.LoadSubAsset( assetBundle, assetBundleName, assetName, subAssetName, type, instance, resourcePath ) ;
+					asset = assetBundleInfo.LoadSubAsset( assetBundle, assetBundlePath, assetName, subAssetName, type, instance, resourcePath ) ;
 //				}
 
 				if( asset != null )
@@ -2133,15 +2122,14 @@ namespace AssetBundleHelper
 					onLoaded?.Invoke( asset ) ;
 				}
 
-				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					// キャッシュにためない場合はアセットパンドルのインスタンスは破棄する
 #if UNITY_EDITOR
 					// デバッグログを出力するとなぜか UnityEditor 上でのエラーが出なくなる
-					Debug.LogWarning( "----- LoadSubAsset_Coroutine アセットバンドルを破棄する: [ " + assetBundleName + " ] ( " + assetName + " : " + type + " )" ) ;
+					Debug.LogWarning( "----- LoadSubAsset_Coroutine アセットバンドルを破棄する: [ " + assetBundlePath + " ] ( " + assetName + " : " + type + " )" ) ;
 //					yield return null ;	// １フレームおくとUnityEditor上でのエラーが出なくなる
 #endif
-//					tAssetBundle.Unload( false ) ;
 					instance.AddAutoCleaningTarget( assetBundle ) ;
 				}
 			}
@@ -2159,9 +2147,9 @@ namespace AssetBundleHelper
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <param name="tResourcePath">アセットのリソースパス</param>
 			/// <returns>全てのサブアセットに含まれる任意のコンポーネントのインスタンス</returns>
-			internal protected UnityEngine.Object[] LoadAllSubAssets( string assetBundleName, string assetName, Type type, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
+			internal protected UnityEngine.Object[] LoadAllSubAssets( string assetBundlePath, string assetName, Type type, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
 			{
-				AssetBundle assetBundle = LoadAssetBundle( assetBundleName, assetBundleCaching, instance ) ;
+				AssetBundle assetBundle = LoadAssetBundle( assetBundlePath, assetBundleCaching, instance ) ;
 				if( assetBundle == null )
 				{
 					return null ;	// 失敗
@@ -2170,22 +2158,18 @@ namespace AssetBundleHelper
 				//---------------------------------------------------------
 
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
-
-				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットのロード
-				UnityEngine.Object[] assets = assetBundleInfo.LoadAllSubAssets( assetBundle, assetBundleName, assetName, type, instance, resourcePath ) ;
+				UnityEngine.Object[] assets = m_AssetBundleHash[ assetBundlePath ].LoadAllSubAssets( assetBundle, assetBundlePath, assetName, type, instance, resourcePath ) ;
 
-				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					// キャッシュにためない場合はアセットパンドルのインスタンスは破棄する
 #if UNITY_EDITOR
 					// デバッグログを出力するとなぜか UnityEditor 上でのエラーが出なくなる
-					Debug.LogWarning( "----- LoadAllSubAssets アセットバンドルを破棄する: [ " + assetBundleName + " ] ( " + assetName + " : " + type + " )" ) ;
+					Debug.LogWarning( "----- LoadAllSubAssets アセットバンドルを破棄する: [ " + assetBundlePath + " ] ( " + assetName + " : " + type + " )" ) ;
 #endif
-//					assetBundle.Unload( false ) ;
 					instance.AddAutoCleaningTarget( assetBundle ) ;
 				}
 
@@ -2202,12 +2186,12 @@ namespace AssetBundleHelper
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <param name="tResourcePath">アセットのリソースパス</param>
 			/// <returns>列挙子</returns>
-			internal protected IEnumerator LoadAllSubAssets_Coroutine( string assetBundleName, string assetName, Type type, Action<UnityEngine.Object[]> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
+			internal protected IEnumerator LoadAllSubAssets_Coroutine( string assetBundlePath, string assetName, Type type, Action<UnityEngine.Object[]> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance, string resourcePath )
 			{
 				AssetBundle assetBundle = null ;
 				
 				// 必ず非同期ダウンロードを試みる(依存関係にあるアセットバンドルのロードも行う必要があるため)
-				yield return instance.StartCoroutine( LoadAssetBundle_Coroutine( assetBundleName, ( _ ) => { assetBundle = _ ; }, keep, request, assetBundleCaching, instance ) ) ;
+				yield return instance.StartCoroutine( LoadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { assetBundle = _ ; }, keep, request, assetBundleCaching, instance ) ) ;
 				if( assetBundle == null )
 				{
 					yield break ;	// アセットバンドルが展開出来ない
@@ -2216,10 +2200,10 @@ namespace AssetBundleHelper
 				//---------------------------------------------------------
 
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
 
 				// アセットバンドルが読み出せた(あと一息)
 				UnityEngine.Object[] assets = null ;
@@ -2234,7 +2218,7 @@ namespace AssetBundleHelper
 //				else
 //				{
 					// 同期
-					assets = assetBundleInfo.LoadAllSubAssets( assetBundle, assetBundleName, assetName, type, instance, resourcePath ) ;
+					assets = assetBundleInfo.LoadAllSubAssets( assetBundle, assetBundlePath, assetName, type, instance, resourcePath ) ;
 //				}
 
 				if( assets != null && assets.Length >  0 )
@@ -2242,12 +2226,12 @@ namespace AssetBundleHelper
 					onLoaded?.Invoke( assets ) ;
 				}
 
-				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( assetBundleCaching == false && m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					// キャッシュにためない場合はアセットパンドルのインスタンスは破棄する
 #if UNITY_EDITOR
 					// デバッグログを出力するとなぜか UnityEditor 上でのエラーが出なくなる
-					Debug.LogWarning( "----- LoadAllSubAssets_Coroutine アセットバンドルを破棄する: [ " + assetBundleName + " ] ( " + assetName + " : " + type + " )" ) ;
+					Debug.LogWarning( "----- LoadAllSubAssets_Coroutine アセットバンドルを破棄する: [ " + assetBundlePath + " ] ( " + assetName + " : " + type + " )" ) ;
 //					yield return null ;	// １フレームおくとUnityEditor上でのエラーが出なくなる
 #endif
 //					tAssetBundle.Unload( false ) ;
@@ -2265,13 +2249,13 @@ namespace AssetBundleHelper
 			/// <param name="tAssetBundleName">アセットバンドル名</param>
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <returns>アセットバンドルのインスタンス</returns>
-			internal protected AssetBundle LoadAssetBundle( string assetBundleName, bool assetBundleCaching, AssetBundleManager instance )
+			internal protected AssetBundle LoadAssetBundle( string assetBundlePath, bool assetBundleCaching, AssetBundleManager instance )
 			{
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundleName = assetBundleName.ToLower() ;
 
 				// そのファイルが更新対象か確認する
-				if( m_AssetBundleHash.ContainsKey( assetBundleName ) == false )
+				if( m_AssetBundleHash.ContainsKey( assetBundlePath ) == false )
 				{
 					// 指定の名前のアセットバンドルは存在しない
 					return null ;
@@ -2282,13 +2266,13 @@ namespace AssetBundleHelper
 				// 指定の名前のアセットバンドルインフォは存在する
 
 				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
 
 				// このアセットバンドルが更新対象になっているか確認する
 				if( assetBundleInfo.UpdateRequired == true )
 				{
 					// 更新対象になっているのでキャッシュから削除する
-					RemoveAssetBundleCache( assetBundleName ) ;
+					RemoveAssetBundleCache( assetBundlePath ) ;
 
 					// 更新対象になっているので取得不可
 					return null ;
@@ -2301,30 +2285,31 @@ namespace AssetBundleHelper
 				if( m_Manifest != null )
 				{
 					// レガシータイプの場合はマニフェストが存在しないので null チェックはきちんと行う必要がある
-					string[] dependentAssetBundleNames = m_Manifest.GetAllDependencies( assetBundleName ) ;
-					if( dependentAssetBundleNames != null && dependentAssetBundleNames.Length >  0 )
+					string[] dependentAssetBundlePaths = m_Manifest.GetAllDependencies( assetBundlePath ) ;
+					if( dependentAssetBundlePaths != null && dependentAssetBundlePaths.Length >  0 )
 					{
 						// 依存するものが存在する
 
-						Debug.LogWarning( "同期:依存するアセットバンドルが存在する: [ " + dependentAssetBundleNames.Length + " ] <- " + assetBundleName ) ;
+						Debug.LogWarning( "同期:依存するアセットバンドルが存在する: [ " + dependentAssetBundlePaths.Length + " ] <- " + assetBundlePath ) ;
 
-						string			dependentAssetBundleName ;
+//						string			dependentAssetBundlePath ;
 						AssetBundleInfo	dependentAssetBundleInfo ;
 						AssetBundle		dependentAssetBundle ;
 
-						int i, l = dependentAssetBundleNames.Length ;
+//						int i, l = dependentAssetBundlePaths.Length ;
 
-						for( i  = 0 ; i <  l ; i ++ )
+//						for( i  = 0 ; i <  l ; i ++ )
+						foreach( var dependentAssetBundlePath in dependentAssetBundlePaths )
 						{
-							dependentAssetBundleName = dependentAssetBundleNames[ i ].ToLower() ;	// 保険で小文字か化
+//							dependentAssetBundlePath = dependentAssetBundlePaths[ i ].ToLower() ;	// 保険で小文字か化
 
-							Debug.LogWarning( "同期:依存するアセットバンドル名:" + dependentAssetBundleName ) ;
+							Debug.LogWarning( "同期:依存するアセットバンドル名:" + dependentAssetBundlePath ) ;
 
-							dependentAssetBundleInfo = m_AssetBundleHash[ dependentAssetBundleName ] ;
+							dependentAssetBundleInfo = m_AssetBundleHash[ dependentAssetBundlePath ] ;
 							if( dependentAssetBundleInfo.UpdateRequired == true )
 							{
 								// 更新対象であるため取得不可
-								RemoveAssetBundleCache( dependentAssetBundleName ) ;
+								RemoveAssetBundleCache( dependentAssetBundlePath ) ;
 
 //								Debug.LogWarning( "同期:依存するアセットバンドルに更新が必要なものがある:" + tDependentAssetBundleName ) ;
 
@@ -2336,25 +2321,26 @@ namespace AssetBundleHelper
 						//-------------------------------
 
 						// 依存するアセットバンドルでキャッシュにためていないものはためていく
-						for( i  = 0 ; i <  l ; i ++ )
+//						for( i  = 0 ; i <  l ; i ++ )
+						foreach( var dependentAssetBundlePath in dependentAssetBundlePaths )
 						{
-							dependentAssetBundleName = dependentAssetBundleNames[ i ].ToLower() ;	// 保険で小文字化
+//							dependentAssetBundlePath = dependentAssetBundlePaths[ i ].ToLower() ;	// 保険で小文字化
 
 //							Debug.LogWarning( "同期:依存するアセットバンドル名:" + tDependentAssetBundleName ) ;
 
-							dependentAssetBundleInfo = m_AssetBundleHash[ dependentAssetBundleName ] ;
+							dependentAssetBundleInfo = m_AssetBundleHash[ dependentAssetBundlePath ] ;
 
 							// 全て更新対象ではないはず
 
 							// キャッシュに存在するか確認する
-							if( m_AssetBundleCache.ContainsKey( dependentAssetBundleName ) == false )
+							if( m_AssetBundleCache.ContainsKey( dependentAssetBundlePath ) == false )
 							{
 								// キャッシュに存在しない
 								dependentAssetBundle = StorageAccessor_LoadAssetBundle( ManifestName + "/" + dependentAssetBundleInfo.Path ) ;
 								if( dependentAssetBundle != null )
 								{
 									// キャッシュにためる
-									AddAssetBundleCache( dependentAssetBundleName, dependentAssetBundle, instance ) ;
+									AddAssetBundleCache( dependentAssetBundlePath, dependentAssetBundle, instance ) ;
 								}
 							}
 						}
@@ -2366,7 +2352,7 @@ namespace AssetBundleHelper
 				// ここに来るということは既にローカルに最新のアセットバンドルが保存されている事を意味する
 				AssetBundle assetBundle ;
 				
-				if( m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					// キャッシュには存在しない
 					assetBundle = StorageAccessor_LoadAssetBundle( ManifestName + "/" + assetBundleInfo.Path ) ;
@@ -2379,13 +2365,13 @@ namespace AssetBundleHelper
 					if( assetBundleCaching == true )
 					{
 //						Debug.LogWarning( "アセットバンドルをキャッシュにためました:" + tAssetBundleName ) ;
-						AddAssetBundleCache( assetBundleName, assetBundle, instance ) ;
+						AddAssetBundleCache( assetBundlePath, assetBundle, instance ) ;
 					}
 				}
 				else
 				{
 					// 既にキャッシュに存在するのでそれを使用する
-					assetBundle = m_AssetBundleCache[ assetBundleName ].AssetBundle ;
+					assetBundle = m_AssetBundleCache[ assetBundlePath ].AssetBundle ;
 				}
 
 				// アセットバンドルのインスタンスを返す
@@ -2400,13 +2386,13 @@ namespace AssetBundleHelper
 			/// <param name="keep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
 			/// <param name="instance">アセットバンドルマネージャのインスタンス</param>
 			/// <returns>列挙子</returns>
-			internal protected IEnumerator LoadAssetBundle_Coroutine( string assetBundleName, Action<AssetBundle> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance )
+			internal protected IEnumerator LoadAssetBundle_Coroutine( string assetBundlePath, Action<AssetBundle> onLoaded, bool keep, Request request, bool assetBundleCaching, AssetBundleManager instance )
 			{
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundleName = assetBundleName.ToLower() ;
 
 				// そのファイルが更新対象か確認する
-				if( m_AssetBundleHash.ContainsKey( assetBundleName ) == false )
+				if( m_AssetBundleHash.ContainsKey( assetBundlePath ) == false )
 				{
 					// 指定の名前のアセットバンドルは存在しない
 					yield break ;
@@ -2417,7 +2403,7 @@ namespace AssetBundleHelper
 				// 指定の名前のアセットバンドルインフォは存在する
 
 				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
 
 				// 非同期で同じアセットバンドルにアクセスする場合は排他ロックをかける
 				if( assetBundleInfo.Busy == true )
@@ -2436,7 +2422,7 @@ namespace AssetBundleHelper
 				if( assetBundleInfo.UpdateRequired == true )
 				{
 					// キャッシュから削除する
-					RemoveAssetBundleCache( assetBundleName ) ;
+					RemoveAssetBundleCache( assetBundlePath ) ;
 
 					// 更新対象になっているのでダウンロードを試みる
 					yield return instance.StartCoroutine( LoadAssetBundleFromRemote_Coroutine( assetBundleInfo, assetBundleLocalPath, true, keep, request, instance ) ) ;
@@ -2455,26 +2441,28 @@ namespace AssetBundleHelper
 				if( m_Manifest != null )
 				{
 					// レガシータイプの場合はマニフェストが存在しないので null チェックはきちんと行う必要がある
-					string[] dependentAssetBundleNames = m_Manifest.GetAllDependencies( assetBundleName ) ;
-					if( dependentAssetBundleNames != null && dependentAssetBundleNames.Length >  0 )
+					string[] dependentAssetBundlePaths = m_Manifest.GetAllDependencies( assetBundlePath ) ;
+					if( dependentAssetBundlePaths != null && dependentAssetBundlePaths.Length >  0 )
 					{
 						// 依存するものが存在する
 
-						Debug.LogWarning( "非同期:依存するアセットバンドルが存在する: [ " + dependentAssetBundleNames.Length + " ] <- " + assetBundleName ) ;
+						Debug.LogWarning( "非同期:依存するアセットバンドルが存在する: [ " + dependentAssetBundlePaths.Length + " ] <- " + assetBundlePath ) ;
 
-						string			dependentAssetBundleName ;
+//						string			dependentAssetBundlePath ;
 						AssetBundleInfo	dependentAssetBundleInfo ;
 						string			dependentAssetBundleLocalPath ;
 						AssetBundle		dependentAssetBundle ;
 
-						int i, l = dependentAssetBundleNames.Length ;
-						for( i  = 0 ; i <  l ; i ++ )
+//						int i, l = dependentAssetBundlePaths.Length ;
+
+//						for( i  = 0 ; i <  l ; i ++ )
+						foreach( var dependentAssetBundlePath in dependentAssetBundlePaths )
 						{
-							dependentAssetBundleName = dependentAssetBundleNames[ i ].ToLower() ;	// 保険で小文字化
+//							dependentAssetBundlePath = dependentAssetBundlePaths[ i ].ToLower() ;	// 保険で小文字化
 
-							Debug.LogWarning( "非同期:依存するアセットバンドル名:" + dependentAssetBundleName ) ;
+							Debug.LogWarning( "非同期:依存するアセットバンドル名:" + dependentAssetBundlePath ) ;
 
-							dependentAssetBundleInfo = m_AssetBundleHash[ dependentAssetBundleName ] ;
+							dependentAssetBundleInfo = m_AssetBundleHash[ dependentAssetBundlePath ] ;
 
 //							Debug.LogWarning( "非同期:ロック状態:" + tDependentAssetBundleName + " " + tDependentAssetBundleInfo.busy ) ;
 
@@ -2497,9 +2485,9 @@ namespace AssetBundleHelper
 							if( dependentAssetBundleInfo.UpdateRequired == true )
 							{
 								// キャッシュから削除する
-								RemoveAssetBundleCache( dependentAssetBundleName ) ;
+								RemoveAssetBundleCache( dependentAssetBundlePath ) ;
 
-								Debug.LogWarning( "非同期:依存アセットバンドルのダウンロードを試みる:" + dependentAssetBundleName ) ;
+								Debug.LogWarning( "非同期:依存アセットバンドルのダウンロードを試みる:" + dependentAssetBundlePath ) ;
 
 								// 更新対象になっているのでダウンロードを試みる
 								yield return instance.StartCoroutine( LoadAssetBundleFromRemote_Coroutine( dependentAssetBundleInfo, dependentAssetBundleLocalPath, true, keep, request, instance ) ) ;
@@ -2508,7 +2496,7 @@ namespace AssetBundleHelper
 							if( dependentAssetBundleInfo.UpdateRequired == false )
 							{
 								// 依存アセットバンドルのダウンロードに成功
-								if( m_AssetBundleCache.ContainsKey( dependentAssetBundleName ) == false )
+								if( m_AssetBundleCache.ContainsKey( dependentAssetBundlePath ) == false )
 								{
 									// キャッシュには存在しないのでロードする
 //									if( tInstance.m_FastLoadEnabled == false || fastLoadEnabled == false )
@@ -2526,7 +2514,7 @@ namespace AssetBundleHelper
 									{
 										// キャッシュにためる
 //										Debug.LogWarning( "キャッシュにためます:" + tDependentAssetBundleName ) ;
-										AddAssetBundleCache( dependentAssetBundleName, dependentAssetBundle, instance ) ;
+										AddAssetBundleCache( dependentAssetBundlePath, dependentAssetBundle, instance ) ;
 									}
 								}
 							}
@@ -2536,7 +2524,7 @@ namespace AssetBundleHelper
 
 							if( dependentAssetBundleInfo.UpdateRequired == true )
 							{
-								Debug.LogWarning( "非同期:依存アセットバンドルのダウンロードに失敗した:" + dependentAssetBundleName ) ;
+								Debug.LogWarning( "非同期:依存アセットバンドルのダウンロードに失敗した:" + dependentAssetBundlePath ) ;
 
 								// 依存アセットバンドルのダウンロードに失敗
 								request.Error = "Could not dependent load" ;
@@ -2552,7 +2540,7 @@ namespace AssetBundleHelper
 
 				AssetBundle assetBundle ;
 
-				if( m_AssetBundleCache.ContainsKey( assetBundleName ) == false )
+				if( m_AssetBundleCache.ContainsKey( assetBundlePath ) == false )
 				{
 					// キャッシュには存在しない
 //					if( tInstance.m_FastLoadEnabled == false || fastLoadEnabled == false )
@@ -2569,13 +2557,13 @@ namespace AssetBundleHelper
 					// キャッシュにためる
 					if( assetBundleCaching == true )
 					{
-						AddAssetBundleCache( assetBundleName, assetBundle, instance ) ;
+						AddAssetBundleCache( assetBundlePath, assetBundle, instance ) ;
 					}
 				}
 				else
 				{
 					// キャッシュに存在する
-					assetBundle = m_AssetBundleCache[ assetBundleName ].AssetBundle ;
+					assetBundle = m_AssetBundleCache[ assetBundlePath ].AssetBundle ;
 				}
 				
 				//---------------------------------------------------------
@@ -2662,17 +2650,18 @@ namespace AssetBundleHelper
 
 				//---------------------------------------------------------
 				
-				// トータルサイズを計算する
-				int length = 0 ;
+				// 全体サイズを計算する
+				int entireDataSize = 0 ;
 				foreach( var assetBundlePath in assetBundlePaths )
 				{
 					AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
-					length += assetBundleInfo.Size ;
+					entireDataSize += assetBundleInfo.Size ;
 				}
-				request.Length = length ;
+				request.EntireDataSize = entireDataSize ;
+				request.EntireFileCount = assetBundlePaths.Length ;
 
 				// ダウンロードを行う
-				int offset = 0 ;
+				int storedDataSize = 0 ;
 				foreach( var assetBundlePath in assetBundlePaths )
 				{
 					AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
@@ -2687,17 +2676,23 @@ namespace AssetBundleHelper
 					Request subRequest = new Request() ;
 					instance.StartCoroutine( LoadAssetBundleFromRemote_Coroutine( assetBundleInfo, assetBundleLocalPath, true, keep, subRequest, instance ) ) ;
 
-					offset = request.Offset ;
+					storedDataSize = request.StoredDataSize ;
 					while( true )
 					{
 						// ダウンロード終了を待つ
-						request.Offset = offset + subRequest.Offset ;
-						request.Progress = ( float )request.Offset / ( float )request.Length ;
+						request.StoredDataSize = storedDataSize + subRequest.StoredDataSize ;
+						request.Progress = ( float )request.StoredDataSize / ( float )request.EntireDataSize ;
 
-						if( subRequest.IsDone == true || string.IsNullOrEmpty( subRequest.Error ) == false )
+						if( subRequest.IsDone == true )
 						{
-							break ;
+							request.StoredFileCount ++ ;
+							break ;	// 成功
 						}
+						if( string.IsNullOrEmpty( subRequest.Error ) == false )
+						{
+							break ;	// 失敗
+						}
+
 						yield return null ;
 					}
 
@@ -2722,13 +2717,13 @@ namespace AssetBundleHelper
 			/// <param name="tKeep">キャッシュオーバー時の動作(true=キャッシュオーバー時に保持する・false=キャッシュオーバー時に破棄する)</param>
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <returns>列挙子</returns>
-			internal protected bool RemoveAssetBundle( string assetBundleName, AssetBundleManager instance )
+			internal protected bool RemoveAssetBundle( string assetBundlePath, AssetBundleManager instance )
 			{
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// そのファイルが更新対象か確認する
-				if( m_AssetBundleHash.ContainsKey( assetBundleName ) == false )
+				if( m_AssetBundleHash.ContainsKey( assetBundlePath ) == false )
 				{
 					// 指定の名前のアセットバンドルは存在しない
 					return false ;
@@ -2739,7 +2734,7 @@ namespace AssetBundleHelper
 				// 指定の名前のアセットバンドルインフォは存在する
 
 				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
 
 				// ローカルのパス
 				string assetBundleLocalPath = ManifestName + "/" + assetBundleInfo.Path ;
@@ -2767,13 +2762,13 @@ namespace AssetBundleHelper
 			/// <param name="tAssetBundleName">アセットバンドル名</param>
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <returns>結果(true=存在する・false=存在しない</returns>
-			internal protected bool Contains( string assetBundleName )
+			internal protected bool Contains( string assetBundlePath )
 			{
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// そのファイルが更新対象か確認する
-				if( m_AssetBundleHash.ContainsKey( assetBundleName ) == false )
+				if( m_AssetBundleHash.ContainsKey( assetBundlePath ) == false )
 				{
 					// 指定の名前のアセットバンドルは存在しない
 					return false ;
@@ -2791,13 +2786,13 @@ namespace AssetBundleHelper
 			/// <param name="tAssetBundleName">アセットバンドル名</param>
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <returns>結果(true=存在する・false=存在しない</returns>
-			internal protected bool Exists( string assetBundleName )
+			internal protected bool Exists( string assetBundlePath )
 			{
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// そのファイルが更新対象か確認する
-				if( m_AssetBundleHash.ContainsKey( assetBundleName ) == false )
+				if( m_AssetBundleHash.ContainsKey( assetBundlePath ) == false )
 				{
 					// 指定の名前のアセットバンドルは存在しない
 					return false ;
@@ -2808,7 +2803,7 @@ namespace AssetBundleHelper
 				// 指定の名前のアセットバンドルインフォは存在する
 
 				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
 
 				// このアセットバンドルが更新対象になっているか確認する
 				if( assetBundleInfo.UpdateRequired == true )
@@ -2824,29 +2819,30 @@ namespace AssetBundleHelper
 				if( m_Manifest != null )
 				{
 					// レガシータイプの場合はマニフェストが存在しないので null チェックはきちんと行う必要がある
-					string[] dependentAssetBundleNames = m_Manifest.GetAllDependencies( assetBundleName ) ;
-					if( dependentAssetBundleNames != null && dependentAssetBundleNames.Length >  0 )
+					string[] dependentAssetBundlePaths = m_Manifest.GetAllDependencies( assetBundlePath ) ;
+					if( dependentAssetBundlePaths != null && dependentAssetBundlePaths.Length >  0 )
 					{
 						// 依存するものが存在する
 
 //						Debug.LogWarning( "存在確認:依存するアセットバンドルが存在する: [ " + tDependentAssetBundleNames.Length + " ] <- " + tAssetBundleName ) ;
 
-						string			dependentAssetBundleName ;
+//						string			dependentAssetBundlePath ;
 						AssetBundleInfo	dependentAssetBundleInfo ;
 
-						for( int i  = 0 ; i <  dependentAssetBundleNames.Length ; i ++ )
+//						for( int i  = 0 ; i <  dependentAssetBundlePaths.Length ; i ++ )
+						foreach( var dependentAssetBundlePath in dependentAssetBundlePaths )
 						{
-							dependentAssetBundleName = dependentAssetBundleNames[ i ].ToLower() ;	// 保険で小文字化
+//							dependentAssetBundlePath = dependentAssetBundlePaths[ i ].ToLower() ;	// 保険で小文字化
 
 //							Debug.LogWarning( "存在確認:依存するアセットバンドル名:" + tDependentAssetBundleName ) ;
 
-							dependentAssetBundleInfo = m_AssetBundleHash[ dependentAssetBundleName ] ;
+							dependentAssetBundleInfo = m_AssetBundleHash[ dependentAssetBundlePath ] ;
 							if( dependentAssetBundleInfo.UpdateRequired == true )
 							{
 								// 更新対象であるため取得不可
-								RemoveAssetBundleCache( dependentAssetBundleName ) ;
+								RemoveAssetBundleCache( dependentAssetBundlePath ) ;
 
-								Debug.LogWarning( "----- ※存在:依存するアセットバンドルに更新が必要なものがある:" + dependentAssetBundleName + " <- " + assetBundleName ) ;
+								Debug.LogWarning( "----- ※存在:依存するアセットバンドルに更新が必要なものがある:" + dependentAssetBundlePath + " <- " + assetBundlePath ) ;
 
 								// １つでも依存アセットバンドルが欠けていたら対象のアセットバンドルも取得出来ない(非同期で取得せよ)
 								return false ;
@@ -2865,13 +2861,13 @@ namespace AssetBundleHelper
 			/// <param name="tAssetBundleName">アセットバンドル名</param>
 			/// <param name="tInstance">アセットバンドルマネージャのインスタンス</param>
 			/// <returns>結果(true=存在する・false=存在しない</returns>
-			internal protected int GetSize( string assetBundleName )
+			internal protected int GetSize( string assetBundlePath )
 			{
 				// 全て小文字化
-				assetBundleName = assetBundleName.ToLower() ;
+//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// そのファイルが更新対象か確認する
-				if( m_AssetBundleHash.ContainsKey( assetBundleName ) == false )
+				if( m_AssetBundleHash.ContainsKey( assetBundlePath ) == false )
 				{
 					// 指定の名前のアセットバンドルは存在しない
 					return 0 ;
@@ -2882,7 +2878,7 @@ namespace AssetBundleHelper
 				// 指定の名前のアセットバンドルインフォは存在する
 
 				// アセットバンドルインフォを取得する
-				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundleName ] ;
+				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
 
 				//------------------------------------------
 
@@ -3002,12 +2998,13 @@ namespace AssetBundleHelper
 
 				List<string> paths = new List<string>() ;
 
-				string			dependentAssetBundlePath ;
+//				string			dependentAssetBundlePath ;
 				AssetBundleInfo	dependentAssetBundleInfo ;
 
-				for( int i  = 0 ; i <  dependentAssetBundlePaths.Length ; i ++ )
+//				for( int i  = 0 ; i <  dependentAssetBundlePaths.Length ; i ++ )
+				foreach( var dependentAssetBundlePath in dependentAssetBundlePaths )
 				{
-					dependentAssetBundlePath = dependentAssetBundlePaths[ i ].ToLower() ;	// 保険で小文字化
+//					dependentAssetBundlePath = dependentAssetBundlePaths[ i ].ToLower() ;	// 保険で小文字化
 
 //					Debug.LogWarning( "依存するアセットバンドル名:" + tDependentAssetBundleName ) ;
 

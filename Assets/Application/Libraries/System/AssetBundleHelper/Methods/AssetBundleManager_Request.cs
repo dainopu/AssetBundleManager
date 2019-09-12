@@ -111,14 +111,26 @@ namespace AssetBundleHelper
 			public float	Progress = 0 ;
 
 			/// <summary>
-			/// ダウンロード済みサイズ
+			/// ダウンロード済み対象サイズ
 			/// </summary>
-			public int		Offset = 0 ;
+			public int		StoredDataSize = 0 ;
 
 			/// <summary>
-			/// ダウンロード全体サイズ
+			/// ダウンロード対象サイズ
 			/// </summary>
-			public int		Length = 0 ;
+			public int		EntireDataSize = 0 ;
+
+			/// <summary>
+			/// ダウンロード済み対象数
+			/// </summary>
+			public int		StoredFileCount = 0 ;
+
+			/// <summary>
+			/// ダウンロード対象数
+			/// </summary>
+			public int		EntireFileCount = 0 ;
+
+
 		}
 	}
 }

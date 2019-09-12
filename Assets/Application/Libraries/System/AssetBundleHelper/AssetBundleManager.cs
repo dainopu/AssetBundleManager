@@ -19,7 +19,7 @@ using StorageHelper ;
 namespace AssetBundleHelper
 {
 	/// <summary>
-	/// アセットバンドルマネージャクラス(シングルトン) Version 2019/09/11 0
+	/// アセットバンドルマネージャクラス(シングルトン) Version 2019/09/12 0
 	/// </summary>
 	public partial class AssetBundleManager : MonoBehaviour
 	{
@@ -58,6 +58,9 @@ namespace AssetBundleHelper
 				return m_Instance ;
 			}
 		}
+
+		// 初期化済みかどうか
+		private bool m_Initialized ;
 		
 		/// <summary>
 		/// AssetBundleManagerのシングルトンインスタンスを生成する
@@ -96,6 +99,13 @@ namespace AssetBundleHelper
 		// 各種初期設定を行う
 		private void Setup()
 		{
+			if( m_Initialized == true )
+			{
+				return ;
+			}
+
+			//----------------------------------
+
 			// 保存されている全マニフェスト情報を読み出す
 			LoadSystemFile() ;
 
@@ -114,6 +124,10 @@ namespace AssetBundleHelper
 
 			// リソースキャッシュを生成する
 			m_ResourceCache = new Dictionary<string, UnityEngine.Object>() ;
+
+			//----------------------------------
+			
+			m_Initialized = true ;	// 初期化済み状態らする
 		}
 
 		/// <summary>
@@ -176,6 +190,10 @@ namespace AssetBundleHelper
 			gameObject.transform.localPosition = Vector3.zero ;
 			gameObject.transform.localRotation = Quaternion.identity ;
 			gameObject.transform.localScale = Vector3.one ;
+
+			//-----------------------------
+		
+			Setup() ;
 		}
 
 		IEnumerator Start()
@@ -214,10 +232,10 @@ namespace AssetBundleHelper
 		/// <param name="rAssetBundleName"></param>
 		/// <param name="rAssetName"></param>
 		/// <returns></returns>
-		private bool GetManifestNameAndAssetBundleName( string path, out string manifestName, out string assetBundleName, out string assetName )
+		private bool GetManifestNameAndAssetBundleName( string path, out string manifestName, out string assetBundlePath, out string assetName )
 		{
 			manifestName	= string.Empty ;
-			assetBundleName	= string.Empty ;
+			assetBundlePath	= string.Empty ;
 			assetName		= string.Empty ;
 
 			if( string.IsNullOrEmpty( path ) == true )
@@ -277,7 +295,7 @@ namespace AssetBundleHelper
 			{
 				// デフォルトマニフェスト名の指定がある
 				manifestName = m_DefaultManifestName ;
-				assetBundleName = path ;
+				assetBundlePath = path ;
 			}
 			else
 			{
@@ -296,7 +314,7 @@ namespace AssetBundleHelper
 				// アセットバンドル名を取得する
 				if( ( l - ( i + 1 ) ) >  0 )
 				{
-					assetBundleName = path.Substring( i + 1, l - ( i + 1 ) ) ;
+					assetBundlePath = path.Substring( i + 1, l - ( i + 1 ) ) ;
 				}
 				else
 				{
@@ -304,13 +322,16 @@ namespace AssetBundleHelper
 				}
 			}
 			
-			i = assetBundleName.IndexOf( "//" ) ;
+			i = assetBundlePath.IndexOf( "//" ) ;
 			if( i >= 0 )
 			{
 				// 複合アセットのアセットバンドルとみなす
-				assetName = assetBundleName.Substring( i + 2, assetBundleName.Length - ( i + 2 ) ) ;
-				assetBundleName = assetBundleName.Substring( 0, i ) ;
+				assetName = assetBundlePath.Substring( i + 2, assetBundlePath.Length - ( i + 2 ) ) ;
+				assetBundlePath = assetBundlePath.Substring( 0, i ) ;
 			}
+
+			// アセットバンドル名は大文字と小文字の区別を無くす(管理上は全て小文字管理)
+			assetBundlePath = assetBundlePath.ToLower() ;
 
 			return true ;
 		}

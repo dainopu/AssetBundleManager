@@ -412,13 +412,13 @@ namespace AssetBundleHelper
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
 						// アセットバンドルからロードを試みる
-						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 						{
-							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									asset = m_ManifestHash[ manifestName ].LoadAsset( assetBundleName, assetName, type, assetBundleCaching, this ) ;
+									asset = m_ManifestHash[ manifestName ].LoadAsset( assetBundlePath, assetName, type, assetBundleCaching, this ) ;
 								}
 							}
 						}
@@ -560,13 +560,13 @@ namespace AssetBundleHelper
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
 						// アセットバンドルからロードを試みる
-						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 						{
-							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAsset_Coroutine( assetBundleName, assetName, type, ( _ ) => { asset = _ ; }, keep, request, assetBundleCaching, this ) ) ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAsset_Coroutine( assetBundlePath, assetName, type, ( _ ) => { asset = _ ; }, keep, request, assetBundleCaching, this ) ) ;
 								}
 							}
 						}
@@ -726,13 +726,13 @@ namespace AssetBundleHelper
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
 						// アセットバンドルからロードを試みる
-						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 						{
-							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									assets = m_ManifestHash[ manifestName ].LoadAllAssets( assetBundleName, type, assetBundleCaching, this, resourcePath ) ;
+									assets = m_ManifestHash[ manifestName ].LoadAllAssets( assetBundlePath, type, assetBundleCaching, this, resourcePath ) ;
 								}
 							}
 						}
@@ -908,13 +908,13 @@ namespace AssetBundleHelper
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
 						// アセットバンドルからロードを試みる
-						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 						{
-							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllAssets_Coroutine( assetBundleName, type, ( _ ) => { assets = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllAssets_Coroutine( assetBundlePath, type, ( _ ) => { assets = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
 								}
 							}
 						}
@@ -1052,13 +1052,13 @@ namespace AssetBundleHelper
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
 						// アセットバンドルからロードを試みる
-						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 						{
-							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									asset = m_ManifestHash[ manifestName ].LoadSubAsset( assetBundleName, assetName, subAssetName, type, assetBundleCaching, this, resourcePath ) ;
+									asset = m_ManifestHash[ manifestName ].LoadSubAsset( assetBundlePath, assetName, subAssetName, type, assetBundleCaching, this, resourcePath ) ;
 								}
 							}
 						}
@@ -1204,13 +1204,13 @@ namespace AssetBundleHelper
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
 						// アセットバンドルからロードを試みる
-						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 						{
-							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadSubAsset_Coroutine( assetBundleName, assetName, subAssetName, type, ( _ ) => { asset = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadSubAsset_Coroutine( assetBundlePath, assetName, subAssetName, type, ( _ ) => { asset = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
 								}
 							}
 						}
@@ -1369,13 +1369,13 @@ namespace AssetBundleHelper
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
 						// アセットバンドルからロードを試みる
-						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 						{
-							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									assets = m_ManifestHash[ manifestName ].LoadAllSubAssets( assetBundleName, assetName, type, assetBundleCaching, this, resourcePath ) ;
+									assets = m_ManifestHash[ manifestName ].LoadAllSubAssets( assetBundlePath, assetName, type, assetBundleCaching, this, resourcePath ) ;
 								}
 							}
 						}
@@ -1549,13 +1549,13 @@ namespace AssetBundleHelper
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
 						// アセットバンドルからロードを試みる
-						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 						{
-							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllSubAssets_Coroutine( assetBundleName, assetName, type, ( _ ) => { assets = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllSubAssets_Coroutine( assetBundlePath, assetName, type, ( _ ) => { assets = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
 								}
 							}
 						}
@@ -1797,13 +1797,13 @@ namespace AssetBundleHelper
 					if( ( t == 1 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 0 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
 						// アセットバンドルからロードを試みる
-						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+						if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 						{
-							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+							if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundleName, ( _ ) => { assetBundle = _ ; }, keep, request, false, this ) ) ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { assetBundle = _ ; }, keep, request, false, this ) ) ;
 									if( assetBundle != null )
 									{
 										if( assetBundle.isStreamedSceneAssetBundle == true )
@@ -1997,13 +1997,13 @@ namespace AssetBundleHelper
 		// アセットバンドルを取得する(同期版)
 		private AssetBundle LoadAssetBundle_Private( string path )
 		{
-			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out _ ) == true )
 			{
-				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 				{
 					if( m_ManifestHash.ContainsKey( manifestName ) == true )
 					{
-						return m_ManifestHash[ manifestName ].LoadAssetBundle( assetBundleName, false, this ) ;
+						return m_ManifestHash[ manifestName ].LoadAssetBundle( assetBundlePath, false, this ) ;
 					}
 				}
 			}
@@ -2039,13 +2039,13 @@ namespace AssetBundleHelper
 			// アセットバンドルを取得する
 			AssetBundle assetBundle = null ;
 
-			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out string assetName ) == true )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 			{
-				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 				{
 					if( m_ManifestHash.ContainsKey( manifestName ) == false )
 					{
-						yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundleName, ( _ ) => { assetBundle = _ ; }, keep, request, false, this ) ) ;
+						yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { assetBundle = _ ; }, keep, request, false, this ) ) ;
 					}
 				}
 			}
@@ -2090,20 +2090,23 @@ namespace AssetBundleHelper
 		{
 			bool result = false ;
 
-			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out _ ) == true )
 			{
-				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 				{
 					if( m_ManifestHash.ContainsKey( manifestName ) == true )
 					{
-						yield return StartCoroutine( m_ManifestHash[ manifestName ].DownloadAssetBundle_Coroutine( assetBundleName, ( _ ) => { result = _ ; }, keep, request, this ) ) ;
+						yield return StartCoroutine( m_ManifestHash[ manifestName ].DownloadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { result = _ ; }, keep, request, this ) ) ;
 					}
 				}
 			}
 
-			if( string.IsNullOrEmpty( request.Error ) == true )
+			if( result == false )
 			{
-				request.Error = "Could not load." ;
+				if( string.IsNullOrEmpty( request.Error ) == true )
+				{
+					request.Error = "Could not load." ;
+				}
 				yield break ;
 			}
 
@@ -2181,15 +2184,17 @@ namespace AssetBundleHelper
 				}
 			}
 
-			if( string.IsNullOrEmpty( request.Error ) == true )
+			if( result == false )
 			{
-				request.Error = "Could not load." ;
+				if( string.IsNullOrEmpty( request.Error ) == true )
+				{
+					request.Error = "Could not load." ;
+				}
 				yield break ;
 			}
 
 			request.IsDone = true ;
 		}
-		
 
 		//-----------------------------------
 
@@ -2206,13 +2211,13 @@ namespace AssetBundleHelper
 		// アセットバンドルをキャッシュから削除する
 		private bool RemoveAssetBundle_Private( string path )
 		{
-			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out _ ) == true )
 			{
-				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 				{
 					if( m_ManifestHash.ContainsKey( manifestName ) == true )
 					{
-						return m_ManifestHash[ manifestName ].RemoveAssetBundle( assetBundleName, this ) ;
+						return m_ManifestHash[ manifestName ].RemoveAssetBundle( assetBundlePath, this ) ;
 					}
 				}
 			}
@@ -2248,7 +2253,7 @@ namespace AssetBundleHelper
 		}
 		
 		/// <summary>
-		/// アセットの存在を確認する
+		/// アセットバンドルの存在を確認する
 		/// </summary>
 		/// <param name="path">アセットバンドルのパス</param>
 		/// <returns></returns>
@@ -2257,7 +2262,7 @@ namespace AssetBundleHelper
 			return m_Instance == null ? false : m_Instance.Exists_Private( path ) ;
 		}
 		
-		// アセットの存在を確認する
+		// アセットバンドルの存在を確認する
 		private bool Exists_Private( string path )
 		{
 			if( m_UseLocalAsset == true )
@@ -2267,13 +2272,13 @@ namespace AssetBundleHelper
 
 			//------------------------------------------------
 
-			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out _ ) == true )
 			{
-				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 				{
 					if( m_ManifestHash.ContainsKey( manifestName ) == true )
 					{
-						return m_ManifestHash[ manifestName ].Exists( assetBundleName ) ;
+						return m_ManifestHash[ manifestName ].Exists( assetBundlePath ) ;
 					}
 				}
 			}
@@ -2293,13 +2298,13 @@ namespace AssetBundleHelper
 		// アセットバンドルのサイズを取得する
 		private int GetSize_Private( string path )
 		{
-			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == true )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out _ ) == true )
 			{
-				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 				{
 					if( m_ManifestHash.ContainsKey( manifestName ) == true )
 					{
-						return m_ManifestHash[ manifestName ].GetSize( assetBundleName ) ;
+						return m_ManifestHash[ manifestName ].GetSize( assetBundlePath ) ;
 					}
 				}
 			}
@@ -2320,13 +2325,13 @@ namespace AssetBundleHelper
 		// 指定のアセットバンドルのキャッシュ内での動作を設定する
 		private bool SetKeepFlag_Private( string path, bool keep )
 		{
-			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundleName, out _ ) == false )
+			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out _ ) == false )
 			{
-				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundleName ) == false )
+				if( string.IsNullOrEmpty( manifestName ) == false && string.IsNullOrEmpty( assetBundlePath ) == false )
 				{
 					if( m_ManifestHash.ContainsKey( manifestName ) == true )
 					{
-						return m_ManifestHash[ manifestName ].SetKeepFlag( assetBundleName, keep ) ;
+						return m_ManifestHash[ manifestName ].SetKeepFlag( assetBundlePath, keep ) ;
 					}
 				}
 			}

@@ -55,7 +55,7 @@ namespace AssetableExperiment
 //				AssetBundleManager.localPriority = AssetBundleManager.LocalPriority.High ; // 優先 Resources > StreamingAssets > AssetBundle
 				AssetBundleManager.LoadPriorityType = AssetBundleManager.LoadPriority.Local ;	// 優先 StreamingAssets > Resources > AssetBundle
 				Debug.LogWarning( "[注意]各種アセットは StreamingAssets を優先的に使用します" ) ;
-				AssetBundleManager.UseStreamingAssets = true ;	// ネットワーク上のアセットバンドルが見つからない場合は StreamingAssets から探す
+				AssetBundleManager.UseStreamingAssets = false ;	// ネットワーク上のアセットバンドルが見つからない場合は StreamingAssets から探す
 
 				AssetBundleManager.FastLoadEnabled = false ;	// 一部同期化で高速化読み出し
 
@@ -63,7 +63,7 @@ namespace AssetableExperiment
 
 				// 実際はマスターの通信が完了してからそちらから取得する
 //				string tDomainName = "http://vms010.ibrains.co.jp/ibrains/moe/" ;
-				string domainName = "http://localhost/Sample/" ;
+				string domainName = "http://localhost:32000/Sample/" ;
 
 
 				// マニフェストを登録
@@ -133,8 +133,8 @@ namespace AssetableExperiment
 
 			Sprite[] sprite = new Sprite[ 2 ] ;
 
-			int category = 0 ;
-			int type = 0 ;
+			int category = 3 ;
+			int type = 1 ;
 
 			AssetBundleManager.UseResources = AssetBundleManager.UserResources.None ;       // ネットワーク上のアセットバンドルが見つからない場合は Resources から探す
 			AssetBundleManager.UseLocalAsset = false ;
@@ -297,6 +297,81 @@ namespace AssetableExperiment
 //				{
 					yield return AssetBundleManager.AddSceneAsync( "scenes/OverlayScene" ) ;
 //				}
+			}
+			else
+			if( category == 6 )
+			{
+				// 単独ファイルのダウンロード
+				string sceneAssetBundlePath = "Scenes/OverlayScene" ;
+
+				if( AssetBundleManager.Exists( sceneAssetBundlePath ) == false )
+				{
+					Debug.LogWarning( "------> " + sceneAssetBundlePath + " をダウンロードする" ) ;
+
+					var request = AssetBundleManager.DownloadAssetBundleAsync( sceneAssetBundlePath ) ;
+
+					Debug.LogWarning( "ダウンロードサイズ : " + request.EntireDataSize ) ;
+
+					while( true )
+					{
+						Debug.LogWarning( "ダウンロード済み : サイズ = " + request.StoredDataSize + " 割合 = " + request.Progress ) ;
+
+						if( request.IsDone == true )
+						{
+							Debug.LogWarning( "成功" ) ;
+							break ;
+						}
+						if( string.IsNullOrEmpty( request.Error ) == false )
+						{
+							Debug.LogWarning( "失敗 : " + request.Error ) ;
+							break ;
+						}
+						yield return null ;
+					}
+				}
+				else
+				{
+					Debug.LogWarning( "------> " + sceneAssetBundlePath + " は既にダウンロード済み" ) ;
+				}
+			}
+			else
+			if( category == 7 )
+			{
+				// 複数ファイルのダウンロード
+
+				string tag = "t1" ;
+
+				string[] paths = AssetBundleManager.GetAllAssetBundlePathsWithTag( tag, true, true ) ;
+
+				if( paths != null && paths.Length >  0 )
+				{
+					Debug.LogWarning( "------> " + paths.Length + " ファイルをダウンロードする" ) ;
+
+					var request = AssetBundleManager.DownloadAssetBundleWithTagAsync( tag ) ;
+
+					Debug.LogWarning( "ダウンロード : サイズ = " + request.EntireDataSize + " 個数 = " + request.EntireFileCount ) ;
+
+					while( true )
+					{
+						Debug.LogWarning( "ダウンロード済み : サイズ = " + request.StoredDataSize + " 個数 = " + request.StoredFileCount + " 割合 = " + request.Progress + " " ) ;
+
+						if( request.IsDone == true )
+						{
+							Debug.LogWarning( "成功" ) ;
+							break ;
+						}
+						if( string.IsNullOrEmpty( request.Error ) == false )
+						{
+							Debug.LogWarning( "失敗 : " + request.Error ) ;
+							break ;
+						}
+						yield return null ;
+					}
+				}
+				else
+				{
+					Debug.LogWarning( "------> 既にダウンロード済み" ) ;
+				}
 			}
 
 
