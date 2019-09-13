@@ -58,7 +58,7 @@ namespace AssetableExperiment
 //				AssetBundleManager.localPriority = AssetBundleManager.LocalPriority.High ; // 優先 Resources > StreamingAssets > AssetBundle
 				AssetBundleManager.LoadPriorityType = AssetBundleManager.LoadPriority.Local ;	// 優先 StreamingAssets > Resources > AssetBundle
 				Debug.LogWarning( "[注意]各種アセットは StreamingAssets を優先的に使用します" ) ;
-				AssetBundleManager.UseStreamingAssets = true ;	// ネットワーク上のアセットバンドルが見つからない場合は StreamingAssets から探す
+				AssetBundleManager.UseStreamingAssets = false ;	// ネットワーク上のアセットバンドルが見つからない場合は StreamingAssets から探す
 
 				AssetBundleManager.FastLoadEnabled = false ;	// 一部同期化で高速化読み出し
 

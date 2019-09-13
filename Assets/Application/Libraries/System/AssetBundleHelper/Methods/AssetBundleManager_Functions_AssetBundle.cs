@@ -261,11 +261,11 @@ namespace AssetBundleHelper
 		/// </summary>
 		/// <param name="path"></param>
 		/// <returns></returns>
-		private IEnumerator OpenLocalSceneAsync( string path, string sceneName, Type type, UnityEngine.SceneManagement.LoadSceneMode mode, Request request )
+		private IEnumerator OpenLocalSceneAsync( string path, string sceneName, Type type, UnityEngine.SceneManagement.LoadSceneMode mode, Action<string> onError )
 		{
 			if( string.IsNullOrEmpty( sceneName ) == true )
 			{
-				request.Error = "Bad scene name" ;
+				onError?.Invoke( "Bad scene name." ) ;
 				yield break ;
 			}
 			
@@ -301,7 +301,7 @@ namespace AssetBundleHelper
 			UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneByName( sceneName ) ;
 			if( scene.IsValid() == false )
 			{
-				request.Error = "Could not load." ;
+				onError?.Invoke( "Could not load." ) ;
 				yield break ;
 			}
 		}
@@ -610,8 +610,8 @@ namespace AssetBundleHelper
 			//------------------------------------------------
 
 			request.Asset = asset ;
-			onLoaded?.Invoke( asset ) ;
 			request.IsDone = true ;
+			onLoaded?.Invoke( asset ) ;
 		}
 		
 		//---------------------------------------------------------------------------
@@ -967,8 +967,8 @@ namespace AssetBundleHelper
 			//------------------------------------------------
 
 			request.Assets = assets ;
-			onLoaded?.Invoke( assets ) ;
 			request.IsDone = true ;
+			onLoaded?.Invoke( assets ) ;
 		}
 
 		//---------------------------------------------------------------------------
@@ -1182,8 +1182,8 @@ namespace AssetBundleHelper
 			{
 				asset = m_ResourceCache[ resourceCachePath ] ;
 				request.Asset = asset ;
-				onLoaded?.Invoke( asset ) ;
 				request.IsDone = true ;
+				onLoaded?.Invoke( asset ) ;
 				yield break ;
 			}
 
@@ -1258,8 +1258,8 @@ namespace AssetBundleHelper
 			//------------------------------------------------
 
 			request.Asset = asset ;
-			onLoaded?.Invoke( asset ) ;
 			request.IsDone = true ;
+			onLoaded?.Invoke( asset ) ;
 		}
 
 		//---------------------------------------------------------------------------
@@ -1612,8 +1612,8 @@ namespace AssetBundleHelper
 			//------------------------------------------------
 
 			request.Assets = assets ;
-			onLoaded?.Invoke( assets ) ;
 			request.IsDone = true ;
+			onLoaded?.Invoke( assets ) ;
 		}
 		
 		//---------------------------------------------------------------------------
@@ -1765,7 +1765,7 @@ namespace AssetBundleHelper
 					sceneName = path.Substring( p, path.Length - p ) ;
 					if( string.IsNullOrEmpty( sceneName ) == true )
 					{
-						request.Error = "Bad scene name" ;
+						request.Error = "Bad scene name." ;
 						yield break ;	// シーン名が不明
 					}
 				}
@@ -1789,24 +1789,26 @@ namespace AssetBundleHelper
 						if( m_UseResources == UserResources.AsyncOnly || m_UseResources == UserResources.Same )
 						{
 							// リソースからロードを試みる
-							yield return StartCoroutine( OpenSceneAsync_Private( sceneName, type, mode, request ) ) ;
-							result = string.IsNullOrEmpty( request.Error ) ;
+							error = string.Empty ;
+							yield return StartCoroutine( OpenSceneAsync_Private( sceneName, type, mode, ( _ ) => { error = _ ; } ) ) ;
+							result = string.IsNullOrEmpty( error ) ;
 							if( result == true )
 							{
-								yield return StartCoroutine( WaitSceneAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, request ) ) ;
-								result = string.IsNullOrEmpty( request.Error ) ;
+								yield return StartCoroutine( WaitSceneAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, ( _ ) => { error = _ ; } ) ) ;
+								result = string.IsNullOrEmpty( error ) ;
 							}
 						}
 #if UNITY_EDITOR
 						if( m_UseLocalAsset == true && result == false )
 						{
 							// ローカルアセットからロードを試みる
-							yield return StartCoroutine( OpenLocalSceneAsync( path, sceneName, type, mode, request ) ) ;
-							result = string.IsNullOrEmpty( request.Error ) ;
+							error = string.Empty ;
+							yield return StartCoroutine( OpenLocalSceneAsync( path, sceneName, type, mode, ( _ ) => { error = _ ; } ) ) ;
+							result = string.IsNullOrEmpty( error ) ;
 							if( result == true )
 							{
-								yield return StartCoroutine( WaitSceneAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, request ) ) ;
-								result = string.IsNullOrEmpty( request.Error ) ;
+								yield return StartCoroutine( WaitSceneAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, ( _ ) => { error = _ ; } ) ) ;
+								result = string.IsNullOrEmpty( error ) ;
 							}
 						}
 #endif
@@ -1827,12 +1829,13 @@ namespace AssetBundleHelper
 										if( assetBundle.isStreamedSceneAssetBundle == true )
 										{
 											// SceneのAssetBundle
-											yield return StartCoroutine( OpenSceneAsync_Private( sceneName, type, mode, request ) ) ;
-											result = string.IsNullOrEmpty( request.Error ) ;
+											error = string.Empty ;
+											yield return StartCoroutine( OpenSceneAsync_Private( sceneName, type, mode, ( _ ) => { error = _ ; } ) ) ;
+											result = string.IsNullOrEmpty( error ) ;
 											if( result == true )
 											{
-												yield return StartCoroutine( WaitSceneAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, request ) ) ;
-												result = string.IsNullOrEmpty( request.Error ) ;
+												yield return StartCoroutine( WaitSceneAsync_Private( sceneName, type, ( _ ) => { targets = _ ; }, targetName, ( _ ) => { error = _ ; } ) ) ;
+												result = string.IsNullOrEmpty( error ) ;
 											}
 										}
 
@@ -1872,15 +1875,15 @@ namespace AssetBundleHelper
 			//------------------------------------------------
 
 			request.Assets = targets ;
-			onLoaded?.Invoke( targets ) ;
 			request.IsDone = true ;
+			onLoaded?.Invoke( targets ) ;
 		}
 
-		private IEnumerator OpenSceneAsync_Private( string sceneName, Type type, UnityEngine.SceneManagement.LoadSceneMode mode, Request request )
+		private IEnumerator OpenSceneAsync_Private( string sceneName, Type type, UnityEngine.SceneManagement.LoadSceneMode mode, Action<string> onError )
 		{
 			if( string.IsNullOrEmpty( sceneName ) == true )
 			{
-				request.Error = "Bad scene name" ;
+				onError?.Invoke( "Bad scene name." ) ;
 				yield break ;
 			}
 			
@@ -1915,13 +1918,13 @@ namespace AssetBundleHelper
 		}
 
 		// シーンをロードまたは加算する(非同期版)
-		private IEnumerator WaitSceneAsync_Private( string sceneName, Type type, Action<UnityEngine.Object[]> onLoaded, string targetName, Request request )
+		private IEnumerator WaitSceneAsync_Private( string sceneName, Type type, Action<UnityEngine.Object[]> onLoaded, string targetName, Action<string> onError )
 		{
 			UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneByName( sceneName ) ;
 			
 			if( scene.IsValid() == false )
 			{
-				request.Error = "Scene is invalid" ;
+				onError?.Invoke( "Scene is invalid" ) ;
 				yield break ;
 			}
 
@@ -1930,72 +1933,65 @@ namespace AssetBundleHelper
 
 			if( type != null && onLoaded != null )
 			{
-				GetInstance_Private( scene, type, onLoaded, targetName, request ) ;
+				GetInstance_Private( scene, type, onLoaded, targetName ) ;
 			}
-
-			// 念のため保険
-			request.Error = null ;
 		}
 
 		//---------------------------
 
-		private void GetInstance_Private( UnityEngine.SceneManagement.Scene scene, Type type, Action<UnityEngine.Object[]> onLoaded, string targetName, Request request )
+		private void GetInstance_Private( UnityEngine.SceneManagement.Scene scene, Type type, Action<UnityEngine.Object[]> onLoaded, string targetName )
 		{
-			if( onLoaded != null || request != null )
-			{
-				// 指定の型のコンポーネントを探してインスタンスを取得する
-				List<UnityEngine.Object> fullTargets = new List<UnityEngine.Object>() ;
+			// 指定の型のコンポーネントを探してインスタンスを取得する
+			List<UnityEngine.Object> fullTargets = new List<UnityEngine.Object>() ;
 
-				GameObject[] gos = scene.GetRootGameObjects() ;
-				if( gos != null && gos.Length >  0 )
+			GameObject[] gos = scene.GetRootGameObjects() ;
+			if( gos != null && gos.Length >  0 )
+			{
+				UnityEngine.Object[] components ;
+				foreach( var go in gos )
 				{
-					UnityEngine.Object[] components ;
-					foreach( var go in gos )
+					components = go.GetComponentsInChildren( type, true ) ;
+					if( components != null && components.Length >  0 )
 					{
-						components = go.GetComponentsInChildren( type, true ) ;
-						if( components != null && components.Length >  0 )
+						foreach( var component in components )
 						{
-							foreach( var component in components )
-							{
-								fullTargets.Add( component ) ;
-							}
+							fullTargets.Add( component ) ;
 						}
 					}
 				}
+			}
 
-				if( fullTargets.Count >  0 )
+			if( fullTargets.Count >  0 )
+			{
+				UnityEngine.Object[] temporaryTargets = null ;
+
+				// 該当のコンポーネントが見つかった
+				if( string.IsNullOrEmpty( targetName ) == false )
 				{
-					UnityEngine.Object[] temporaryTargets = null ;
-
-					// 該当のコンポーネントが見つかった
-					if( string.IsNullOrEmpty( targetName ) == false )
+					// 名前によるフィルタ有り
+					List<UnityEngine.Object> filteredTargets = new List<UnityEngine.Object>() ;
+					foreach( var target in fullTargets )
 					{
-						// 名前によるフィルタ有り
-						List<UnityEngine.Object> filteredTargets = new List<UnityEngine.Object>() ;
-						foreach( var target in fullTargets )
+						if( target.name == targetName )
 						{
-							if( target.name == targetName )
-							{
-								filteredTargets.Add( target ) ;
-							}
+							filteredTargets.Add( target ) ;
 						}
-
-						if( filteredTargets.Count >  0 )
-						{
-							temporaryTargets = filteredTargets.ToArray() ;
-						} 
-					}
-					else
-					{
-						// 名前によるフィルタ無し
-						temporaryTargets = fullTargets.ToArray() ;
 					}
 
-					if( temporaryTargets != null && temporaryTargets.Length >  0 )
+					if( filteredTargets.Count >  0 )
 					{
-						onLoaded?.Invoke( temporaryTargets ) ;
-						request.Assets = temporaryTargets ;
-					}
+						temporaryTargets = filteredTargets.ToArray() ;
+					} 
+				}
+				else
+				{
+					// 名前によるフィルタ無し
+					temporaryTargets = fullTargets.ToArray() ;
+				}
+
+				if( temporaryTargets != null && temporaryTargets.Length >  0 )
+				{
+					onLoaded?.Invoke( temporaryTargets ) ;
 				}
 			}
 		}
@@ -2082,8 +2078,8 @@ namespace AssetBundleHelper
 			}
 
 			request.AssetBundle = assetBundle ;
-			onLoaded?.Invoke( assetBundle ) ;
 			request.IsDone = true ;
+			onLoaded?.Invoke( assetBundle ) ;
 		}
 
 		//-----------------------------------------------------------

@@ -33,7 +33,7 @@ namespace AssetBundleHelper
 			/// <summary>
 			/// リモート側のマニフェストのパス
 			/// </summary>
-			public string	FilePath = "" ;
+			public string	FilePath = string.Empty ;
 
 			/// <summary>
 			/// レガシータイプのアセットバンドルであるかどうかを示す
@@ -1778,7 +1778,6 @@ namespace AssetBundleHelper
 					// 失敗
 					Error = "Could not load data" ;
 					onError?.Invoke( Error ) ;    // 失敗
-
 					yield break ;
 				}
 
@@ -1790,7 +1789,6 @@ namespace AssetBundleHelper
 					{
 						Error = "Bad CRC" ;
 						onError?.Invoke( Error ) ;    // 失敗
-
 						yield break ;
 					}
 				}
@@ -1873,9 +1871,6 @@ namespace AssetBundleHelper
 
 				//---------------------------------------------------------
 
-				// 全て小文字化
-//				assetBundlePath = assetBundlePath.ToLower() ;
-
 				// アセットのロード
 				UnityEngine.Object asset = m_AssetBundleHash[ assetBundlePath ].LoadAsset( assetBundle, assetBundlePath, assetName, type, instance ) ;
 
@@ -1914,9 +1909,6 @@ namespace AssetBundleHelper
 				}
 
 				//---------------------------------------------------------
-
-				// 全て小文字化
-//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットバンドルインフォを取得する
 				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
@@ -1980,9 +1972,6 @@ namespace AssetBundleHelper
 
 				//---------------------------------------------------------
 
-				// 全て小文字化
-//				assetBundlePath = assetBundlePath.ToLower() ;
-
 				// アセットのロード
 				UnityEngine.Object[] assets = m_AssetBundleHash[ assetBundlePath ].LoadAllAssets( assetBundle, type, instance, resourcePath ) ;
 
@@ -2021,9 +2010,6 @@ namespace AssetBundleHelper
 				}
 
 				//---------------------------------------------------------
-
-				// 全て小文字化
-//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットバンドルインフォを取得する
 				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
@@ -2089,9 +2075,6 @@ namespace AssetBundleHelper
 
 				//---------------------------------------------------------
 
-				// 全て小文字化
-//				assetBundlePath = assetBundlePath.ToLower() ;
-
 				// アセットのロード
 				UnityEngine.Object asset = m_AssetBundleHash[ assetBundlePath ].LoadSubAsset( assetBundle, assetBundlePath, assetName, subAssetName, type, instance, resourcePath ) ;
 
@@ -2131,9 +2114,6 @@ namespace AssetBundleHelper
 				}
 
 				//---------------------------------------------------------
-
-				// 全て小文字化
-//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットバンドルインフォを取得する
 				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
@@ -2196,9 +2176,6 @@ namespace AssetBundleHelper
 
 				//---------------------------------------------------------
 
-				// 全て小文字化
-//				assetBundlePath = assetBundlePath.ToLower() ;
-
 				// アセットのロード
 				UnityEngine.Object[] assets = m_AssetBundleHash[ assetBundlePath ].LoadAllSubAssets( assetBundle, assetBundlePath, assetName, type, instance, resourcePath ) ;
 
@@ -2237,9 +2214,6 @@ namespace AssetBundleHelper
 				}
 
 				//---------------------------------------------------------
-
-				// 全て小文字化
-//				assetBundlePath = assetBundlePath.ToLower() ;
 
 				// アセットバンドルインフォを取得する
 				AssetBundleInfo assetBundleInfo = m_AssetBundleHash[ assetBundlePath ] ;
