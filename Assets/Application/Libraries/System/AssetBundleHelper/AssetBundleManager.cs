@@ -19,7 +19,7 @@ using StorageHelper ;
 namespace AssetBundleHelper
 {
 	/// <summary>
-	/// アセットバンドルマネージャクラス(シングルトン) Version 2019/09/12 0
+	/// アセットバンドルマネージャクラス(シングルトン) Version 2019/09/13 0
 	/// </summary>
 	public partial class AssetBundleManager : MonoBehaviour
 	{

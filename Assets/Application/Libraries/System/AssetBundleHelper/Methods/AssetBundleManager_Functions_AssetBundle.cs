@@ -528,13 +528,14 @@ namespace AssetBundleHelper
 			//------------------------------------------------
 
 			UnityEngine.Object asset = null ;
+			string error = null ;
 
 			// キャッシュにあればそれを返す
 			if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourceCachePath ) == true )
 			{
 				asset = m_ResourceCache[ resourceCachePath ] ;
-				onLoaded?.Invoke( asset ) ;
 				request.Asset = asset ;
+				onLoaded?.Invoke( asset ) ;
 				request.IsDone = true ;
 				yield break ;
 			}
@@ -575,7 +576,7 @@ namespace AssetBundleHelper
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAsset_Coroutine( assetBundlePath, assetName, type, ( _ ) => { asset = _ ; }, keep, request, assetBundleCaching, this ) ) ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAsset_Coroutine( assetBundlePath, assetName, type, ( _ ) => { asset = _ ; }, keep, ( _ ) => { error = _ ; }, request, assetBundleCaching, this ) ) ;
 								}
 							}
 						}
@@ -590,10 +591,11 @@ namespace AssetBundleHelper
 			if( asset == null )
 			{
 				// 失敗
-				if( string.IsNullOrEmpty( request.Error ) == true )
+				if( string.IsNullOrEmpty( error ) == true )
 				{
-					request.Error = "Could not load" ;
+					error = "Could not load." ;
 				}
+				request.Error = error ;
 				yield break ;
 			}
 
@@ -607,8 +609,8 @@ namespace AssetBundleHelper
 
 			//------------------------------------------------
 
-			onLoaded?.Invoke( asset ) ;
 			request.Asset = asset ;
+			onLoaded?.Invoke( asset ) ;
 			request.IsDone = true ;
 		}
 		
@@ -688,7 +690,7 @@ namespace AssetBundleHelper
 
 			for( int t  = 0 ; t <  2 ; t ++ )
 			{
-				if( assets == null )
+				if( assets == null || assets.Length == 0 )
 				{
 					if( ( t == 0 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 1 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
@@ -711,7 +713,7 @@ namespace AssetBundleHelper
 							}
 						}
 #if UNITY_EDITOR
-						if( m_UseLocalAsset == true && assets == null )
+						if( m_UseLocalAsset == true && ( assets == null || assets.Length == 0 ) )
 						{
 							// ローカルアセットバンドルパスからロードを試みる
 							temporaryAssets = LoadLocalAllAssets( resourcePath, type ) ;
@@ -747,7 +749,7 @@ namespace AssetBundleHelper
 						}
 					}
 				}
-				if( assets != null )
+				if( assets != null && assets.Length >  0 )
 				{
 					break ;
 				}
@@ -867,10 +869,11 @@ namespace AssetBundleHelper
 
 			UnityEngine.Object[] assets = null ;
 			UnityEngine.Object[] temporaryAssets ;
+			string error = string.Empty ;
 
 			for( int t  = 0 ; t <  2 ; t ++ )
 			{
-				if( assets == null )
+				if( assets == null || assets.Length == 0 )
 				{
 					if( ( t == 0 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 1 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
@@ -893,7 +896,7 @@ namespace AssetBundleHelper
 							}
 						}
 #if UNITY_EDITOR
-						if( m_UseLocalAsset == true && assets == null )
+						if( m_UseLocalAsset == true && ( assets == null || assets.Length == 0 ) )
 						{
 							// ローカルアセットバンドルパスからロードを試みる
 							temporaryAssets = LoadLocalAllAssets( resourcePath, type ) ;
@@ -923,13 +926,13 @@ namespace AssetBundleHelper
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllAssets_Coroutine( assetBundlePath, type, ( _ ) => { assets = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllAssets_Coroutine( assetBundlePath, type, ( _ ) => { assets = _ ; }, keep, ( _ ) => { error = _ ; }, request, assetBundleCaching, this, resourcePath ) ) ;
 								}
 							}
 						}
 					}
 				}
-				if( assets != null )
+				if( assets != null && assets.Length >  0 )
 				{
 					break ;
 				}
@@ -938,10 +941,11 @@ namespace AssetBundleHelper
 			if( assets == null || assets.Length == 0 )
 			{
 				// 失敗
-				if( string.IsNullOrEmpty( request.Error ) == true )
+				if( string.IsNullOrEmpty( error ) == true )
 				{
-					request.Error = "Could not load" ;
+					error = "Could not load." ;
 				}
+				request.Error = error ;
 				yield break ;
 			}
 
@@ -962,11 +966,10 @@ namespace AssetBundleHelper
 
 			//------------------------------------------------
 
-			onLoaded?.Invoke( assets ) ;
 			request.Assets = assets ;
+			onLoaded?.Invoke( assets ) ;
 			request.IsDone = true ;
 		}
-
 
 		//---------------------------------------------------------------------------
 
@@ -1178,13 +1181,15 @@ namespace AssetBundleHelper
 			if( m_ResourceCache != null && m_ResourceCache.ContainsKey( resourceCachePath ) == true )
 			{
 				asset = m_ResourceCache[ resourceCachePath ] ;
-				onLoaded?.Invoke( asset ) ;
 				request.Asset = asset ;
+				onLoaded?.Invoke( asset ) ;
 				request.IsDone = true ;
 				yield break ;
 			}
 
 			//------------------------------------------------
+
+			string error = string.Empty ;
 
 			for( int t  = 0 ; t <  2 ; t ++ )
 			{
@@ -1219,7 +1224,7 @@ namespace AssetBundleHelper
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadSubAsset_Coroutine( assetBundlePath, assetName, subAssetName, type, ( _ ) => { asset = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadSubAsset_Coroutine( assetBundlePath, assetName, subAssetName, type, ( _ ) => { asset = _ ; }, keep, ( _ ) => { error = _ ; }, request, assetBundleCaching, this, resourcePath ) ) ;
 								}
 							}
 						}
@@ -1234,10 +1239,11 @@ namespace AssetBundleHelper
 			if( asset == null )
 			{
 				// 失敗
-				if( string.IsNullOrEmpty( request.Error ) == true )
+				if( string.IsNullOrEmpty( error ) == true )
 				{
-					request.Error = "Could not load" ;
+					error = "Could not load." ;
 				}
+				request.Error = error ;
 				yield break ;
 			}
 
@@ -1251,8 +1257,8 @@ namespace AssetBundleHelper
 
 			//------------------------------------------------
 
-			onLoaded?.Invoke( asset ) ;
 			request.Asset = asset ;
+			onLoaded?.Invoke( asset ) ;
 			request.IsDone = true ;
 		}
 
@@ -1331,7 +1337,7 @@ namespace AssetBundleHelper
 
 			for( int t  = 0 ; t <  2 ; t ++ )
 			{
-				if( assets == null )
+				if( assets == null || assets.Length == 0 )
 				{
 					if( ( t == 0 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 1 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
@@ -1354,7 +1360,7 @@ namespace AssetBundleHelper
 							}
 						}
 #if UNITY_EDITOR
-						if( m_UseLocalAsset == true && assets == null )
+						if( m_UseLocalAsset == true && ( assets == null || assets.Length == 0 ) )
 						{
 							// ローカルアセットバンドルパスからロードを試みる
 							temporaryAssets = LoadLocalAllSubAssets( resourcePath, type ) ;
@@ -1390,7 +1396,7 @@ namespace AssetBundleHelper
 						}
 					}
 				}
-				if( assets != null )
+				if( assets != null && assets.Length >  0 )
 				{
 					break ;
 				}
@@ -1508,10 +1514,11 @@ namespace AssetBundleHelper
 
 			UnityEngine.Object[] assets = null ;
 			UnityEngine.Object[] temporaryAssets ;
+			string error = string.Empty ;
 
 			for( int t  = 0 ; t <  2 ; t ++ )
 			{
-				if( assets == null )
+				if( assets == null || assets.Length == 0 )
 				{
 					if( ( t == 0 && m_LoadPriorityType == LoadPriority.Local ) || ( t == 1 && m_LoadPriorityType == LoadPriority.Remote ) )
 					{
@@ -1534,7 +1541,7 @@ namespace AssetBundleHelper
 							}
 						}
 #if UNITY_EDITOR
-						if( m_UseLocalAsset == true && assets == null )
+						if( m_UseLocalAsset == true && ( assets == null || assets.Length == 0 ) )
 						{
 							// ローカルアセットバンドルパスからロードを試みる
 							temporaryAssets = LoadLocalAllSubAssets( resourcePath, type ) ;
@@ -1564,13 +1571,13 @@ namespace AssetBundleHelper
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllSubAssets_Coroutine( assetBundlePath, assetName, type, ( _ ) => { assets = _ ; }, keep, request, assetBundleCaching, this, resourcePath ) ) ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAllSubAssets_Coroutine( assetBundlePath, assetName, type, ( _ ) => { assets = _ ; }, keep, ( _ ) => { error = _ ; }, request, assetBundleCaching, this, resourcePath ) ) ;
 								}
 							}
 						}
 					}
 				}
-				if( assets != null )
+				if( assets != null && assets.Length >  0 )
 				{
 					break ;
 				}
@@ -1579,10 +1586,11 @@ namespace AssetBundleHelper
 			if( assets == null || assets.Length == 0 )
 			{
 				// 失敗
-				if( string.IsNullOrEmpty( request.Error ) == true )
+				if( string.IsNullOrEmpty( error ) == true )
 				{
-					request.Error = "Could not load" ;
+					error = "Could not load." ;
 				}
+				request.Error = error ;
 				yield break ;
 			}
 
@@ -1603,8 +1611,8 @@ namespace AssetBundleHelper
 
 			//------------------------------------------------
 
-			onLoaded?.Invoke( assets ) ;
 			request.Assets = assets ;
+			onLoaded?.Invoke( assets ) ;
 			request.IsDone = true ;
 		}
 		
@@ -1769,6 +1777,7 @@ namespace AssetBundleHelper
 			AssetBundle		assetBundle = null ;
 
 			UnityEngine.Object[] targets = null ;
+			string error = string.Empty ;
 
 			for( int t  = 0 ; t <  2 ; t ++ )
 			{
@@ -1812,7 +1821,7 @@ namespace AssetBundleHelper
 							{
 								if( m_ManifestHash.ContainsKey( manifestName ) == true )
 								{
-									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { assetBundle = _ ; }, keep, request, false, this ) ) ;
+									yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { assetBundle = _ ; }, keep, ( _ ) => { error = _ ; }, request, false, this ) ) ;
 									if( assetBundle != null )
 									{
 										if( assetBundle.isStreamedSceneAssetBundle == true )
@@ -1852,15 +1861,17 @@ namespace AssetBundleHelper
 			if( result == false )
 			{
 				// 失敗
-				if( string.IsNullOrEmpty( request.Error ) == true )
+				if( string.IsNullOrEmpty( error ) == true )
 				{
-					request.Error = "Could not load" ;
+					error = "Could not load." ;
 				}
+				request.Error = error ;
 				yield break ;
 			}
 
 			//------------------------------------------------
 
+			request.Assets = targets ;
 			onLoaded?.Invoke( targets ) ;
 			request.IsDone = true ;
 		}
@@ -2047,6 +2058,7 @@ namespace AssetBundleHelper
 		{
 			// アセットバンドルを取得する
 			AssetBundle assetBundle = null ;
+			string error = string.Empty ;
 
 			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out string assetName ) == true )
 			{
@@ -2054,22 +2066,23 @@ namespace AssetBundleHelper
 				{
 					if( m_ManifestHash.ContainsKey( manifestName ) == false )
 					{
-						yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { assetBundle = _ ; }, keep, request, false, this ) ) ;
+						yield return StartCoroutine( m_ManifestHash[ manifestName ].LoadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { assetBundle = _ ; }, keep, ( _ ) => { error = _ ; }, request, false, this ) ) ;
 					}
 				}
 			}
 
 			if( assetBundle == null )
 			{
-				if( string.IsNullOrEmpty( request.Error ) == true )
+				if( string.IsNullOrEmpty( error ) == true )
 				{
-					request.Error = "Could not load" ;
+					error = "Could not load." ;
 				}
+				request.Error = error ;
 				yield break ;
 			}
 
-			onLoaded?.Invoke( assetBundle ) ;
 			request.AssetBundle = assetBundle ;
+			onLoaded?.Invoke( assetBundle ) ;
 			request.IsDone = true ;
 		}
 
@@ -2097,7 +2110,8 @@ namespace AssetBundleHelper
 		// アセットバンドルのダウンロードを行う
 		private IEnumerator DownloadAssetBundleAsync_Private( string path, bool keep, Request request )
 		{
-			bool result = false ;
+			bool isComplited = false ;
+			string error = string.Empty ;
 
 			if( GetManifestNameAndAssetBundleName( path, out string manifestName, out string assetBundlePath, out _ ) == true )
 			{
@@ -2105,17 +2119,18 @@ namespace AssetBundleHelper
 				{
 					if( m_ManifestHash.ContainsKey( manifestName ) == true )
 					{
-						yield return StartCoroutine( m_ManifestHash[ manifestName ].DownloadAssetBundle_Coroutine( assetBundlePath, ( _ ) => { result = _ ; }, keep, request, this ) ) ;
+						yield return StartCoroutine( m_ManifestHash[ manifestName ].DownloadAssetBundle_Coroutine( assetBundlePath, keep, () => { isComplited = true ; }, ( _ ) => { error = _ ; }, request, this ) ) ;
 					}
 				}
 			}
 
-			if( result == false )
+			if( isComplited == false )
 			{
-				if( string.IsNullOrEmpty( request.Error ) == true )
+				if( string.IsNullOrEmpty( error ) == true )
 				{
-					request.Error = "Could not load." ;
+					error = "Could not load." ;
 				}
+				request.Error = error ;
 				yield break ;
 			}
 
@@ -2183,22 +2198,24 @@ namespace AssetBundleHelper
 
 			//--------------------------
 
-			bool result = false ;
+			bool isCompleted = false ;
+			string error = string.Empty ;
 
 			if( string.IsNullOrEmpty( manifestName ) == false )
 			{
 				if( m_ManifestHash.ContainsKey( manifestName ) == true )
 				{
-					yield return StartCoroutine( m_ManifestHash[ manifestName ].DownloadAssetBundleWithTags_Coroutine( tags, ( _ ) => { result = _ ; }, keep, request, this ) ) ;
+					yield return StartCoroutine( m_ManifestHash[ manifestName ].DownloadAssetBundleWithTags_Coroutine( tags, keep, () => { isCompleted = true ; }, ( _ ) => { error = _ ; }, request, this ) ) ;
 				}
 			}
 
-			if( result == false )
+			if( isCompleted == false )
 			{
-				if( string.IsNullOrEmpty( request.Error ) == true )
+				if( string.IsNullOrEmpty( error ) == true )
 				{
-					request.Error = "Could not load." ;
+					error = "Could not load." ;
 				}
+				request.Error = error ;
 				yield break ;
 			}
 

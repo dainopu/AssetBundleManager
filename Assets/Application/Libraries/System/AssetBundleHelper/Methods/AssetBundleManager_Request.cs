@@ -36,11 +36,11 @@ namespace AssetBundleHelper
 			{
 				get
 				{
-					if( IsDone == false && Asset == null && AssetBundle == null && string.IsNullOrEmpty( Error ) == true )
+					if( IsDone == true || string.IsNullOrEmpty( Error ) == false )
 					{
-						return true ;    // 継続
+						return false ;    // 終了
 					}
-					return false ;   // 終了
+					return true ;	// 継続
 				}
 			}
 
@@ -109,7 +109,7 @@ namespace AssetBundleHelper
 			/// <summary>
 			/// エラーメッセージ
 			/// </summary>
-			public string	Error = "" ;
+			public string	Error = string.Empty ;
 
 			/// <summary>
 			/// ダウンロード状況

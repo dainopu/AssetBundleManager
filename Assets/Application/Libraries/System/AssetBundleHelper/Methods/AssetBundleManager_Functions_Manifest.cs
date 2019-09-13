@@ -306,9 +306,8 @@ namespace AssetBundleHelper
 				}
 			}
 
-			request.IsDone = true ;
-
 			m_IsAnyManifestLoading = false ;
+			request.IsDone = true ;
 		}
 
 		//-----------------------------------------------------------
@@ -340,7 +339,6 @@ namespace AssetBundleHelper
 			{
 				// 何故か失敗した(基本的にありえない)
 				request.Error = "Could not load" ;
-				request.IsDone = true ;
 				yield break ;
 			}
 
@@ -358,15 +356,22 @@ namespace AssetBundleHelper
 			}
 
 			// 実際のダウンロードと展開を行う
-			yield return StartCoroutine( manifestInfo.LoadAsync( request, this ) ) ;
-			if( string.IsNullOrEmpty( request.Error ) == false )
+			bool isCompleted = false ;
+			string error = string.Empty ;
+			yield return StartCoroutine( manifestInfo.LoadAsync( () => { isCompleted = true ; }, ( _ ) => { error = _ ; }, this ) ) ;
+			if( isCompleted = false || string.IsNullOrEmpty( error ) == false )
 			{
+				// 失敗
 				if( isAll == false )
 				{
 					m_IsAnyManifestLoading = false ;
 				}
 
-				request.IsDone = true ;
+				if( string.IsNullOrEmpty( error ) == true )
+				{
+					error = "Could not load." ;
+				}
+				request.Error = error ;
 				yield break ;
 			}
 
